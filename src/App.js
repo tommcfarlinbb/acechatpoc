@@ -8,10 +8,13 @@ import {
 } from 'react-native';
 import { Navigation } from 'react-native-navigation';
 import { registerScreens } from './screens';
+import configureStore from './store/configureStore';
+import { Provider } from 'react-redux';
 
-
+const store = configureStore();
+registerScreens(store, Provider);
 // screen related book keeping
-registerScreens();
+//registerScreens();
 
 const tabs = [{
   label: 'Navigation',
@@ -28,8 +31,12 @@ const tabs = [{
 Navigation.startSingleScreenApp({
   screen: {
     screen: 'Home',
-    title: 'Home',
-    navigatorStyle: {},
+    title: 'CHAT',
+    navigatorStyle: {
+      navBarTextColor: '#f4002d',
+      navBarTextFontSize: 18,
+      navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
+    },
     navigatorButtons: {}
   }
 });

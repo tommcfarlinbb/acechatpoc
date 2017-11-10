@@ -157,6 +157,7 @@ import CustomView from '../CustomView';
     }
 
     addMessage(message) {
+      console.log(message)
       if (this._isMounted) {
         this.setState({
           messages: [{
@@ -333,7 +334,7 @@ import CustomView from '../CustomView';
     render() {
         return (
           <GiftedChat        
-            renderInputToolbar={this.getRenderInputToolbar()}
+            
             onSend={this.handleSend}
             onInputTextChanged={ this.handleInputTextChange }
             user={ this.getVisitor() }
