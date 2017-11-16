@@ -12,6 +12,11 @@ import {
 
 
 export default class NewChat extends Component {
+  static navigatorStyle = {
+    navBarTextColor: '#f4002d',
+    navBarTextFontSize: 18,
+    navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
+  };
   constructor(props) {
     super(props);
     this.state = {
@@ -19,9 +24,12 @@ export default class NewChat extends Component {
       firstName: null,
       lastName: null,
       email: null,
-      description: null
+      description: null,
+      customerId: this.props.customerId || null
     }
+    this.sdk = this.props.sdk;
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+
   }
   onNavigatorEvent(event) { 
     console.log(event)
@@ -32,20 +40,33 @@ export default class NewChat extends Component {
     }
   }
   beginChat = () => {
+ //   const subtitle = this.state.description.toUpperCase();
     this.props.navigator.push({
-      screen: 'ChatIO',
-      title: 'New Chat',
+      screen: 'ChatIOsdk',
+      title: 'Rick\'s Ace Hardware',
       passProps: {
         area: this.state.area,
         name: this.state.firstName + ' ' + this.state.lastName,
         email: this.state.email,
-        description: this.state.description
+        description: this.state.description,
+        sdk: this.sdk,
+        customerId: this.state.customerId,
+        title: 'Rick\'s Ace Hardware',
+        subtitle: this.state.description,
       },
       navigatorButtons: {
         leftButtons: [{
           id: 'close',
           disableIconTint: true,
           icon: require('../img/back_icn.png')
+        }],
+        rightButtons: [{
+          id: 'end',
+          title: 'End Chat',
+          buttonColor: '#5b5b5b',
+          buttonFontSize: 16,
+          buttonFontFamily: 'HelveticaNeue-CondensedBold'
+
         }]
       }
     });
