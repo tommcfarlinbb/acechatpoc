@@ -16,18 +16,6 @@ registerScreens(store, Provider);
 // screen related book keeping
 //registerScreens();
 
-const tabs = [{
-  label: 'Navigation',
-  screen: 'example.Types',
-  icon: require('./img/list.png'),
-  title: 'Navigation Types',
-}, {
-  label: 'Actions',
-  screen: 'example.Actions',
-  icon: require('./img/list.png'),
-  title: 'Navigation Actions',
-}];
-
 Navigation.startSingleScreenApp({
   screen: {
     screen: 'Home',

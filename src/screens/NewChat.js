@@ -4,24 +4,48 @@ import {
   StyleSheet,
   ScrollView,
   Text,
+  Image,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
 
+import { Common } from '../styles';
+import LinearGradient from 'react-native-linear-gradient';
+const images = {
+  plumbing: require('../img/plumbing.png'),
+  plumbing_icn: require('../img/plumbing_icn.png'),
+  lawn: require('../img/lawn.png'),
+  paint: require('../img/paint.png'),
+  outdoors: require('../img/outdoors.png'),
+  hardware: require('../img/hardware.png'),
+  auto: require('../img/auto.png'),
+  tools: require('../img/tools.png'),
+  indoor: require('../img/indoor.png'),
+  other: require('../img/other.png'),
+  arrowRight: require('../img/arrow-right.png')
+};
 
 export default class NewChat extends Component {
+  static navigatorStyle = {
+    navBarTextColor: '#f4002d',
+    navBarTextFontSize: 18,
+    navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
+  };
   constructor(props) {
     super(props);
     this.state = {
       area: null,
-      firstName: null,
-      lastName: null,
-      email: null,
-      description: null
+      firstName: 'Brand',
+      lastName: 'McBranderson',
+      email: 'brander@bb.com',
+      description: null,
+      customerId: this.props.customerId || null
     }
+    this.sdk = this.props.sdk;
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+
   }
   onNavigatorEvent(event) { 
     console.log(event)
@@ -32,20 +56,33 @@ export default class NewChat extends Component {
     }
   }
   beginChat = () => {
+ //   const subtitle = this.state.description.toUpperCase();
     this.props.navigator.push({
-      screen: 'ChatIO',
-      title: 'New Chat',
+      screen: 'ChatIOsdk',
+      title: 'Rick\'s Ace Hardware',
       passProps: {
         area: this.state.area,
         name: this.state.firstName + ' ' + this.state.lastName,
         email: this.state.email,
-        description: this.state.description
+        description: this.state.description,
+        sdk: this.sdk,
+        customerId: this.state.customerId,
+        title: 'Rick\'s Ace Hardware',
+        subtitle: this.state.description,
       },
       navigatorButtons: {
         leftButtons: [{
           id: 'close',
           disableIconTint: true,
           icon: require('../img/back_icn.png')
+        }],
+        rightButtons: [{
+          id: 'end',
+          title: 'End Chat',
+          buttonColor: '#5b5b5b',
+          buttonFontSize: 16,
+          buttonFontFamily: 'HelveticaNeue-CondensedBold'
+
         }]
       }
     });
@@ -57,21 +94,24 @@ export default class NewChat extends Component {
   }
   render() {
     let areas = [
-      { name: 'Plumbing', icon: '' },
-      { name: 'Lawn', icon: '' },
-      { name: 'Painting', icon: '' },
-      { name: 'Outdoors', icon: '' },
-      { name: 'Hardware', icon: '' },
-      { name: 'Auto', icon: '' },
-      { name: 'Tools', icon: '' },
-      { name: 'Indoors', icon: '' },
-      { name: 'Other', icon: '' }
+      { name: 'Plumbing', icon: 'plumbing_icn' },
+      { name: 'Lawn', icon: 'lawn' },
+      { name: 'Painting', icon: 'paint' },
+      { name: 'Outdoors', icon: 'outdoors' },
+      { name: 'Hardware', icon: 'hardware' },
+      { name: 'Auto', icon: 'auto' },
+      { name: 'Tools', icon: 'tools' },
+      { name: 'Indoors', icon: 'indoor' },
+      { name: 'Other', icon: 'other' }
     ];
     let areaList = areas.map((area,idx) => {
       return (
         <TouchableWithoutFeedback key={idx} onPress={() => this.pressArea(area.name)}>
           <View style={[styles.areaItem, this.state.area === area.name && styles.areaItemActive]}>
-            <View style={styles.areaContent}><Text style={styles.areaContentTitle}>{area.name}</Text></View>
+            <View style={styles.areaContent}>
+              <Image style={styles.areaImage} source={images[area.icon]} />
+              <Text style={styles.areaContentTitle}>{area.name}</Text>
+            </View>
           </View>
         </TouchableWithoutFeedback>
       );
@@ -85,15 +125,15 @@ export default class NewChat extends Component {
               <View style={{
                 flexDirection: 'row',
               }}>
-                <TextInput style={[styles.input,styles.firstName]} onChangeText={text => this.setState({firstName: text})} autoCorrect={false}  placeholder="First Name" />
-                <TextInput style={[styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} autoCorrect={false} placeholder="Last Name" />
+                <TextInput style={[Common.fontRegular,styles.input,styles.firstName]} onChangeText={text => this.setState({firstName: text})} value={this.state.firstName} autoCorrect={false}  placeholder="First Name *" />
+                <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name *" />
               </View>
             </View>
             <View style={{paddingLeft:15,paddingRight:15,marginBottom: 10}}>
-              <TextInput style={styles.inputEmail} onChangeText={text => this.setState({email: text})} autoCorrect={false} autoCapitalize="none" placeholder="Email Address" />
+              <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email *" />
             </View>
 
-            <View style={{padding:15,paddingBottom:0,height: 200}}>
+            <View style={{padding:15,paddingBottom:0,height: 220}}>
               <Text style={styles.header}>What area do you need assitance?</Text>
               <View style={{
                 flexDirection: 'row',
@@ -109,18 +149,20 @@ export default class NewChat extends Component {
             <View style={{padding:15,paddingBottom:0}}>
               <Text style={styles.header}>Please provide a brief description</Text>
               <View>
-                <TextInput style={styles.inputDescription} onChangeText={text => this.setState({description: text})}  placeholder="Description (40 characters)" />
+                <TextInput style={[Common.fontRegular,styles.inputDescription]} onChangeText={text => this.setState({description: text})}  placeholder="Description (40 characters)" />
               </View>
             </View>
 
         </View>
        
-        <View style={{padding: 10,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
+        <View style={{padding: 10,height:60,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
           <TouchableOpacity
               style={styles.button}
               onPress={this.beginChat}
             >
-              <Text style={styles.buttonText}>BEGIN CHAT</Text>
+            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+               <Text style={styles.buttonText}>BEGIN CHAT</Text>
+            </LinearGradient>
             </TouchableOpacity>
         </View>
       </View>
@@ -142,10 +184,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: .5,
     borderColor: '#aaa',
-    fontSize: 14,
-    paddingLeft: 15,
+    fontSize: 15,     
     padding: 10,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+    paddingLeft: 15, 
+    paddingTop: 14,
   },
   firstName: {
     borderTopLeftRadius: 5,
@@ -156,9 +198,10 @@ const styles = StyleSheet.create({
     borderLeftColor: '#f6f4f0'
   },
   header: {
-    fontSize: 15,
+    fontSize: 16,
     marginBottom: 8,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+    color: '#5b5b5b',
+    fontFamily: 'HelveticaNeueLTStd-MdCn'
   },
   inputEmail: {
     height: 45,
@@ -168,50 +211,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     padding: 10,
     paddingLeft: 15,
+    paddingTop: 14,
     borderTopWidth: 0,
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
-    fontFamily: 'HelveticaNeue-CondensedBold'
   },
+
   inputDescription: {
     height: 45,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderRadius: 5,
     borderColor: '#aaa',
-    fontSize: 14,
+    fontSize: 15,
     padding: 10,
     paddingLeft: 15,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+    paddingTop: 14,
   },
   areaContent: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     flex: 1
   },
+  areaImage: {
+    marginBottom: 11
+  },  
   areaContentTitle: {
-    fontFamily: 'HelveticaNeue-CondensedBold',
-    fontSize: 11
+    fontFamily: 'HelveticaNeueLTStd-Cn',
+    fontSize: 12,
+    marginBottom: 6
   },
   areaItem: {
-    height: 70,
-    width: 60,
+    height: 80,
+    width: 65,
     backgroundColor: '#fff',
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 10,
-    marginRight: 8
+    marginRight: 4
   },
   areaItemActive: {
     borderColor: '#f4002d',
     backgroundColor: '#fdeff1',
     borderWidth: 2,
   },
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#d80024',
+  linearGradient: {
+    flex: 1,
+    paddingLeft: 15,
+    paddingRight: 15,
     borderRadius: 5,
     borderWidth: 0,
     width: '100%',
@@ -219,9 +268,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 10
   },
+  button: {
+    alignItems: 'center',
+    flex: 1,
+    //backgroundColor: '#d80024',
+    backgroundColor: 'transparent',
+    borderRadius: 5,
+    borderWidth: 0,
+    width: '100%',
+   // height: 60,
+    justifyContent: 'center',
+  //  padding: 10
+  },
   buttonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+      color: '#FFF',
+      fontSize: 16,
+      textAlign: 'center',
+      fontFamily: 'HelveticaNeue-CondensedBold',
+      backgroundColor: 'transparent',
   }
 });
