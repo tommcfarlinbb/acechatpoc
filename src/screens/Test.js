@@ -5,7 +5,7 @@ import { init } from '@livechat/chat.io-customer-sdk'
 
 export default class App extends React.Component {
   componentDidMount() {
-    const sdk = init({ license: 9225035 })
+    const sdk = init({ license: 100004225 })
     sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
     })
@@ -14,7 +14,8 @@ export default class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <AuthWebView license={9225035} />
+        <AuthWebView license={100004225} env={"labs"}/>
+        <Text>Loading</Text>
       </View>
     );
   }

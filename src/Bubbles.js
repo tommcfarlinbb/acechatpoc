@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, ART } from 'react-native';
+import { Animated, ART, View } from 'react-native';
 const { Surface } = ART;
 
 import Circle from './animated/Circle';
@@ -9,12 +9,14 @@ export default class Bubbles extends Component {
   static propTypes = {
     size: PropTypes.number,
     color: PropTypes.string,
+    typing: PropTypes.bool,
     spaceBetween: PropTypes.number
   };
 
   static defaultProps = {
     spaceBetween: 6,
     size: 11,
+    typing: false,
     color: '#000'
   };
 
@@ -23,7 +25,6 @@ export default class Bubbles extends Component {
       new Animated.Value(0),
       new Animated.Value(0),
       new Animated.Value(0),
-      new Animated.Value(0)
     ]
   };
 
@@ -49,11 +50,11 @@ export default class Bubbles extends Component {
       .sequence([
         Animated.timing(this.state.circles[index], {
           toValue: 1,
-          duration: 700
+          duration: 650
         }),
         Animated.timing(this.state.circles[index], {
           toValue: 0,
-          duration: 700
+          duration: 650
         })
       ])
       .start(() => {
@@ -80,15 +81,15 @@ export default class Bubbles extends Component {
   }
 
   render() {
-    const { size, spaceBetween } = this.props;
-    const width = size * 9 + spaceBetween * 2;
+    const { size, spaceBetween, typing } = this.props;
+    let width = size * 9 + spaceBetween * 2;
     const height = size * 2;
+    if (typing) width = width-9;
 
     return (<Surface width={width} height={height}>
       {this.renderBubble(0)}
       {this.renderBubble(1)}
       {this.renderBubble(2)}
-      {this.renderBubble(3)}
     </Surface>);
   }
 }

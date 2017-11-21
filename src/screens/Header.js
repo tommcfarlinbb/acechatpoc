@@ -9,14 +9,14 @@ export default class Header extends React.Component {
     if (this.props.title) {
       return (
         <View style={styles.container}>
-          <Text style={styles.title}>{this.props.title}</Text>
-          <Text style={styles.subtitle}>{this.props.subtitle}</Text>
+          <Text numberOfLines={1} style={styles.title}>{this.props.title}</Text>
+          <Text numberOfLines={1} style={styles.subtitle}>{this.props.subtitle}</Text>
         </View>
       );
     } else {
       return (
         <View style={styles.container}>
-          <Text style={styles.title}></Text>
+          <Text numberOfLines={1} style={styles.title}></Text>
         </View>
       );
     }
@@ -27,18 +27,20 @@ export default class Header extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection:'column',
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end'
   },
   title: {
-    color: '#5b5b5b',
-    fontSize: 12,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+    color: '#000',
+    fontSize: 11,
+    fontFamily: 'HelveticaNeueLTStd-Cn'
   },
   subtitle: {
     color: '#f4002d',
-    fontSize: 18,
-    fontFamily: 'HelveticaNeue-CondensedBold'
+    fontSize: 15,
+    fontFamily: 'HelveticaNeueLTStd-BdCn',
+    marginBottom:2
   }
 });

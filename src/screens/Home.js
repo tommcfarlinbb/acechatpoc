@@ -10,21 +10,38 @@ import {
   TouchableHighlight,
   View
 } from 'react-native';
+
+
 import Row from '../components/Row';
 import moment from 'moment';
 import config from '../config';
+import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
-import Bubbles from '../Bubbles';
 
+import Bubbles from '../Bubbles';
+import { Common } from '../styles';
+import LinearGradient from 'react-native-linear-gradient';
 //import Rx from 'rxjs'
 // import { bindActionCreators } from 'redux';
 // import { connect } from 'react-redux';
 // import * as actions from '../actions';
 const images = {
-  plumbing: require('../img/plumbing.png'),
-  arrowRight: require('../img/arrow-right.png')
+  arrowRight: require('../img/arrow-right.png'),
+  Plumbing: require('../img/circle/plumbing.png'),  
+  Lawn: require('../img/circle/lawn.png'),
+  Painting: require('../img/circle/paint.png'),
+  Outdoors: require('../img/circle/outdoor.png'),
+  Hardware: require('../img/circle/hardware.png'),
+  Auto: require('../img/circle/auto.png'),
+  Tools: require('../img/circle/tools.png'),
+  Indoors: require('../img/circle/indoor.png'),
+  Other: require('../img/circle/other.png'),
 };
+
+const hideChats = [
+  'OZ0H23E5X2'
+]
 
   class Home extends Component {
     constructor(props) {
@@ -47,28 +64,32 @@ const images = {
       this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     onNavigatorEvent(event) {
-      console.log('HOME EVENT')
-      console.log(event)
+    //  console.log('HOME EVENT')
+    //  console.log(event)
       switch(event.id) {
         case 'willAppear':
+        console.log('willAppear')
         if (this.state.isConnected) {
           // TODO - get chat history and iterate over to update
-          console.log('// TODO - get chat history and iterate over to update')
+      //    console.log('// TODO - get chat history and iterate over to update')
           this.sdk.getChatsSummary({
             page: 1,
             limit: 25,
            })
             .then(({chatsSummary}) => {
-              console.log('new chat summary!')
+            //  console.log('new chat summary!')
               console.log(chatsSummary)
               this.iterateOver(chatsSummary, (chat, report, fields) => {
-                console.log(chat)
+          //     console.log(chat)                 
+                chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
                 const threadsArr = [chat.lastEvent.thread]
+                chat.title    = fields['chat_'+chat.id];
+                chat.area    = fields['category_'+chat.id];
                 this.sdk.getChatThreads(chat.id, threadsArr)
                   .then(threads => {
-                      console.log(threads)
-                      chat.isActive = threads.threads[0].active;
-                      chat.title    = fields['chat_'+chat.id];
+             //         console.log(threads)
+                      chat.isActive = threads[0].active;
+                      
                       report();
                   })
                   .catch(error => {
@@ -95,29 +116,42 @@ const images = {
       }
       
       let userData = this.state.userData.slice();
+      let fields = {};
+      console.log(userData)
       let users = [];
       for (i=0; i<userData.length; i++) {
         if (userData[i].type === 'customer') {
           users.push(userData[i]);
         }
       }
-      users.sort(function(a, b) {
-        return b.lastSeenTimestamp - a.lastSeenTimestamp
-      }); 
-      console.log(list)
+      // sort ascending
+      // users.sort(function(a, b) {
+      //   return a.lastSeenTimestamp - b.lastSeenTimestamp
+      // }); 
+      // go through users to get all title fieldss
+      for (var i=0; i<users.length; i++) {
+        Object.assign(fields,users[i].fields);
+      }
+      let lastUserIdx = users.length-1;
+      console.log('USERRRRRRRRRRRRRR')
+      console.log(users)
+      console.log(users[lastUserIdx])
+      console.log(fields)
       for(var i = 0; i < list.length; i++) {
-        console.log(list[i],users[0].fields)
-          iterator(list[i], report, users[0].fields)
+       // console.log(list[i],users[0].fields)
+          iterator(list[i], report, fields)
       }
   }
   updateChats = (chat) => {
     let chatList = this.state.chats.slice();
     for (i=0; i<chatList.length; i++) {
-      console.log(chatList[i].id, chat.chat);
+      console.log(chat.event);
       if (chatList[i].id === chat.chat) {
+        if (!chatList[i].lastEvent) chatList[i].lastEvent = {};
         chatList[i].lastEvent.text = chat.event.text;
         chatList[i].lastEvent.timestamp = chat.event.timestamp;
         chatList[i].order = chat.event.timestamp;
+        chatList[i].isActive = true;
         break;
       }
     }
@@ -166,7 +200,27 @@ const images = {
   componentDidMount() {
     
     this._isMounted = true;
-    this.sdk = init({ license: config.chatio_license });
+
+    this.props.navigator.showModal({
+      screen: 'Availability',
+      title: 'CHAT AVAILABILITY',     
+      passProps: {
+      },
+      animationType: 'none',
+      navigatorButtons: {
+        leftButtons: [{
+          id: 'close',
+          disableIconTint: true,
+          icon: require('../img/close_icn.png')
+        }]
+      }
+    });
+
+    this.sdk = init({ 
+      license: config.chatio_license,
+      clientId: '087dde4e017557c9d1cf0bab5c0e8547',
+      redirectUri: 'https://app.chat.io/'
+    });
     //     Rx.Observable.from(this.sdk)
     // .subscribe(([ eventName, eventData ]) => {
     //     console.log('RX.OBSERVABLE')
@@ -177,40 +231,53 @@ const images = {
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
 
+      // let updateObj = { fields: {} }
+      // updateObj.fields.chat_OZ0I0XI2UJ = 'This is a test title';
+      // this.sdk.updateCustomer(updateObj);
+
       this.updateChatHistory(chatsSummary);
       this.setState({
         isLoading: false,
         isConnected: true
       })
       this.iterateOver(chatsSummary, (chat, report, fields) => {
-          console.log(chat)
-          const threadsArr = [chat.lastEvent.thread]
-          this.sdk.getChatThreads(chat.id, threadsArr)
-            .then(threads => {
-                console.log(threads)
-                chat.isActive = threads.threads[0].active;
-                chat.title    = fields['chat_'+chat.id];
-                report();
-            })
-            .catch(error => {
-                console.log(error)
-            });
+        console.log('------ CHAT DATA ------')
+        console.log(chat)
+          chat.title       = fields['chat_'+chat.id];
+          chat.area        = fields['category_'+chat.id];
+          chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
+          if (chat.lastEvent) {
+            const threadsArr = [chat.lastEvent.thread]
+            this.sdk.getChatThreads(chat.id, threadsArr)
+              .then(threads => {
+                console.log('THREDSSSSSSSS')
+                  console.log(threads)
+                  chat.isActive = threads[0].active;                
+                  report();
+              })
+              .catch(error => {
+                  console.log(error)
+              });
+          } else {
+            report();
+          }
+
               
       }, this.setChatState);
     })
 
-    // this.sdk.on('connection_lost', () => {
-    //   console.log('connection_lost')
-    // })
-    // this.sdk.on('disconnected', reason => {
-    //   console.log('disconnected')
-    //   console.log(reason)
-    // })
-    // this.sdk.on('connection_restored', payload => {
-    //   console.log('connection_restored')
-    //   console.log(payload.chatsSummary)
-    //   console.log(payload.totalChats)
-    // })
+    this.sdk.on('connection_lost', () => {
+      console.log('connection_lost')
+    })
+    this.sdk.on('disconnected', reason => {
+      console.log('disconnected')
+      console.log(reason)
+    })
+    this.sdk.on('connection_restored', payload => {
+      console.log('connection_restored')
+      console.log(payload.chatsSummary)
+      console.log(payload.totalChats)
+    })
     this.sdk.on('customer_id', id => {
       console.log('customer id is', id)
       this.setState({
@@ -242,14 +309,14 @@ const images = {
     // this.sdk.on('user_stopped_typing', (payload) => {
     //   this.handleTypingIndicator(payload,false);
     // })
-    // this.sdk.on('thread_closed', ({ chat }) => {
-    //   console.log('thread_closed')
-    //   console.log(chat)
-    // })
-    // this.sdk.on('thread_metada', (metadata) => {
-    //   console.log('thread_metada')
-    //   console.log(metadata)
-    // })
+    this.sdk.on('thread_closed', ({ chat }) => {
+      console.log('thread_closed')
+      console.log(chat)
+    })
+    this.sdk.on('thread_summary', (thread_summary) => {
+      console.log('thread_summary')
+      console.log(thread_summary)
+    })
   }
 
 
@@ -291,7 +358,10 @@ const images = {
     }
     renderAuthView() {
       return (
-        <AuthWebView license={config.chatio_license} />
+        <View style={{
+          height: 0,
+          backgroundColor: 'transparent'
+        }}><AuthWebView style={styles.auth} /></View>
       )
     }
     addGlobalUsers = (user) => {
@@ -304,6 +374,7 @@ const images = {
     }
     loadChat = (chat) => {
       console.log('load chat with id: '+chat.id)
+      chat.myLastVisit = Date.now();
       this.props.navigator.push({
         screen: 'ChatIOsdk',
         passProps: {
@@ -311,7 +382,8 @@ const images = {
           customerId: this.state.customerId,
           chatId: chat.id,
           title: 'Rick\'s Ace Hardware',
-          subtitle: chat.title,
+          subtitle: chat.title.toUpperCase(),
+          isActive: chat.isActive,
           userData: this.state.userData
         },
         navigatorButtons: {
@@ -319,14 +391,19 @@ const images = {
             id: 'back',
             disableIconTint: true,
             icon: require('../img/back_icn.png')
-          }],
+          },
+          {
+            id: 'custom-button',
+            component: 'CustomButton', 
+            passProps: {
+              text: 'test'
+            }
+          }
+          ],
           rightButtons: [{
             id: 'end',
-            title: 'End Chat',
-            buttonColor: '#5b5b5b',
-            buttonFontSize: 16,
-            buttonFontFamily: 'HelveticaNeue-CondensedBold'
-  
+            disableIconTint: true,
+            icon: require('../img/end-chat.png')  
           }]
         }
       });
@@ -334,14 +411,17 @@ const images = {
     renderChats(chats) {    
       if (this.state.isLoading) {
         return (
-          <View style={styles.container}><Bubbles size={8} color="#d80024" /></View>
+          <View style={styles.container}>
+            { this.renderAuthView() }
+            <Bubbles size={8} color="#d80024" />
+          </View>
         );
       }  else {
         if (chats.length) {
 
-          let activeChats   = chats.filter(chat => { return chat.isActive; }
+          let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); }
                                 ).sort((a, b) => { return b.order - a.order });
-          let previousChats = chats.filter(chat => { return !chat.isActive; })
+          let previousChats = chats.filter(chat => { return !chat.isActive && chat.title && !~hideChats.indexOf(chat.id); })
                                    .sort((a, b) => { return b.order - a.order });
 
           return (
@@ -354,19 +434,25 @@ const images = {
                   <TouchableOpacity
                     style={styles.button}
                     onPress={this.onPressNewChat}
-                  ><Text style={styles.buttonText}>START NEW CHAT</Text></TouchableOpacity>
+                  >
+                    <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                    <Text style={styles.buttonText}>START NEW CHAT</Text>
+                    </LinearGradient>
+                  
+
+                  </TouchableOpacity>
                   
                 </View>
                 <Text
-                  style={{
+                  style={[Common.fontMedium,{
                     fontSize: 16,
-                    fontFamily: 'HelveticaNeue-CondensedBold',
                     color: '#5b5b5b',
                     marginBottom: 7,
                     paddingHorizontal: 16
-                  }}>Open Chats</Text>
-                {!activeChats.length && <Text style={{flex:1,fontFamily: 'HelveticaNeue-CondensedBold',color:'#999',textAlign:'center'}}>No open chats</Text>}
-                {activeChats.map(chat => (
+                  }]}>Open Chats</Text>
+                {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No open chats</Text></View>}
+                {activeChats.map(chat => {
+                  return (
                   <TouchableHighlight
                     key={chat.id}
                     onPress={() => this.loadChat(chat)}
@@ -377,33 +463,33 @@ const images = {
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}>
-                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images.plumbing} />
+                        <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
+                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
                         <View style={styles.chat}>
                         <View style={{                  
                             flexDirection: 'row',
                           }}>
-                            <Text style={styles.store}>Rick's Ace Hardware</Text>
-                            <Text style={styles.time}>{moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
-                            <Image style={{height: 16,width: 10,marginRight: 5}} source={images.arrowRight} />
-                          </View>
-                          <Text numberOfLines={1} style={styles.description}>{chat.title ? chat.title : 'Loading...'}</Text>
-                          <Text numberOfLines={1} style={styles.message}>{chat.lastEvent.text}</Text>
+                            <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
+                            <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                         </View>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text}</Text>
+                      </View>
                     </View>
   
                   </TouchableHighlight>
   
-                ))}     
+                ) } )}     
   
                 <Text
-                  style={{
+                  style={[Common.fontMedium,{
                     fontSize: 16,
-                    fontFamily: 'HelveticaNeue-CondensedBold',
                     color: '#5b5b5b',
                     marginBottom: 7,
                     marginTop: 30,
                     paddingHorizontal: 16
-                  }}>Previous Chats</Text>
+                  }]}>Previous Chats</Text>
                 {!previousChats.length && <Text style={{flex:1,fontFamily: 'HelveticaNeue-CondensedBold',color:'#999',textAlign:'center'}}>No previous chats</Text>}  
                 {previousChats.map(chat => (
                   <TouchableHighlight
@@ -416,18 +502,19 @@ const images = {
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}>
-                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images.plumbing} />
+                        <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
+                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
                         <View style={styles.chat}>
                         <View style={{                  
                             flexDirection: 'row',
                           }}>
-                            <Text style={styles.store}>Rick's Ace Hardware</Text>
-                            <Text style={styles.time}>{moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
-                            <Image style={{height: 16,width: 10,marginRight: 5}} source={images.arrowRight} />
-                          </View>
-                          <Text numberOfLines={1} style={styles.description}>{chat.title ? chat.title : 'Loading...'}</Text>
-                          <Text numberOfLines={1} style={styles.message}>{chat.lastEvent.text}</Text>
+                            <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
+                            <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                         </View>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text}</Text>
+                      </View>
                     </View>
   
                   </TouchableHighlight>
@@ -473,6 +560,40 @@ const images = {
       marginTop: -130,
       backgroundColor: '#eee6d9'
     },
+    linearGradient: {
+      flex: 1,
+      paddingLeft: 15,
+      paddingRight: 15,
+      borderRadius: 5,
+      borderWidth: 0,
+      width: 195,
+      height: 40,
+      justifyContent: 'center',
+      padding: 10
+    },
+    buttonText2: {
+      fontSize: 18,
+      fontFamily: 'Gill Sans',
+      textAlign: 'center',
+      margin: 10,
+      color: '#ffffff',
+      backgroundColor: 'transparent',
+    },
+    buttonText: {
+      color: '#FFF',
+      fontSize: 16,
+      textAlign: 'center',
+      fontFamily: 'HelveticaNeue-CondensedBold',
+      backgroundColor: 'transparent',
+    },
+    auth: {
+      position: 'absolute',
+      left: 500,
+      top: -400,
+      backgroundColor: '#eee6d9',
+      height: 1
+      
+    },
     containerChats: {
       flex: 1,
       paddingTop: 20,
@@ -481,7 +602,9 @@ const images = {
     row: {
       height: 80,
       flex:1,
-      paddingHorizontal: 18,
+      paddingTop: 3,
+      paddingRight: 18,
+      paddingLeft: 8,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'flex-start',
@@ -490,27 +613,65 @@ const images = {
       borderBottomColor: '#e3e3e3',
       borderTopColor: '#e3e3e3',
     },
+    empty: {
+      height: 50,
+      flex:1,
+      paddingTop: 3,
+      paddingRight: 18,
+      paddingLeft: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      backgroundColor: '#f3efe8',
+      borderBottomWidth: 1,
+      borderTopWidth: 1,
+      borderBottomColor: '#e2d3bc',
+      borderTopColor: '#e2d3bc',
+    },
+    newMessageDotOff: {
+      width: 5,
+      height: 5,
+      borderRadius: 5,
+      marginRight: 7,
+      backgroundColor: 'transparent'
+    },
+    newMessageDotOn: {
+      backgroundColor: '#d80024'
+    },
     chat: {
       width: '100%',
       flex: 1
     },
     time: {
-      fontFamily: 'HelveticaNeue-CondensedBold',
-      fontSize: 11,
-      flex: 1
+      fontSize: 12,
+      color: '#6c6c6c',
+      flex: 1,
+      textAlign: 'right',
+      marginRight: 7
     },  
     store: {
-      fontFamily: 'HelveticaNeue-CondensedBold',
-      fontSize: 11,
+      fontSize: 12,
+      color: '#6c6c6c',
       flex: 5
     },  
+    newMessageBold: {
+      fontFamily: 'HelveticaNeueLTStd-BdCn'
+    },
+    newMessageColor: {
+      color: '#000'
+    }, 
+    newMessageTime: {
+      color: '#000',
+      fontFamily: 'HelveticaNeueLTStd-BdCn'
+    },   
     description: {
-      fontFamily: 'HelveticaNeue-CondensedBold',
-      fontSize: 15
+      fontSize: 15,
+      color: '#000',
+      lineHeight: 17
     },  
     message: {
-      fontFamily: 'HelveticaNeue-CondensedBold',
-      fontSize: 12
+      fontSize: 14,
+      color: '#6c6c6c',
     },  
     noChats: {
       color: '#777',
@@ -521,19 +682,10 @@ const images = {
     },
     button: {
       alignItems: 'center',
-      backgroundColor: '#d80024',
-      borderRadius: 5,
-      borderWidth: 0,
-      width: 195,
-      height: 40,
-      justifyContent: 'center',
-      padding: 10
+//      backgroundColor: '#d80024',
+
     },
-    buttonText: {
-      color: '#FFF',
-      fontSize: 16,
-      fontFamily: 'HelveticaNeue-CondensedBold'
-    }
+
   });
 
   // const mapStateToProps = state => {

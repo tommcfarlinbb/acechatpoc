@@ -1,23 +1,146 @@
 import React from 'react';
 import {
   Platform,
+  Animated,
   StyleSheet,
   Text,
   Dimensions,
+  ListView,
   View,
+  Image,
+  TouchableOpacity,
+  TouchableWithoutFeedback
 } from 'react-native';
 
-import {GiftedChat, GiftedAvatar, Actions, Bubble, Message, Avatar, SystemMessage} from 'react-native-gifted-chat';
+import {GiftedChat, Time, InputToolbar, Composer, Send, MessageText, utils, MessageContainer, Day, GiftedAvatar, Actions, Bubble, Message, Avatar, SystemMessage} from 'react-native-gifted-chat';
 import CustomActions from '../CustomActions';
 import CustomView from '../CustomView';
 import config from '../config';
+import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
 import Bubbles from '../Bubbles';
 import Rx from 'rxjs'
+import moment from 'moment';
+import { isWithinMinutes } from '../utils/isWithinMinutes';
+import { Common } from '../styles';
+import LinearGradient from 'react-native-linear-gradient';
+
+let { isSameDay, isSameUser, warnDeprecated } = utils;
 
 const { width, height } = Dimensions.get('window');
 
+const images = {
+  avatar: require('../img/AceAvatar.png'),
+  send: require('../img/send.png'),
+  thumbs: require('../img/thumbs.png'),
+  thumbsUp: require('../img/thumbsUp.png'),
+  thumbsDown: require('../img/thumbsDown.png')
+};
+
+class CustomGiftedChat extends GiftedChat {  
+  renderMessages() {
+    const AnimatedView = this.props.isAnimated === true ? Animated.View : View;
+    return (
+      <AnimatedView style={{
+        height: this.state.messagesContainerHeight,
+      }}>
+        <CustomMessageContainer
+          {...this.props}
+
+          invertibleScrollViewProps={this.invertibleScrollViewProps}
+
+          messages={this.getMessages()}
+
+          ref={component => this._messageContainerRef = component}
+        />
+        {this.renderChatFooter()}
+      </AnimatedView>
+    );
+  } 
+}
+
+class CustomeSystemMessage extends SystemMessage {
+  render() {
+    const { currentMessage } = this.props;
+    if (currentMessage.rating) {
+      return (
+        <View style={[systemStyles.container, this.props.containerStyle]}>
+          <View style={[systemStyles.wrapper, this.props.wrapperStyle,{
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }]}>
+            <Image style={{width:65,height:58,marginBottom: 12}} source={images.send} />
+            <Text style={[systemStyles.text, this.props.textStyle,{ 
+              fontFamily: 'HelveticaNeueLTStd-Cn',
+              fontSize: 14,
+              color: '#5b5b5b'
+            }]}>
+              {currentMessage.text}
+            </Text>
+            <Text style={[systemStyles.text, this.props.textStyle,{ 
+              fontFamily: 'HelveticaNeueLTStd-CnO',
+              fontSize: 14,
+              color: '#5b5b5b'
+            }]}>
+              {currentMessage.rating.comment}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+    return (
+      <View style={[systemStyles.container, this.props.containerStyle]}>
+        <View style={[systemStyles.wrapper, this.props.wrapperStyle]}>
+          <Text style={[systemStyles.text, this.props.textStyle]}>
+            {currentMessage.text}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+}
+
+const systemStyles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  text: {
+    backgroundColor: "transparent",
+    color: "#b2b2b2",
+    fontSize: 12,
+    fontWeight: "300"
+  }
+});
+
+class CustomMessageContainer extends MessageContainer {
+  constructor(props) {
+    super(props);
+
+    this.renderRow = this.renderRow.bind(this);
+    this.renderFooter = this.renderFooter.bind(this);
+    this.renderLoadEarlier = this.renderLoadEarlier.bind(this);
+    this.renderScrollComponent = this.renderScrollComponent.bind(this);
+
+    const dataSource = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => {
+       // return r1.hash !== r2.hash;
+        return true;
+      }
+    });
+
+    const messagesData = this.prepareMessages(props.messages);
+    this.state = {
+      dataSource: dataSource.cloneWithRows(messagesData.blob, messagesData.keys)
+    };
+  }
+
+}
+  
 class CustomMessage extends Message {
   renderAvatar() {
     return (
@@ -25,14 +148,130 @@ class CustomMessage extends Message {
         imageStyleTest={{
           right: {
             backgroundColor: '#aaa'
-          },
-          left: {
-            backgroundColor: '#e31836'
-          }     
+          }   
         }}
         />
     );
   } 
+}
+
+// /////////////////////////////////
+// ///// CUSTOM DAY COMPONENT //////
+// /////////////////////////////////
+// /////////////////////////////////
+const dayStyles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  wrapper: {
+    // backgroundColor: '#ccc',
+    // borderRadius: 10,
+    // paddingLeft: 10,
+    // paddingRight: 10,
+    // paddingTop: 5,
+    // paddingBottom: 5,
+  },
+  text: {
+    backgroundColor: 'transparent',
+    color: '#5b5b5b',
+    fontSize: 12,
+    fontFamily: 'HelveticaNeue-CondensedBold',
+  },
+});
+
+class CustomDay extends Day {
+  render() {
+    const { timeFormat } = this.props;
+
+    if (isWithinMinutes(this.props.currentMessage, this.props.previousMessage,5)) {
+      return (
+        <View style={[dayStyles.container, this.props.containerStyle]}>
+          <View style={[dayStyles.wrapper, this.props.wrapperStyle]}>
+            <Text style={[dayStyles.text, this.props.textStyle]}>
+              {moment(this.props.currentMessage.createdAt).locale(this.context.getLocale()).format('ddd LT').toUpperCase()}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+    return null;
+  }
+}
+class CustomBubble extends Bubble {
+  renderTicks() {
+    const {currentMessage, adminLastSeen, myLastMessage} = this.props;
+
+    if (currentMessage.user._id !== this.props.user._id) {
+        return;
+    }
+    if (adminLastSeen >= currentMessage.createdAt) {
+      if (currentMessage.createdAt >= adminLastSeen) {
+        return (
+          <View>
+            <Text>Seen</Text>
+          </View>
+        )
+      } else {
+        return;
+      }
+
+    }
+    if (currentMessage.createdAt >= myLastMessage) {
+      return (
+        <View>
+          <Text style={{
+            fontFamily: 'HelveticaNeueLTStd-MdCn',
+            fontSize: 11,
+            marginTop: 4,
+            marginBottom: -7,
+            color: '#5b5b5b'
+          }}>Delivered</Text>
+        </View>
+      )
+    }
+  
+    return;
+
+
+    // if (currentMessage.sent || currentMessage.received) {
+    //   return (
+    //     <View style={styles.tickView}>
+    //       {currentMessage.sent && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
+    //       {currentMessage.received && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
+    //     </View>
+    //   )
+    // }
+  }
+  render() {
+    return (
+      <View>        
+        <View style={[bubbleStyles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
+          <View style={[bubbleStyles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position]]}>
+            <TouchableWithoutFeedback
+              onLongPress={this.onLongPress}
+              accessibilityTraits="text"
+              {...this.props.touchableProps}
+            >
+              <View>
+                {this.renderCustomView()}
+                {this.renderMessageImage()}
+                {this.renderMessageText()}
+                <View style={[bubbleStyles.bottom, this.props.bottomContainerStyle[this.props.position]]}>
+                  
+                  
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+          {this.renderTicks()}
+        </View>        
+      </View>
+
+    );
+  }
 }
 
 const styles = {
@@ -70,19 +309,24 @@ export default class ChatIO extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       messages: [],
       users: [],
       userData: [],
       customerId: this.props.customerId || null,
       chatId: this.props.chatId || null,
-      loadEarlier: true,
+      isActive: this.props.isActive || false,
+      loadEarlier: false,
       isLoading: true,
       typingText: null,
       isLoadingEarlier: false,
       connected: false,
       PING: null,
-      username: null
+      username: null,
+      myLastMessage: null,
+      adminLastSeen: null,
+      minInputToolbarHeight: 64
     };
     this.sdk = this.props.sdk;
    // this.socket = new WebSocket('wss://api.chat.io/customer/v0.2/rtm/ws?license_id='+config.chatio_license);
@@ -112,6 +356,12 @@ export default class ChatIO extends React.Component {
           }
         });
       }
+      if (event.id == 'end') { 
+        this.endChat(this.state.chatId);
+      }
+      if (event.id == 'close') { 
+        this.props.navigator.dismissModal();
+      }
     }
   }
   componentWillMount() {
@@ -122,6 +372,48 @@ export default class ChatIO extends React.Component {
         subtitle: this.props.subtitle
       }
     });
+  }
+
+  endChat = (id) => {
+    console.log('this.state.isActive: '+this.state.isActive)
+    if (this.state.isActive) {
+      console.log(id)
+      this.sdk.closeThread(id).then(response => {
+        console.log('closed')
+        console.log(response)
+        this.setState({
+          messages: [{
+            _id: Math.round(Math.random() * 1000000),
+            text: 'You have ended the chat',
+            createdAt: Date.now(),
+            system: true
+          }, ...this.state.messages]
+        });
+        setTimeout(() => {
+          this.setState({
+            isActive: false
+          });
+          setTimeout(() => {
+            this.props.navigator.showLightBox({
+              screen: "ThumbsModal", // unique ID registered with Navigation.registerScreen
+              passProps: {
+                  
+              }, // simple serializable object that will pass as props to the lightbox (optional)
+              style: {
+                backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
+                backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
+                tapBackgroundToDismiss: true // dismisses LightBox on background taps (optional)
+              }
+            });
+          },600)
+
+        }, 200);
+  
+      })
+      .catch(error => {
+        console.log(error)
+      });
+    }
   }
   
   // static navigatorStyle = {
@@ -173,6 +465,10 @@ export default class ChatIO extends React.Component {
   }; 
 
   apiSendStartChat = () => {
+    
+    if (!(this.props.name && this.props.email && this.props.description)) {
+      return false;
+    }
     console.log('starting chat')
     this.sdk.startChat()
       .then(chat => {
@@ -186,9 +482,13 @@ export default class ChatIO extends React.Component {
         // ////////////////////////////////
         // eventually replace with new configuration API
         // ////////////////////////////////
-        let payload = {}
+        let payload = { fields: {} }
         let chatKey = 'chat_'+chat.id;
-        payload[chatKey] = this.props.description;
+        let catkey = 'category_'+chat.id;
+        payload.fields[catkey] = this.props.area;   
+     //   let chatKeyLastVisit = 'lastVisit_'+chat.id;
+        payload.fields[chatKey] = this.props.description;
+     //   payload.fields[chatKeyLastVisit] = Date.now().toString();
         // ////////////////////////////////
         // ////////////////////////////////
         // ////////////////////////////////
@@ -212,11 +512,10 @@ export default class ChatIO extends React.Component {
               "value": this.props.email
             }]
         });
-        this.apiSendChatMessage(chat.id,this.props.description,true);
+        this.apiSendChatMessage(chat.id,this.props.description,true).then(response => {
+          console.log(response)
+        });
 
-        this.sdk.updateLastSeenTimestamp(chat.id,Date.now()).then(response => {
-            console.log(response)
-        })
       })
       .catch(error => {
         console.log(error);
@@ -234,16 +533,21 @@ export default class ChatIO extends React.Component {
     let payload = {
       text: msg
     }
-    if (isDescription) payload.customId = 'description';
-    console.log(payload);
+   // if (isDescription) payload.customId = 'description';
+   // console.log(payload);
     this.sdk.sendMessage(chatId,payload).then(message => {
       console.log(message);
       if (this._isMounted && (chatId === this.state.chatId)) {
+        this.sdk.updateLastSeenTimestamp(chatId,message.timestamp).then(response => {
+          console.log(response)
+        })
         this.setState({
+          myLastMessage: message.timestamp,
           messages: [{
             text: msg,
             _id: message.id,
             createdAt: message.timestamp,
+            sent: true,
             user: {
               _id: message.author,
               name: this.props.name || this.state.username
@@ -286,7 +590,6 @@ export default class ChatIO extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
-    console.log('MOUNT!!!!')
   //  this.sdk = init({ license: config.chatio_license });
 
     if (this.sdk && this._isMounted) {
@@ -296,9 +599,19 @@ export default class ChatIO extends React.Component {
           chatId: this.props.chatId,
           userData: this.props.userData
         })
+        // UPDATE USER OBJECT with last time youve viewed chat
+         let payload = { fields: {} }
+        //  let catkey = 'category_'+this.props.chatId;
+        //  payload.fields[catkey] = 'Hardware';        
+         this.sdk.updateCustomer(payload);
+
+        this.sdk.updateLastSeenTimestamp(this.props.chatId,Date.now());
         this.getChatHistory(this.props.chatId);
       } else {
         // new chat
+        this.setState({
+          isActive: true
+        })
         let payload = {
           name: this.props.name,
           email: this.props.email
@@ -313,6 +626,10 @@ export default class ChatIO extends React.Component {
     }
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
+      if (!this.props.name || !this.props.email) {
+        console.log('===========--------- NOT SURE HOW WE GOT HERE ----------=================')
+        return false;
+      }
       this.setCustomerInfo({
         name: this.props.name,
         email: this.props.email
@@ -340,15 +657,21 @@ export default class ChatIO extends React.Component {
     })
     this.sdk.on('customer_id', id => {
       console.log('customer id is', id)
-      this.setState({
-        customerId: id
-      })
+      if (this._isMounted) {
+        this.setState({
+          customerId: id
+        })
+      }
+
     })
     this.sdk.on('last_seen_timestamp_updated', payload => {
       console.log('last_seen_timestamp_updated')
       console.log(payload.chat)
       console.log(payload.user)
       console.log(payload.timestamp)
+      if (this._isMounted) {
+
+      }
     })
     this.sdk.on('new_event', (payload) => {
       console.log('new_event')
@@ -369,6 +692,16 @@ export default class ChatIO extends React.Component {
     this.sdk.on('user_stopped_typing', (payload) => {
       this.handleTypingIndicator(payload,false);
     })
+    this.sdk.on('user_joined_chat', ({ user, chat }) => {
+      if (this._isMounted) {
+        this.userChatStatusUpdate(user,chat,true);
+      }      
+    })
+    this.sdk.on('user_left_chat', ({ user, chat }) => {      
+      if (this._isMounted) {
+        this.userChatStatusUpdate(user,chat,false);
+      }
+    })
     this.sdk.on('thread_closed', ({ chat }) => {
       console.log('thread_closed')
       console.log(chat)
@@ -376,9 +709,9 @@ export default class ChatIO extends React.Component {
         this.closeChat(chat);
       }
     })
-    this.sdk.on('thread_metada', (metadata) => {
-      console.log('thread_metada')
-      console.log(metadata)
+    this.sdk.on('thread_summary', (thread_summary) => {
+      console.log('thread_summary')
+      console.log(thread_summary)
     })
   }
 
@@ -391,6 +724,26 @@ export default class ChatIO extends React.Component {
   // }
   
   // objs.sort(compare);
+  userChatStatusUpdate = (user,chat,didJoin) => {
+    console.log(user,chat)
+    let userData = this.state.userData.slice();
+    console.log(userData)
+    let name = 'Agent';
+    for (i=0; i<userData.length; i++) {
+      if (userData[i].id === user) {
+        name = userData[i].name;
+      }
+    }
+    let msg = name + ' has ' + (didJoin ? 'joined' : 'left') + ' the chat';
+    this.setState({
+      messages: [{
+        _id: Math.round(Math.random() * 1000000),
+        text: msg,
+        createdAt: Date.now(),
+        system: true
+      }, ...this.state.messages]
+    });
+  }
   closeChat = (chat) => {
     this.setState({
       messages: [{
@@ -411,27 +764,34 @@ export default class ChatIO extends React.Component {
         users.push(userData[i]);
       }
     }
-    users.sort(function(a, b) {
-      return b.lastSeenTimestamp - a.lastSeenTimestamp
-    });   
-
-    let username = users[0].name || 'Customer';
+    let lastUserIdx = users.length-1;
+    // users.sort(function(a, b) {
+    //   return b.lastSeenTimestamp - a.lastSeenTimestamp
+    // });   
+    let lastMessage = null;
+    let username = users[lastUserIdx].name || 'Customer';
     let chatDisplayName = username;
+    let avatar = null;
     this.setState({
       username: username
     });    
     
+    
     history.next().then(result => {
-            
       const events = result.value
-      
+      console.log(events)
       for (i=0; i<events.length; i++) {
-        if (events[i].type === 'message') {
-          username = users[0].name || 'Customer';
+        if (events[i].type === 'message' && events[i].text) {
+          username = users[lastUserIdx].name || 'Customer';
+          avatar = null;
           if (events[i].author === this.state.customerId) {
             chatDisplayName = username;
+            if (!lastMessage || (events[i].timestamp > lastMessage)) {
+              lastMessage = events[i].timestamp;
+            }
           } else {
             chatDisplayName = 'Ace';
+            avatar = images.avatar
           }
           this.setState({
             messages: [{
@@ -440,16 +800,23 @@ export default class ChatIO extends React.Component {
               createdAt: events[i].timestamp,
               user: {
                 _id: events[i].author,
-                name: chatDisplayName
+                name: chatDisplayName,
+                avatar: avatar
               }
             }, ...this.state.messages]
           });
         }
       }
+      console.log('---------------====================-------------')
+      console.log(lastMessage)
+      this.setState({
+        myLastMessage: lastMessage
+      })
       if (result.done) {
+        
         this.setState({
           isLoading: false
-        })
+        });
       }
 
     })
@@ -514,6 +881,7 @@ export default class ChatIO extends React.Component {
 
   onIncomingEvent = (payload) => {
     let event    = payload.event;
+    let avatar   = null;
     let username = this.props.name;
     console.log(payload);
     switch (event.type) {
@@ -521,11 +889,20 @@ export default class ChatIO extends React.Component {
         // if its the agent message, remove typing indicator
         if (event.author_id != this.state.customerId) {
           username = 'Ace';
+          avatar = images.avatar
           this.setState({
             typingText: false
           })
         }
         if (this._isMounted && (payload.chat === this.state.chatId)) {
+
+        // // UPDATE USER OBJECT with last time youve viewed chat
+        // let customerPayload = { fields: {} }
+        // let chatKeyLastVisit = 'lastVisit_'+this.state.chatId;
+        // customerPayload.fields[chatKeyLastVisit] = Date.now().toString();
+        // this.sdk.updateCustomer(customerPayload);
+
+          this.sdk.updateLastSeenTimestamp(this.state.chatId,Date.now());
           this.setState({
             messages: [{
               text: event.text,
@@ -533,7 +910,8 @@ export default class ChatIO extends React.Component {
               createdAt: event.timestamp,
               user: {
                 _id: event.author,
-                name: username
+                name: username,
+                avatar: avatar
               }
             }, ...this.state.messages]
           });
@@ -627,18 +1005,62 @@ export default class ChatIO extends React.Component {
   }
 
   onSend(messages) {
-  //   const properties = {
-  //     name: 'sasdafdsd Doe',
-  //     email: 'john.doe@example.com'
-  //   }
-  //   this.sdk.updateCustomer(properties)
-  //   .then(response => {
-  //     console.log(response)
-  // })
-  // .catch(error => {
-  //     console.log(error)
-  // })
-    this.apiSendChatMessage(this.state.chatId,messages[0].text);
+    if (this._isMounted) {
+      this.apiSendChatMessage(this.state.chatId,messages[0].text);
+    }    
+  }
+  onImageSend = (images) => {
+    if (this._isMounted) {
+      console.log(images)
+      
+      this.setState({
+        messages: [{
+          image: images[0].image,
+          _id: 'asdf3245ergae234asdfhadfs',
+          createdAt: Date.now(),
+          sent: true,
+          user: {
+            _id: this.state.customerId,
+            name: this.props.name || this.state.username
+          }
+        }, ...this.state.messages]
+      });
+    }
+  }
+
+  renderDay = (props) => {
+    return (
+      <CustomDay
+        {...props}
+      />
+    );
+  }
+  renderMessageText = (props) => {
+    return (
+      <MessageText
+        {...props}
+        textStyle={{
+          left: {
+            marginTop: 12,
+            marginBottom: 8,
+            marginLeft: 12,
+            marginRight: 12,
+            fontSize: 15,
+            lineHeight: 16,
+            fontFamily: 'HelveticaNeueLTStd-Cn',
+          },
+          right: {
+            marginTop: 12,
+            marginBottom: 8,
+            marginLeft: 12,
+            marginRight: 12,
+            lineHeight: 16,
+            fontSize: 15,
+            fontFamily: 'HelveticaNeueLTStd-Cn',
+          }
+        }}
+      />
+    );
   }
 
   answerDemo(messages) {
@@ -719,10 +1141,130 @@ export default class ChatIO extends React.Component {
   }
 
 
+
+  // renderTime = (props) => {
+  //   return (
+  //     <Time
+  //       {...props}
+  //       containerStyle={{
+  //         left: {
+  //           alignItems: 'center',
+  //         },
+  //         right: {
+  //           alignItems: 'center',
+  //         }
+  //       }}
+  //       textStyle={{
+  //         left: {
+  //           color: '#5b5b5b',
+  //           fontSize: 12,
+  //           fontFamily: 'HelveticaNeue-CondensedBold',
+  //         },
+  //         right: {
+  //           color: '#5b5b5b',
+  //           fontSize: 12,
+  //           fontFamily: 'HelveticaNeue-CondensedBold',
+  //         }
+  //       }}
+  //     />
+  //   );
+  // }
+
+  onReopenChat = () => {
+    this.setState({
+      isActive: true
+    })
+  }
+  renderInputToolbar = (props) => {
+    if (!this.state.isActive) {
+      return (
+        <View style={{
+           padding:10,
+           paddingTop:12,
+           marginTop:10,
+           backgroundColor:'#fff',
+           height:80
+         }}
+        >
+            <Text style={[Common.fontRegular,{marginBottom:3,textAlign:'center'}]}>Reopen Chat?</Text>
+            <View style={{
+              flexDirection:'row',
+              alignItems:'center',
+              justifyContent:'center',
+              flex:1
+            }}>
+              <TouchableOpacity
+                    style={[commonStyles.button,{marginRight:10}]}
+                    onPress={this.onReopenChat}
+                  >
+                    <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient]}>
+                    <Text style={commonStyles.buttonText}>YES</Text>
+                    </LinearGradient>
+                  
+
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={commonStyles.button}
+                    onPress={() => { return null; }}
+                  >
+                    <View style={{flex:1,borderWidth: 1,borderColor:'#c8c8c8',height: 38,justifyContent:'center',alignItems:'center',width:'100%',backgroundColor:'#eee',borderRadius:5}}>
+                      <Text style={[commonStyles.buttonText,{color:'#5b5b5b'}]}>NO</Text>
+                    </View>
+                    
+                  
+
+                  </TouchableOpacity>
+            </View>
+        </View>
+      )
+    }
+    return (
+      <InputToolbar
+        {...props}
+        primaryStyle={{
+          padding: 5,
+          paddingRight: 12
+        }}
+      />
+    );
+  }
+  renderSend = (props) => {
+    return (
+      <Send
+        {...props}
+      ><Image style={{height: 18,width:20,marginBottom: 15,marginLeft: 14,}} source={images.send} /></Send>
+    );
+  }
+  renderComposer = (props) => {
+    return (
+      <Composer
+        {...props}
+        placeholder='Start Typing...'
+        placeholderTextColor='#aaaaaa'
+        composerHeight={40}
+        textInputStyle={{
+          fontFamily: 'HelveticaNeueLTStd-Cn',
+          fontSize: 15,
+          borderWidth: 1,
+          borderColor: '#e3e3e3',
+          borderRadius: 5,
+          lineHeight: 22,
+          paddingTop: 12,
+          paddingLeft: 10,
+          marginTop: Platform.select({
+            ios: 5,
+            android: 0,
+          }),
+        }}
+      />
+    );
+  }
+
   renderBubble(props) {
     return (
-      <Bubble
+      <CustomBubble
         {...props}
+
         wrapperStyle={{
           left: {
             backgroundColor: '#fff',
@@ -734,6 +1276,43 @@ export default class ChatIO extends React.Component {
       />
     );
   }
+  // renderTicks = (props) => {
+  //   //const {currentMessage} = this.props;1510868005000
+  // //  console.log(props)
+    
+  //   // Object.getOwnPropertyNames(props.nextMessage).length === 0
+
+  //   if (props.user._id === this.state.customerId) {
+  //     if (this.state.adminLastSeen >= props.createdAt) {
+  //       if (props.createdAt >= this.state.adminLastSeen) {
+  //         return (
+  //           <View>
+  //             <Text>Seen</Text>
+  //           </View>
+  //         )
+  //       } else {
+  //         return;
+  //       }
+
+  //     }
+  //    // console.log(props.createdAt, this.state.myLastMessage)
+  //     if (props.createdAt >= this.state.myLastMessage) {
+  //       return (
+  //         <View>
+  //           <Text style={{
+  //             fontFamily: 'HelveticaNeueLTStd-MdCn',
+  //             fontSize: 11,
+  //             marginTop: 4,
+  //             marginBottom: -7,
+  //             color: '#5b5b5b'
+  //           }}>{props.createdAt} - {this.state.myLastMessage}</Text>
+  //         </View>
+  //       )
+  //     }
+
+  //   }
+  //   return;
+  // }
 
   // renderMessage(props) {
   //   return (
@@ -759,8 +1338,9 @@ export default class ChatIO extends React.Component {
           marginBottom: 15,
         }}
         textStyle={{
-          fontSize: 12,
-          color: '#5b5b5b'
+          fontSize: 14,
+          color: '#5b5b5b',
+          fontFamily: 'HelveticaNeueLTStd-MdCn'
         }}
       />
     );
@@ -775,16 +1355,19 @@ export default class ChatIO extends React.Component {
   }
 
   renderFooter(props) {
-    if (this.state.typingText) {
+   if (this.state.typingText) {
       return (
         <View style={chatStyles.footerContainer}>
-          <Text style={chatStyles.footerText}>
-            {this.state.typingText}
-          </Text>
+         <View style={{backgroundColor:'#fff',paddingLeft:7,borderRadius:12,width:60,height:25,justifyContent:'center',alignItems:'center',flex: 1}}>  
+           <Bubbles typing={true} size={5} spaceBetween={4} color="#ccc" />
+         </View>
+          {/* <Text style={chatStyles.footerText}>
+            { this.state.typingText  }
+          </Text> */}
         </View>
       );
-    }
-    return null;
+   }
+   return null;
   }
   renderAvatar = (props) => {
     return (
@@ -834,9 +1417,9 @@ export default class ChatIO extends React.Component {
       return (
         <View style={{backgroundColor:'#eee6d9',flex: 1}}>          
           <View style={styles.container}>
-            <AuthWebView license={config.chatio_license} />
+            <AuthWebView />
           </View>
-          <GiftedChat
+          <CustomGiftedChat
             messages={this.state.messages}
             onSend={this.onSend}
             loadEarlier={this.state.loadEarlier}
@@ -850,7 +1433,18 @@ export default class ChatIO extends React.Component {
             renderSystemMessage={this.renderSystemMessage}
             renderCustomView={this.renderCustomView}
             renderFooter={this.renderFooter}
-            
+            renderDay={this.renderDay}
+            renderMessageText={this.renderMessageText}
+            renderTicks={this.renderTicks}
+            myLastMessage={this.state.myLastMessage}
+            adminLastSeen={this.state.adminLastSeen}
+            renderInputToolbar={this.renderInputToolbar}
+            renderComposer={this.renderComposer}
+            renderSend={this.renderSend}
+
+            onImageSend={this.onImageSend}
+
+            minInputToolbarHeight={this.state.isActive ? 64 : 90}
           />
         </View>
       );
@@ -859,11 +1453,88 @@ export default class ChatIO extends React.Component {
   
   }
 }
+const bubbleStyles = {
+  left: StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'flex-start',
+    },
 
+    wrapper: {
+      borderRadius: 10,
+      backgroundColor: '#f0f0f0',
+      marginRight: 90,
+      minHeight: 10,
+      justifyContent: 'flex-end',
+    },
+    containerToNext: {
+      borderBottomLeftRadius: 10,
+    },
+    containerToPrevious: {
+      borderTopLeftRadius: 10,
+    },
+  }),
+  right: StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'flex-end',
+    },
+    wrapper: {
+      borderRadius: 10,
+      backgroundColor: '#0084ff',
+      marginLeft: 90,
+      minHeight: 30,
+      justifyContent: 'flex-end',
+    },
+    containerToNext: {
+      borderBottomRightRadius: 10,
+    },
+    containerToPrevious: {
+      borderTopRightRadius: 10,
+    },
+  }),
+  bottom: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  tick: {
+    fontSize: 10,
+    backgroundColor: 'transparent',
+    color: 'white',
+  },
+  tickView: {
+    flexDirection: 'row',
+    marginRight: 10,
+  }
+};
+
+const commonStyles = StyleSheet.create({
+  linearGradient: {
+    borderRadius: 5,
+    borderWidth: 0,
+    height: 38,
+    justifyContent: 'center',
+    width:'100%'
+  },
+  button: {
+    alignItems: 'center',
+    flex:1,
+    height:38
+//      backgroundColor: '#d80024',
+
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: 'HelveticaNeue-CondensedBold',
+    backgroundColor: 'transparent',
+  },
+})
 const chatStyles = StyleSheet.create({
   footerContainer: {
     marginTop: 5,
-    marginLeft: 10,
+    marginLeft: 14,
     marginRight: 10,
     marginBottom: 10,
   }, 
