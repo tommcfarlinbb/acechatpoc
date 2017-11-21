@@ -392,13 +392,13 @@ const hideChats = [
             disableIconTint: true,
             icon: require('../img/back_icn.png')
           },
-          {
-            id: 'custom-button',
-            component: 'CustomButton', 
-            passProps: {
-              text: 'test'
-            }
-          }
+          // {
+          //   id: 'custom-button',
+          //   component: 'CustomButton', 
+          //   passProps: {
+          //     text: 'test'
+          //   }
+          // }
           ],
           rightButtons: [{
             id: 'end',

@@ -14,41 +14,41 @@ import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 // import Test from './Test';
  import Availability from './Availability';
 
- const images = {
-    thumbs: require('../img/thumbs.png')
-  }
- const CustomButton = ({ text }) =>
- <TouchableOpacity
-   style={[styles.button, { marginLeft:-10 }]}
-   onPress={() => {
-       Navigation.showLightBox({
-        screen: "ThumbsModal", // unique ID registered with Navigation.registerScreen
-        passProps: {
+//  const images = {
+//     thumbs: require('../img/thumbs.png')
+//   }
+//  const CustomButton = ({ text }) =>
+//  <TouchableOpacity
+//    style={[styles.button, { marginLeft:-10 }]}
+//    onPress={() => {
+//        Navigation.showLightBox({
+//         screen: "ThumbsModal", // unique ID registered with Navigation.registerScreen
+//         passProps: {
             
-        }, // simple serializable object that will pass as props to the lightbox (optional)
-        style: {
-          backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
-          backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
-          tapBackgroundToDismiss: true // dismisses LightBox on background taps (optional)
-        }
-      });
-   }}
- >
-   <View style={styles.button}>
-     <Image style={{width: 30,height: 24}} source={images.thumbs} />
-   </View>
- </TouchableOpacity>;
+//         }, // simple serializable object that will pass as props to the lightbox (optional)
+//         style: {
+//           backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
+//           backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
+//           tapBackgroundToDismiss: true // dismisses LightBox on background taps (optional)
+//         }
+//       });
+//    }}
+//  >
+//    <View style={styles.button}>
+//      <Image style={{width: 30,height: 24}} source={images.thumbs} />
+//    </View>
+//  </TouchableOpacity>;
 
-const styles = StyleSheet.create({
-    button: {
-      overflow: 'hidden',
-      width: 34,
-      height: 34,
-      borderRadius: 34 / 2,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-  });
+// const styles = StyleSheet.create({
+//     button: {
+//       overflow: 'hidden',
+//       width: 34,
+//       height: 34,
+//       borderRadius: 34 / 2,
+//       justifyContent: 'center',
+//       alignItems: 'center',
+//     },
+//   });
 export function registerScreens(store,Provider) {
     
     Navigation.registerComponent('Header', () => Header);    
@@ -60,5 +60,5 @@ export function registerScreens(store,Provider) {
     Navigation.registerComponent('ChatIOsdk', () => ChatIOsdk);
     Navigation.registerComponent('Availability', () => Availability);
     Navigation.registerComponent('Home', () => Home, store, Provider);
-    Navigation.registerComponent('CustomButton', () => CustomButton);
+  //  Navigation.registerComponent('CustomButton', () => CustomButton);
 }
