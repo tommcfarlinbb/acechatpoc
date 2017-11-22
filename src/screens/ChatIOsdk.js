@@ -60,20 +60,25 @@ class CustomGiftedChat extends GiftedChat {
   } 
 }
 
-class CustomeSystemMessage extends SystemMessage {
+class CustomSystemMessage extends SystemMessage {
   render() {
     const { currentMessage } = this.props;
+    console.log(currentMessage)
     if (currentMessage.rating) {
       return (
         <View style={[systemStyles.container, this.props.containerStyle]}>
           <View style={[systemStyles.wrapper, this.props.wrapperStyle,{
             flexDirection: 'column',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom:25
           }]}>
-            <Image style={{width:65,height:58,marginBottom: 12}} source={images.send} />
+            {currentMessage.rating.rating === 'good' && <Image style={{width:65,height:58,marginBottom: 18}} source={images.thumbsUp} />}
+            {currentMessage.rating.rating === 'bad' && <Image style={{width:65,height:58,marginBottom: 18}} source={images.thumbsDown} />}
             <Text style={[systemStyles.text, this.props.textStyle,{ 
               fontFamily: 'HelveticaNeueLTStd-Cn',
               fontSize: 14,
+              marginBottom:5,
               color: '#5b5b5b'
             }]}>
               {currentMessage.text}
@@ -81,9 +86,10 @@ class CustomeSystemMessage extends SystemMessage {
             <Text style={[systemStyles.text, this.props.textStyle,{ 
               fontFamily: 'HelveticaNeueLTStd-CnO',
               fontSize: 14,
+              paddingHorizontal: 25,
               color: '#5b5b5b'
             }]}>
-              {currentMessage.rating.comment}
+              "{currentMessage.rating.comment}"
             </Text>
           </View>
         </View>
@@ -185,8 +191,9 @@ const dayStyles = StyleSheet.create({
 class CustomDay extends Day {
   render() {
     const { timeFormat } = this.props;
-
-    if (isWithinMinutes(this.props.currentMessage, this.props.previousMessage,5)) {
+    console.log(this.props);
+    
+    if (!this.props.previousMessage.text || isWithinMinutes(this.props.currentMessage, this.props.previousMessage,5)) {
       return (
         <View style={[dayStyles.container, this.props.containerStyle]}>
           <View style={[dayStyles.wrapper, this.props.wrapperStyle]}>
@@ -358,6 +365,7 @@ export default class ChatIO extends React.Component {
       }
       if (event.id == 'end') { 
         this.endChat(this.state.chatId);
+        //this.props.navigator.pop();
       }
       if (event.id == 'close') { 
         this.props.navigator.dismissModal();
@@ -374,13 +382,16 @@ export default class ChatIO extends React.Component {
     });
   }
 
+  updateMessages = (message) => {
+    this.setState({
+      messages: [message, ...this.state.messages]
+    });
+  }
+
   endChat = (id) => {
-    console.log('this.state.isActive: '+this.state.isActive)
+    
     if (this.state.isActive) {
-      console.log(id)
       this.sdk.closeThread(id).then(response => {
-        console.log('closed')
-        console.log(response)
         this.setState({
           messages: [{
             _id: Math.round(Math.random() * 1000000),
@@ -395,10 +406,10 @@ export default class ChatIO extends React.Component {
           });
           setTimeout(() => {
             this.props.navigator.showLightBox({
-              screen: "ThumbsModal", // unique ID registered with Navigation.registerScreen
+              screen: "ThumbsModal", 
               passProps: {
-                  
-              }, // simple serializable object that will pass as props to the lightbox (optional)
+                updateHandler: this.updateMessages
+              },
               style: {
                 backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
                 backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
@@ -424,45 +435,6 @@ export default class ChatIO extends React.Component {
   //   }
   // };
 
-  onMessage = (d) => {
-    let msg = JSON.parse(d.data);
-    
-    //handle unsuccesed messages
-    if (msg.success == false) {
-      console.error(msg.payload.error)
-      return 
-    }
-
-    if (msg.action !== 'ping') {
-      console.log(msg);
-    }
-    
-    switch (msg.action) {
-      case "login": 
-        return this.onMessageLogin(msg);
-        break;
-
-      case "start_chat":
-        return this.onMessageStartChat(msg);
-        break;
-
-      case "incoming_event":
-        return this.onIncomingEvent(msg);
-        break;
-
-      case "incoming_chat_thread":
-        return this.onIncomingChatThread(msg);
-        break;
-
-      case "chat_users_updated": 
-        return this.onChatUsersUpdated(msg);
-        break;
-
-      // case "incoming_typing_indicator":
-      //   return this.handleTypingIndicator(msg);
-      //   break;
-    }
-  }; 
 
   apiSendStartChat = () => {
     
@@ -476,7 +448,6 @@ export default class ChatIO extends React.Component {
           chatId: chat.id
         });
 
-        // TODO replace with new api
         // temporary for storing chat titles
         // ////////////////////////////////
         // ////////////////////////////////
@@ -593,7 +564,9 @@ export default class ChatIO extends React.Component {
   //  this.sdk = init({ license: config.chatio_license });
 
     if (this.sdk && this._isMounted) {
+    
       if (this.props.chatId) {
+        
         // previous chat
         this.setState({
           chatId: this.props.chatId,
@@ -754,7 +727,76 @@ export default class ChatIO extends React.Component {
       }, ...this.state.messages]
     });
   }
+
+  loadHistory = (history,messages,users,settings) => {
+    history.next().then(result => {
+      console.log('HELLO')
+      const events = result.value;
+      let newMessages = [];
+      console.log(result.done)
+      console.log(events)
+      for (i=0; i<events.length; i++) {
+        if (events[i].type === 'message' && events[i].text) {
+          settings.username = users[settings.lastUserIdx].name || 'Customer';
+          settings.avatar = null;
+          if (events[i].author === this.state.customerId) {
+            settings.chatDisplayName = settings.username;
+            if (!settings.lastMessage || (events[i].timestamp > settings.lastMessage)) {
+              settings.lastMessage = events[i].timestamp;
+            }
+          } else {
+            settings.chatDisplayName = 'Ace';
+            settings.avatar = images.avatar
+          }
+          newMessages = [{
+            text: events[i].text,
+            _id: events[i].id,
+            createdAt: events[i].timestamp,
+            user: {
+              _id: events[i].author,
+              name: settings.chatDisplayName,
+              avatar: settings.avatar
+            }
+          }, ...newMessages];
+
+          // this.setState({
+          //   messages: [{
+          //     text: events[i].text,
+          //     _id: events[i].id,
+          //     createdAt: events[i].timestamp,
+          //     user: {
+          //       _id: events[i].author,
+          //       name: settings.chatDisplayName,
+          //       avatar: settings.avatar
+          //     }
+          //   }, ...this.state.messages]
+          // });
+        }
+      }
+
+      messages = [...messages,...newMessages];
+      console.log('---------------====================-------------')
+      console.log(settings.lastMessage)
+      this.setState({
+        myLastMessage: settings.lastMessage
+      })
+      // all finished loading history
+      if (result.done) {        
+        this.setState({
+          isLoading: false,
+          messages: messages
+        });
+      } else {
+        // load more
+        console.log('load more')
+        this.loadHistory(history,messages,users,settings);
+      }
+
+    })
+  }
+
   getChatHistory = (id) => {
+    console.log("GETTING CHAT HISTORY")
     const history = this.sdk.getChatHistory(id);
     
     let userData = this.props.userData.slice();
@@ -764,62 +806,32 @@ export default class ChatIO extends React.Component {
         users.push(userData[i]);
       }
     }
+
     let lastUserIdx = users.length-1;
     // users.sort(function(a, b) {
     //   return b.lastSeenTimestamp - a.lastSeenTimestamp
     // });   
-    let lastMessage = null;
-    let username = users[lastUserIdx].name || 'Customer';
-    let chatDisplayName = username;
-    let avatar = null;
-    this.setState({
-      username: username
-    });    
-    
-    
-    history.next().then(result => {
-      const events = result.value
-      console.log(events)
-      for (i=0; i<events.length; i++) {
-        if (events[i].type === 'message' && events[i].text) {
-          username = users[lastUserIdx].name || 'Customer';
-          avatar = null;
-          if (events[i].author === this.state.customerId) {
-            chatDisplayName = username;
-            if (!lastMessage || (events[i].timestamp > lastMessage)) {
-              lastMessage = events[i].timestamp;
-            }
-          } else {
-            chatDisplayName = 'Ace';
-            avatar = images.avatar
-          }
-          this.setState({
-            messages: [{
-              text: events[i].text,
-              _id: events[i].id,
-              createdAt: events[i].timestamp,
-              user: {
-                _id: events[i].author,
-                name: chatDisplayName,
-                avatar: avatar
-              }
-            }, ...this.state.messages]
-          });
-        }
-      }
-      console.log('---------------====================-------------')
-      console.log(lastMessage)
-      this.setState({
-        myLastMessage: lastMessage
-      })
-      if (result.done) {
-        
-        this.setState({
-          isLoading: false
-        });
-      }
 
-    })
+    //let lastMessage = null;
+    //let username = users[lastUserIdx].name || 'Customer';
+    let tempName = users[lastUserIdx].name || 'Customer';
+   // let chatDisplayName = username;
+ //   let avatar = null;
+    this.setState({
+      username: tempName
+    });    
+
+    let messages = [];
+    let settings = {
+      lastUserIdx: lastUserIdx,
+      lastMessage:null,
+      username: tempName,
+      chatDisplayName: tempName,
+      avatar: null      
+    }
+    
+    console.log('-0-0-0-0-0-0-0-0-0')
+    this.loadHistory(history,messages,users,settings);
   }
 
   setCustomerInfo = (userData) => {
@@ -961,48 +973,48 @@ export default class ChatIO extends React.Component {
       });
     }
   }
-  onChatUsersUpdated = (payload) => {
-    console.log(payload);
+  // onChatUsersUpdated = (payload) => {
+  //   console.log(payload);
 
-    if (this._isMounted && payload.type === 'agent') {
-    // TODO:  if (this._isMounted && (payload.chat === this.state.chatId)) {
-      if (payload.present) {
-        // users.added.forEach(function(usr,idx) {
-        //   if (idx > 0) addedUsers += ', ';
-        //   addedUsers += usr.name;
-        // })
-        this.setState({
-          users: [payload, ...this.state.users]
-        })
-        this.setState({
-          messages: [{
-            _id: Math.round(Math.random() * 1000000),
-            text: payload.name + ' has joined the chat',
-            createdAt: Date.now(),
-            system: true
-          }, ...this.state.messages]
-        });
-      }
-      else {
-        var stateUsers = this.state.users.slice();
-        for (i=0; i<stateUsers.length; i++) {
-          if (stateUsers[i].id === payload.id) {
-            let name = payload.name;
-            stateUsers.splice(i, 1);                      
-            this.setState({
-              messages: [{
-                _id: Math.round(Math.random() * 1000000),
-                text: name + ' has left the chat',
-                createdAt: Date.now(),
-                system: true
-              }, ...this.state.messages]
-            });
-            break; 
-          }
-        }
-      }
-    }
-  }
+  //   if (this._isMounted && payload.type === 'agent') {
+  //   // TODO:  if (this._isMounted && (payload.chat === this.state.chatId)) {
+  //     if (payload.present) {
+  //       // users.added.forEach(function(usr,idx) {
+  //       //   if (idx > 0) addedUsers += ', ';
+  //       //   addedUsers += usr.name;
+  //       // })
+  //       this.setState({
+  //         users: [payload, ...this.state.users]
+  //       })
+  //       this.setState({
+  //         messages: [{
+  //           _id: Math.round(Math.random() * 1000000),
+  //           text: payload.name + ' has joined the chat',
+  //           createdAt: Date.now(),
+  //           system: true
+  //         }, ...this.state.messages]
+  //       });
+  //     }
+  //     else {
+  //       var stateUsers = this.state.users.slice();
+  //       for (i=0; i<stateUsers.length; i++) {
+  //         if (stateUsers[i].id === payload.id) {
+  //           let name = payload.name;
+  //           stateUsers.splice(i, 1);                      
+  //           this.setState({
+  //             messages: [{
+  //               _id: Math.round(Math.random() * 1000000),
+  //               text: name + ' has left the chat',
+  //               createdAt: Date.now(),
+  //               system: true
+  //             }, ...this.state.messages]
+  //           });
+  //           break; 
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   onSend(messages) {
     if (this._isMounted) {
@@ -1183,10 +1195,10 @@ export default class ChatIO extends React.Component {
            paddingTop:12,
            marginTop:10,
            backgroundColor:'#fff',
-           height:80
+           height:60
          }}
         >
-            <Text style={[Common.fontRegular,{marginBottom:3,textAlign:'center'}]}>Reopen Chat?</Text>
+            {/* <Text style={[Common.fontRegular,{marginBottom:3,textAlign:'center'}]}>Reopen Chat?</Text> */}
             <View style={{
               flexDirection:'row',
               alignItems:'center',
@@ -1197,21 +1209,9 @@ export default class ChatIO extends React.Component {
                     style={[commonStyles.button,{marginRight:10}]}
                     onPress={this.onReopenChat}
                   >
-                    <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient]}>
-                    <Text style={commonStyles.buttonText}>YES</Text>
-                    </LinearGradient>
-                  
-
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={commonStyles.button}
-                    onPress={() => { return null; }}
-                  >
-                    <View style={{flex:1,borderWidth: 1,borderColor:'#c8c8c8',height: 38,justifyContent:'center',alignItems:'center',width:'100%',backgroundColor:'#eee',borderRadius:5}}>
-                      <Text style={[commonStyles.buttonText,{color:'#5b5b5b'}]}>NO</Text>
-                    </View>
-                    
-                  
+                    <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient, {width:250}]}>
+                    <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
+                    </LinearGradient>                 
 
                   </TouchableOpacity>
             </View>
@@ -1332,7 +1332,7 @@ export default class ChatIO extends React.Component {
 
   renderSystemMessage(props) {
     return (
-      <SystemMessage
+      <CustomSystemMessage
         {...props}
         containerStyle={{
           marginBottom: 15,
@@ -1444,7 +1444,7 @@ export default class ChatIO extends React.Component {
 
             onImageSend={this.onImageSend}
 
-            minInputToolbarHeight={this.state.isActive ? 64 : 90}
+            minInputToolbarHeight={this.state.isActive ? 64 : 70}
           />
         </View>
       );

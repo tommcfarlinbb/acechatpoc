@@ -33,8 +33,8 @@ export default class ThumbsModal extends Component {
       comment: null,
       rating: null,
       error: false,
-
     }
+    
     this.sdk = this.props.sdk;
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 
@@ -61,18 +61,16 @@ export default class ThumbsModal extends Component {
     console.log(this.state.rating)
     let rating = this.state.rating === 'up' ? 'good' : 'bad';
     console.log(rating)
-    this.setState({
-      messages: [{
-        _id: Math.round(Math.random() * 1000000),
-        text: 'You rated this chat as: '+rating,
-        createdAt: Date.now(),
-        system: true,
-        rating: {
-          comment: this.state.comment,
-          rating: rating
-        }
-      }, ...this.state.messages]
-    });
+    this.props.updateHandler({
+      _id: Math.round(Math.random() * 1000000),
+      text: 'You rated this chat as: '+rating,
+      createdAt: Date.now(),
+      system: true,
+      rating: {
+        comment: this.state.comment,
+        rating: rating
+      }
+    })
    this.closeModal();
   }
   renderSearching() {

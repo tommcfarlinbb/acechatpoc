@@ -63,56 +63,76 @@ const hideChats = [
       }
       this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
+    getChatsSummary = (offset,limit,fullChatList) => {
+
+      fullChatList = fullChatList || [];
+
+      this.sdk.getChatsSummary({
+        offset: offset,
+        limit: limit,
+       })
+        .then(({chatsSummary,totalChats}) => {
+          console.log(chatsSummary,totalChats)
+          fullChatList = [...fullChatList, ...chatsSummary];
+
+          this.iterateOver(chatsSummary, (chat, report, fields) => {                
+            chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
+            const threadsArr = [chat.lastEvent.thread]
+            chat.title = fields['chat_'+chat.id];
+            chat.area  = fields['category_'+chat.id];
+            this.sdk.getChatThreads(chat.id, threadsArr)
+              .then(threads => {
+                  chat.isActive = threads[0].active;                      
+                  report();
+              })
+              .catch(error => {
+                  console.log(error)
+              });
+                  
+          }, this.setChatState, totalChats, fullChatList, offset);
+        })
+        .catch(error => {
+            console.log(error)
+            console.log(fullChatList)
+        })
+    }
+
     onNavigatorEvent(event) {
-    //  console.log('HOME EVENT')
-    //  console.log(event)
       switch(event.id) {
         case 'willAppear':
-        console.log('willAppear')
+        this.setState({
+          userData: []
+        })
         if (this.state.isConnected) {
-          // TODO - get chat history and iterate over to update
-      //    console.log('// TODO - get chat history and iterate over to update')
-          this.sdk.getChatsSummary({
-            page: 1,
-            limit: 25,
-           })
-            .then(({chatsSummary}) => {
-            //  console.log('new chat summary!')
-              console.log(chatsSummary)
-              this.iterateOver(chatsSummary, (chat, report, fields) => {
-          //     console.log(chat)                 
-                chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
-                const threadsArr = [chat.lastEvent.thread]
-                chat.title    = fields['chat_'+chat.id];
-                chat.area    = fields['category_'+chat.id];
-                this.sdk.getChatThreads(chat.id, threadsArr)
-                  .then(threads => {
-             //         console.log(threads)
-                      chat.isActive = threads[0].active;
-                      
-                      report();
-                  })
-                  .catch(error => {
-                      console.log(error)
-                  });
-                      
-              }, this.setChatState);
-            })
-            .catch(error => {
-                console.log(error)
-            })
+          this.getChatsSummary(0,25);
         }
         break;
       }
     }
-
-  iterateOver = (list, iterator, callback) => {
-      var doneCount = 0; 
   
-      function report() { 
+  
+  iterateOver = (list, iterator, callback, totalChats, fullChatList, offset) => {
+      offset = offset || 0;
+      let doneCount = 0;
+      let fullDoneCount = fullChatList.length - list.length; 
+      // if (!fullChatList) {
+      //   fullChatList = list.slice();
+      // }
+      report = () => { 
           doneCount++;  
-          if(doneCount === list.length)
-              callback(list);
+          fullDoneCount++;
+          // done looping through loaded chats
+          if (doneCount === list.length) {
+            // all chats loaded
+            if (fullDoneCount === totalChats) {
+              callback(fullChatList);
+            } else {
+              offset = offset + 25;
+              // there are more chats to load
+              this.getChatsSummary(offset,25,fullChatList);
+            }
+          }
+              
       }
       
       let userData = this.state.userData.slice();
@@ -170,7 +190,12 @@ const hideChats = [
       chats: chats
     })
   }
-
+  // setChatState = (chats) => {
+  //   console.log(chats)
+  //   this.setState({
+  //     chats: chats
+  //   })
+  // }
   // getChatHistory = (chatsSummary) => {
   //   const id = chatsSummary[i].id
   //   const history = this.sdk.getChatHistory(id);
@@ -263,7 +288,7 @@ const hideChats = [
           }
 
               
-      }, this.setChatState);
+      }, this.setChatState, totalChats, chatsSummary);
     })
 
     this.sdk.on('connection_lost', () => {
@@ -277,6 +302,8 @@ const hideChats = [
       console.log('connection_restored')
       console.log(payload.chatsSummary)
       console.log(payload.totalChats)
+      this.getChatsSummary(0,25);
+
     })
     this.sdk.on('customer_id', id => {
       console.log('customer id is', id)
@@ -299,7 +326,7 @@ const hideChats = [
       }      
     })
     this.sdk.on('user_data', (user) => {
-      console.log('user_data');
+    //  console.log('user_data');
       this.addGlobalUsers(user);
   //    this.onChatUsersUpdated(user);
     })
@@ -312,6 +339,7 @@ const hideChats = [
     this.sdk.on('thread_closed', ({ chat }) => {
       console.log('thread_closed')
       console.log(chat)
+      this.getChatsSummary(0,25);
     })
     this.sdk.on('thread_summary', (thread_summary) => {
       console.log('thread_summary')
@@ -365,7 +393,7 @@ const hideChats = [
       )
     }
     addGlobalUsers = (user) => {
-      console.log(user)
+    //  console.log(user)
       if (this._isMounted) {
         this.setState({
           userData: [user, ...this.state.userData]
