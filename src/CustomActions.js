@@ -75,7 +75,6 @@ export default class CustomActions extends React.Component {
   }
 
   selectImages(images) {
-    console.log(images)
     this.setImages(images);
   }
 
@@ -87,28 +86,38 @@ export default class CustomActions extends React.Component {
         },
         navBar: {
           backgroundColor: '#FFF',
+          paddingTop: 8,
+          paddingLeft: 14,
+          paddingRight: 14
+
         },
       }}>
         <NavButton onPress={() => {
           this.setModalVisible(false);
         }}>
           <NavButtonText style={{
+            paddingTop: 3,
             color: '#000',
+            fontSize: 14,
+            fontFamily: 'HelveticaNeueLTStd-MdCn',
           }}>
             {'Cancel'}
           </NavButtonText>
         </NavButton>
         <NavTitle style={{
-          color: '#000',
+          fontFamily: 'HelveticaNeue-CondensedBold',
+          color: '#d80024',
+          fontSize: 18,          
         }}>
-          {'Camera Roll'}
+          {'CAMERA ROLL'}
         </NavTitle>
         <NavButton onPress={() => {
           this.setModalVisible(false);
 
           const images = this.getImages().map((image) => {
             return {
-              image: image.uri,
+              filename: image.filename,
+              uri: image.uri,
             };
           });
           console.log(images)
@@ -116,7 +125,10 @@ export default class CustomActions extends React.Component {
           this.setImages([]);
         }}>
           <NavButtonText style={{
+            paddingTop: 3,
             color: '#000',
+            fontSize: 14,
+            fontFamily: 'HelveticaNeueLTStd-MdCn',
           }}>
             {'Send'}
           </NavButtonText>
@@ -154,7 +166,7 @@ export default class CustomActions extends React.Component {
         >
           {this.renderNavBar()}
           <CameraRollPicker
-            maximum={3}
+            maximum={1}
             imagesPerRow={4}
             callback={this.selectImages}
             selected={[]}

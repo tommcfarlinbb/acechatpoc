@@ -46,7 +46,6 @@ export default class Availability extends Component {
 
   }
   onNavigatorEvent(event) { 
-    console.log(event)
     if (event.type == 'NavBarButtonPress') {
       if (event.id == 'close') { 
         this.props.navigator.dismissModal();
@@ -86,25 +85,43 @@ export default class Availability extends Component {
       return;
     }
 
+    let zipSearch = 'https://storc.brandingbrand.com/v1/stores/acehardware?zip='+zip+'&limit=10';
 
-    
+    console.log(zipSearch)
     this.setState({
       isSearching: 'Searching...'
     })
-    setTimeout(() => {
-      if (~zipCodeList.indexOf(zip)) {
-        this.props.navigator.dismissModal({
-          animationType: 'slide-down'
-        });
-      } else {
-        // not avail in your area
-        this.setState({
-          showNotAvailable: true,
-          isSearching: null
-        })
-      }
+    // setTimeout(() => {
+    fetch(zipSearch)  
+      .then((response) => response.json())
+      .then((responseData) => {
+        console.log(responseData);
+        if (!responseData.length) {
+          this.setState({
+            showNotAvailable: true,
+            isSearching: null
+          })
+        } else {
+           let storeTitle = responseData[0].title; // Bellevue Builders Supply
+           this.props.navigator.dismissModal({
+             animationType: 'slide-down'
+           });
+        }
+      })
+      // if (~zipCodeList.indexOf(zip)) {
+      //   this.props.navigator.dismissModal({
+      //     animationType: 'slide-down'
+      //   });
+      // } else {
+      //   // not avail in your area
+      //   this.setState({
+      //     showNotAvailable: true,
+      //     isSearching: null
+      //   })
+      // }
 
-    }, 2000); // simulating network
+  //  }, 2000); 
+    // simulating network
     // this.props.navigator.push({
     //   screen: 'ChatIOsdk',
     //   title: 'Rick\'s Ace Hardware',

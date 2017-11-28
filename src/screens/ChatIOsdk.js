@@ -12,7 +12,7 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
-import {GiftedChat, Time, InputToolbar, Composer, Send, MessageText, utils, MessageContainer, Day, GiftedAvatar, Actions, Bubble, Message, Avatar, SystemMessage} from 'react-native-gifted-chat';
+import {GiftedChat, Time, InputToolbar, Composer, Send, MessageText, utils, MessageContainer, Day, GiftedAvatar, Actions, Bubble, Message, Avatar, SystemMessage, MessageImage} from 'react-native-gifted-chat';
 import CustomActions from '../CustomActions';
 import CustomView from '../CustomView';
 import config from '../config';
@@ -63,7 +63,6 @@ class CustomGiftedChat extends GiftedChat {
 class CustomSystemMessage extends SystemMessage {
   render() {
     const { currentMessage } = this.props;
-    console.log(currentMessage)
     if (currentMessage.rating) {
       return (
         <View style={[systemStyles.container, this.props.containerStyle]}>
@@ -191,7 +190,6 @@ const dayStyles = StyleSheet.create({
 class CustomDay extends Day {
   render() {
     const { timeFormat } = this.props;
-    console.log(this.props);
     
     if (!this.props.previousMessage.text || isWithinMinutes(this.props.currentMessage, this.props.previousMessage,5)) {
       return (
@@ -214,17 +212,21 @@ class CustomBubble extends Bubble {
     if (currentMessage.user._id !== this.props.user._id) {
         return;
     }
-    if (adminLastSeen >= currentMessage.createdAt) {
-      if (currentMessage.createdAt >= adminLastSeen) {
+   
+    if (adminLastSeen == currentMessage.createdAt) {
         return (
           <View>
-            <Text>Seen</Text>
+            <Text
+            style={{
+            fontFamily: 'HelveticaNeueLTStd-MdCn',
+            fontSize: 11,
+            marginTop: 4,
+            marginBottom: -3,
+            color: '#5b5b5b'
+          }}
+          >Seen</Text>
           </View>
         )
-      } else {
-        return;
-      }
-
     }
     if (currentMessage.createdAt >= myLastMessage) {
       return (
@@ -233,14 +235,14 @@ class CustomBubble extends Bubble {
             fontFamily: 'HelveticaNeueLTStd-MdCn',
             fontSize: 11,
             marginTop: 4,
-            marginBottom: -7,
+            marginBottom: -3,
             color: '#5b5b5b'
           }}>Delivered</Text>
         </View>
       )
     }
   
-    return;
+    return null;
 
 
     // if (currentMessage.sent || currentMessage.received) {
@@ -324,6 +326,7 @@ export default class ChatIO extends React.Component {
       customerId: this.props.customerId || null,
       chatId: this.props.chatId || null,
       isActive: this.props.isActive || false,
+      sneakPeakEnabled: this.props.isActive || false,
       loadEarlier: false,
       isLoading: true,
       typingText: null,
@@ -332,7 +335,7 @@ export default class ChatIO extends React.Component {
       PING: null,
       username: null,
       myLastMessage: null,
-      adminLastSeen: null,
+      adminLastSeen: this.props.adminLastSeen || null,
       minInputToolbarHeight: 64
     };
     this.sdk = this.props.sdk;
@@ -393,6 +396,7 @@ export default class ChatIO extends React.Component {
     if (this.state.isActive) {
       this.sdk.closeThread(id).then(response => {
         this.setState({
+          sneakPeakEnabled: false,
           messages: [{
             _id: Math.round(Math.random() * 1000000),
             text: 'You have ended the chat',
@@ -513,6 +517,7 @@ export default class ChatIO extends React.Component {
           console.log(response)
         })
         this.setState({
+          sneakPeakEnabled: true,
           myLastMessage: message.timestamp,
           messages: [{
             text: msg,
@@ -573,10 +578,10 @@ export default class ChatIO extends React.Component {
           userData: this.props.userData
         })
         // UPDATE USER OBJECT with last time youve viewed chat
-         let payload = { fields: {} }
+       //  let payload = { fields: {} }
         //  let catkey = 'category_'+this.props.chatId;
         //  payload.fields[catkey] = 'Hardware';        
-         this.sdk.updateCustomer(payload);
+       //  this.sdk.updateCustomer(payload);
 
         this.sdk.updateLastSeenTimestamp(this.props.chatId,Date.now());
         this.getChatHistory(this.props.chatId);
@@ -611,92 +616,177 @@ export default class ChatIO extends React.Component {
     })
 
     // Rx.Observable.from(this.sdk)
-    // .subscribe(([ eventName, eventData ]) => {
-    //     console.log('RX.OBSERVABLE')
+    // .subscribe(([ eventName, eventData ]) => {        
     //     console.log(eventName, eventData)
+    //     switch(eventName) {
+    //       case 'connected':
+    //         console.log('9999999999 CONNNECTED FROM RX 999999999999999')
+    //         let { chatsSummary, totalChats } = eventData;
+    //         console.log(chatsSummary, totalChats);
+    //         break;
+    //     }
+    //     // if (eventName === 'user_data') {
+    //     //   console.log('-----------------RX.OBSERVABLE-----------------')
+    //     // }
     // })
 
-    this.sdk.on('connection_lost', () => {
+    // /////////////////////////////////////
+    // ////////// connection_lost //////////
+    // /////////////////////////////////////
+    this._connectionLostHandler = () => {
       console.log('connection_lost')
-    })
-    this.sdk.on('disconnected', reason => {
+    };
+    this.sdk.on('connection_lost', this._connectionLostHandler);
+
+
+    // /////////////////////////////////////
+    // ////////// disconnected //////////
+    // /////////////////////////////////////
+    this._disconnectedHandler = (reason) => {
       console.log('disconnected')
       console.log(reason)
-    })
-    this.sdk.on('connection_restored', payload => {
+    }
+    this.sdk.on('disconnected', this._disconnectedHandler);
+
+
+    // /////////////////////////////////////
+    // //////// connection_restored ////////
+    // /////////////////////////////////////
+    this._connectionRestoredHandler = (payload) => {
       console.log('connection_restored')
-      console.log(payload.chatsSummary)
-      console.log(payload.totalChats)
-    })
-    this.sdk.on('customer_id', id => {
+      console.log(payload)
+      console.log(this.props.chatId);
+      //this.getChatHistory(this.props.chatId);
+    };
+    this.sdk.on('connection_restored', this._connectionRestoredHandler);
+
+
+    // /////////////////////////////////////
+    // /////////// customer_id /////////////
+    // /////////////////////////////////////
+    this._customerIdHandler = id => {
       console.log('customer id is', id)
       if (this._isMounted) {
         this.setState({
           customerId: id
         })
       }
+    };
+    this.sdk.on('customer_id', this._customerIdHandler);
 
-    })
-    this.sdk.on('last_seen_timestamp_updated', payload => {
-      console.log('last_seen_timestamp_updated')
-      console.log(payload.chat)
-      console.log(payload.user)
-      console.log(payload.timestamp)
-      if (this._isMounted) {
 
+    // /////////////////////////////////////////
+    // ///// last_seen_timestamp_updated ///////
+    // /////////////////////////////////////////
+    this._lastSeenTimestampHandler = (payload) => {
+      console.log('===========last_seen_timestamp_updated===========')
+      console.log(payload)
+      if (this._isMounted && this.state.chatId === payload.chat) {
+        if (payload.user != this.state.customerId) {
+          console.log('update ADMIMLASTSEEN')
+          this.setState({
+            adminLastSeen: payload.timestamp,
+            messages: [{
+              _id: Math.round(Math.random() * 1000000),
+              createdAt: Date.now(),
+              hideMessage: true,
+              system: true
+            }, ...this.state.messages]
+          });
+        }
       }
-    })
-    this.sdk.on('new_event', (payload) => {
+    };
+    this.sdk.on('last_seen_timestamp_updated', this._lastSeenTimestampHandler);
+
+
+    // ///////////////////////////////
+    // ///////// new_event ///////////
+    // ///////////////////////////////
+    this._newEventHandler = (payload) => {
       console.log('new_event')
       if (this._isMounted) {
         this.onIncomingEvent(payload);
       }      
-    })
-    this.sdk.on('user_data', (user) => {
-      console.log('user_data');
+    };
+    this.sdk.on('new_event', this._newEventHandler);
+
+
+    // ///////////////////////////////
+    // ///////// user_data ///////////
+    // ///////////////////////////////   
+    this._userDataHandler = (user) => {
+      
       if (this._isMounted) {
         this.addGlobalUsers(user);
       }
-  //    this.onChatUsersUpdated(user);
-    })
-    this.sdk.on('user_is_typing', (payload) => {
+    }
+    this.sdk.on('user_data', this._userDataHandler);
+
+
+    // ////////////////////////////////////
+    // ///////// user_is_typing ///////////
+    // ////////////////////////////////////   
+    this._userIsTypingHandler = (payload) => {
       this.handleTypingIndicator(payload,true);
-    })
-    this.sdk.on('user_stopped_typing', (payload) => {
+    };
+    this.sdk.on('user_is_typing', this._userIsTypingHandler);
+
+
+    // ////////////////////////////////////
+    // //////// user_stopped_typing ///////
+    // ////////////////////////////////////   
+    this._userStoppedTypingHandler = (payload) => {
       this.handleTypingIndicator(payload,false);
-    })
-    this.sdk.on('user_joined_chat', ({ user, chat }) => {
+    };
+    this.sdk.on('user_stopped_typing', this._userStoppedTypingHandler);
+
+
+    // ////////////////////////////////////
+    // ///////// user_joined_chat /////////
+    // ////////////////////////////////////  
+    this._userJoinedChatHandler = ({ user, chat }) => {
       if (this._isMounted) {
         this.userChatStatusUpdate(user,chat,true);
       }      
-    })
-    this.sdk.on('user_left_chat', ({ user, chat }) => {      
+    }; 
+    this.sdk.on('user_joined_chat', this._userJoinedChatHandler);
+
+
+    // ////////////////////////////////////
+    // ////////// user_left_chat //////////
+    // ////////////////////////////////////  
+    this._userLeftChatHandler = ({ user, chat }) => {      
       if (this._isMounted) {
         this.userChatStatusUpdate(user,chat,false);
       }
-    })
-    this.sdk.on('thread_closed', ({ chat }) => {
+    }
+    this.sdk.on('user_left_chat', this._userLeftChatHandler);
+
+
+    // ////////////////////////////////////
+    // /////////// thread_closed //////////
+    // ////////////////////////////////////  
+    this._threadClosedHandler = ({ chat }) => {
       console.log('thread_closed')
       console.log(chat)
       if (this._isMounted) {
         this.closeChat(chat);
       }
-    })
-    this.sdk.on('thread_summary', (thread_summary) => {
-      console.log('thread_summary')
-      console.log(thread_summary)
-    })
+    }
+    this.sdk.on('thread_closed', this.threadClosedHandler);
+
+
+    // ////////////////////////////////////
+    // ////////// thread_summary //////////
+    // ////////////////////////////////////
+    // this._threadSummaryHandler = (thread_summary) => {
+    //   console.log('thread_summary')
+    //   console.log(thread_summary)
+    // };
+    // this.sdk.on('thread_summary', this._threadSummaryHandler);
+
   }
 
-  // function compare(a,b) {
-  //   if (a.last_nom < b.last_nom)
-  //     return -1;
-  //   if (a.last_nom > b.last_nom)
-  //     return 1;
-  //   return 0;
-  // }
-  
-  // objs.sort(compare);
   userChatStatusUpdate = (user,chat,didJoin) => {
     console.log(user,chat)
     let userData = this.state.userData.slice();
@@ -719,6 +809,7 @@ export default class ChatIO extends React.Component {
   }
   closeChat = (chat) => {
     this.setState({
+      sneakPeakEnabled: false,
       messages: [{
         _id: Math.round(Math.random() * 1000000),
         text: 'This chat has been closed',
@@ -758,19 +849,28 @@ export default class ChatIO extends React.Component {
               avatar: settings.avatar
             }
           }, ...newMessages];
-
-          // this.setState({
-          //   messages: [{
-          //     text: events[i].text,
-          //     _id: events[i].id,
-          //     createdAt: events[i].timestamp,
-          //     user: {
-          //       _id: events[i].author,
-          //       name: settings.chatDisplayName,
-          //       avatar: settings.avatar
-          //     }
-          //   }, ...this.state.messages]
-          // });
+        } else if (events[i].type === 'file' && events[i].contentType === 'image/jpeg') {
+          settings.username = users[settings.lastUserIdx].name || 'Customer';
+          settings.avatar = null;
+          if (events[i].author === this.state.customerId) {
+            settings.chatDisplayName = settings.username;
+            if (!settings.lastMessage || (events[i].timestamp > settings.lastMessage)) {
+              settings.lastMessage = events[i].timestamp;
+            }
+          } else {
+            settings.chatDisplayName = 'Ace';
+            settings.avatar = images.avatar
+          }
+          newMessages = [{
+            image: events[i].url,
+            _id: events[i].id,
+            createdAt: events[i].timestamp,
+            user: {
+              _id: events[i].author,
+              name: settings.chatDisplayName,
+              avatar: settings.avatar
+            }
+          }, ...newMessages];
         }
       }
 
@@ -829,8 +929,6 @@ export default class ChatIO extends React.Component {
       chatDisplayName: tempName,
       avatar: null      
     }
-    
-    console.log('-0-0-0-0-0-0-0-0-0')
     this.loadHistory(history,messages,users,settings);
   }
 
@@ -859,8 +957,21 @@ export default class ChatIO extends React.Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-  //  clearInterval(this._PING);
-    // disconnect websocket
+    console.log('Unmount ===> remove event listeners')
+
+    this.sdk.off('connection_lost', this._connectionLostHandler);
+    this.sdk.off('disconnected', this._disconnectedHandler);
+    this.sdk.off('connection_restored', this._connectionRestoredHandler);
+    this.sdk.off('customer_id', this._customerIdHandler);
+    this.sdk.off('last_seen_timestamp_updated', this._lastSeenTimestampHandler);
+    this.sdk.off('new_event', this._newEventHandler);
+    this.sdk.off('user_data', this._userDataHandler);
+    this.sdk.off('user_is_typing', this._userIsTypingHandler);
+    this.sdk.off('user_stopped_typing', this._userStoppedTypingHandler);
+    this.sdk.off('user_joined_chat', this._userJoinedChatHandler);
+    this.sdk.off('user_left_chat', this._userLeftChatHandler);
+    this.sdk.off('thread_closed', this.threadClosedHandler);
+    this.sdk.off('thread_summary', this._threadSummaryHandler);
   }
 
   onLoadEarlier() {
@@ -895,6 +1006,9 @@ export default class ChatIO extends React.Component {
     let event    = payload.event;
     let avatar   = null;
     let username = this.props.name;
+    this.setState({
+      sneakPeakEnabled: true
+    })
     console.log(payload);
     switch (event.type) {
       case 'message':          
@@ -973,48 +1087,6 @@ export default class ChatIO extends React.Component {
       });
     }
   }
-  // onChatUsersUpdated = (payload) => {
-  //   console.log(payload);
-
-  //   if (this._isMounted && payload.type === 'agent') {
-  //   // TODO:  if (this._isMounted && (payload.chat === this.state.chatId)) {
-  //     if (payload.present) {
-  //       // users.added.forEach(function(usr,idx) {
-  //       //   if (idx > 0) addedUsers += ', ';
-  //       //   addedUsers += usr.name;
-  //       // })
-  //       this.setState({
-  //         users: [payload, ...this.state.users]
-  //       })
-  //       this.setState({
-  //         messages: [{
-  //           _id: Math.round(Math.random() * 1000000),
-  //           text: payload.name + ' has joined the chat',
-  //           createdAt: Date.now(),
-  //           system: true
-  //         }, ...this.state.messages]
-  //       });
-  //     }
-  //     else {
-  //       var stateUsers = this.state.users.slice();
-  //       for (i=0; i<stateUsers.length; i++) {
-  //         if (stateUsers[i].id === payload.id) {
-  //           let name = payload.name;
-  //           stateUsers.splice(i, 1);                      
-  //           this.setState({
-  //             messages: [{
-  //               _id: Math.round(Math.random() * 1000000),
-  //               text: name + ' has left the chat',
-  //               createdAt: Date.now(),
-  //               system: true
-  //             }, ...this.state.messages]
-  //           });
-  //           break; 
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 
   onSend(messages) {
     if (this._isMounted) {
@@ -1024,19 +1096,57 @@ export default class ChatIO extends React.Component {
   onImageSend = (images) => {
     if (this._isMounted) {
       console.log(images)
+      const file = {
+        uri: images[0].uri,
+        type: 'image/jpeg', // optional
+        name: images[0].filename, // optional
+      }
+
+      // this.setState({
+      //   messages: [{
+      //     image: images[0].uri,
+      //     _id: Math.round(Math.random() * 1000000),
+      //     createdAt: Date.now(),
+      //     sent: true,
+      //     user: {
+      //       _id: this.state.customerId,
+      //       name: this.props.name || this.state.username
+      //     }
+      //   }, ...this.state.messages]
+      // });
+
+      this.sdk.sendFile(
+        this.state.chatId,
+        {
+          file
+          //customId, // optional
+        },
+        {
+          onProgress: progress => console.log(`upload progress: ${progress}`),
+        },
+      )
+      .then(response => {
+        console.log('file uploaded!')
+        console.log(response)
+        this.setState({
+          messages: [{
+            image: images[0].uri,
+            _id: Math.round(Math.random() * 1000000),
+            createdAt: Date.now(),
+            sent: true,
+            user: {
+              _id: this.state.customerId,
+              name: this.props.name || this.state.username
+            }
+          }, ...this.state.messages]
+        });
+      })
+      .catch(error => {
+        console.log('error!')
+        console.log(error)
+      })
       
-      this.setState({
-        messages: [{
-          image: images[0].image,
-          _id: 'asdf3245ergae234asdfhadfs',
-          createdAt: Date.now(),
-          sent: true,
-          user: {
-            _id: this.state.customerId,
-            name: this.props.name || this.state.username
-          }
-        }, ...this.state.messages]
-      });
+
     }
   }
 
@@ -1045,6 +1155,28 @@ export default class ChatIO extends React.Component {
       <CustomDay
         {...props}
       />
+    );
+  }
+  renderMessage = (props) => {
+    if (props.currentMessage.hideMessage) {
+      return null;
+    }
+    return (
+      <CustomMessage {...props} />
+    );
+  }
+  renderMessageImage = (props) => {
+    return (
+      <MessageImage 
+        {...props}
+        imageStyle={{
+          width: 265,
+          height: 206,
+          borderRadius: 10,
+          margin: 0
+        }}
+      />
+  
     );
   }
   renderMessageText = (props) => {
@@ -1225,6 +1357,7 @@ export default class ChatIO extends React.Component {
           padding: 5,
           paddingRight: 12
         }}
+
       />
     );
   }
@@ -1405,6 +1538,18 @@ export default class ChatIO extends React.Component {
       };
     }
  }
+ onInputTextChanged = (text) => {
+   if (this.state.sneakPeakEnabled) {
+     if (text && text.length > 2) {
+      this.sdk.setSneakPeek(this.state.chatId,text);
+     } else {
+      this.sdk.setSneakPeek(this.state.chatId,'');
+     }
+   }
+
+   
+   
+ }
 
   render() {
     if (this.state.isLoading) {
@@ -1425,8 +1570,8 @@ export default class ChatIO extends React.Component {
             loadEarlier={this.state.loadEarlier}
             onLoadEarlier={this.onLoadEarlier}
             isLoadingEarlier={this.state.isLoadingEarlier}
-            user={ this.getVisitor() }
-            renderMessage={props => <CustomMessage {...props} />}
+            user={{_id: this.state.customerId} }
+            renderMessage={this.renderMessage}
             renderActions={this.renderCustomActions}
             renderBubble={this.renderBubble}
             renderAvatar={this.renderAvatar}
@@ -1441,6 +1586,8 @@ export default class ChatIO extends React.Component {
             renderInputToolbar={this.renderInputToolbar}
             renderComposer={this.renderComposer}
             renderSend={this.renderSend}
+            renderMessageImage={this.renderMessageImage}
+            onInputTextChanged={this.onInputTextChanged}
 
             onImageSend={this.onImageSend}
 

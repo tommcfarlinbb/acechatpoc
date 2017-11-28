@@ -22,7 +22,7 @@ import { init } from '@livechat/chat.io-customer-sdk';
 import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
-//import Rx from 'rxjs'
+import Rx from 'rxjs'
 // import { bindActionCreators } from 'redux';
 // import { connect } from 'react-redux';
 // import * as actions from '../actions';
@@ -64,6 +64,7 @@ const hideChats = [
       this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     getChatsSummary = (offset,limit,fullChatList) => {
+      console.log('getChatsSummary');
 
       fullChatList = fullChatList || [];
 
@@ -80,6 +81,16 @@ const hideChats = [
             const threadsArr = [chat.lastEvent.thread]
             chat.title = fields['chat_'+chat.id];
             chat.area  = fields['category_'+chat.id];
+
+            for (var user in chat.lastSeenTimestamps) {
+              if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
+                if ((user != this.state.customerId) && (!chat.adminLastSeen || chat.lastSeenTimestamps[user] > chat.adminLastSeen)) {
+                  chat.adminLastSeen = chat.lastSeenTimestamps[user]
+                }                  
+              }
+            }
+            
+
             this.sdk.getChatThreads(chat.id, threadsArr)
               .then(threads => {
                   chat.isActive = threads[0].active;                      
@@ -153,10 +164,10 @@ const hideChats = [
         Object.assign(fields,users[i].fields);
       }
       let lastUserIdx = users.length-1;
-      console.log('USERRRRRRRRRRRRRR')
-      console.log(users)
-      console.log(users[lastUserIdx])
-      console.log(fields)
+      // console.log('USERRRRRRRRRRRRRR')
+      // console.log(users)
+      // console.log(users[lastUserIdx])
+      // console.log(fields)
       for(var i = 0; i < list.length; i++) {
        // console.log(list[i],users[0].fields)
           iterator(list[i], report, fields)
@@ -246,37 +257,63 @@ const hideChats = [
       clientId: '087dde4e017557c9d1cf0bab5c0e8547',
       redirectUri: 'https://app.chat.io/'
     });
-    //     Rx.Observable.from(this.sdk)
-    // .subscribe(([ eventName, eventData ]) => {
-    //     console.log('RX.OBSERVABLE')
+
+
+    // Rx.Observable.from(this.sdk)
+    // .subscribe(([ eventName, eventData ]) => {        
     //     console.log(eventName, eventData)
+    //     switch(eventName) {
+    //       case 'connected':
+    //         console.log('9999999999 CONNNECTED FROM RX 999999999999999')
+    //         let { chatsSummary, totalChats } = eventData;
+    //         console.log(chatsSummary, totalChats);
+    //         break;
+    //     }
+    //     // if (eventName === 'user_data') {
+    //     //   console.log('-----------------RX.OBSERVABLE-----------------')
+    //     // }
     // })
 
 
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
-
-      // let updateObj = { fields: {} }
-      // updateObj.fields.chat_OZ0I0XI2UJ = 'This is a test title';
-      // this.sdk.updateCustomer(updateObj);
-
       this.updateChatHistory(chatsSummary);
       this.setState({
         isLoading: false,
         isConnected: true
       })
+
+      // let payload = { fields: {} }
+      // let chatKey = 'chat_OZ0R1WKT7L';
+      // let catkey = 'category_OZ0R1WKT7L';
+      // payload.fields[catkey] = 'Other';   
+   
+      // payload.fields[chatKey] = 'other other other other';
+   
+      // // ////////////////////////////////
+      // // ////////////////////////////////
+
+      // this.sdk.updateCustomer(payload);
+
       this.iterateOver(chatsSummary, (chat, report, fields) => {
-        console.log('------ CHAT DATA ------')
-        console.log(chat)
-          chat.title       = fields['chat_'+chat.id];
-          chat.area        = fields['category_'+chat.id];
-          chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
+        console.log(fields)
+          chat.title         = fields['chat_'+chat.id];
+          chat.area          = fields['category_'+chat.id];
+          chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
+          chat.adminLastSeen = null;
           if (chat.lastEvent) {
+
+            for (var user in chat.lastSeenTimestamps) {
+              if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
+                if ((user != this.state.customerId) && (!chat.adminLastSeen || chat.lastSeenTimestamps[user] > chat.adminLastSeen)) {
+                  chat.adminLastSeen = chat.lastSeenTimestamps[user]
+                }                  
+              }
+            }
+            
             const threadsArr = [chat.lastEvent.thread]
             this.sdk.getChatThreads(chat.id, threadsArr)
               .then(threads => {
-                console.log('THREDSSSSSSSS')
-                  console.log(threads)
                   chat.isActive = threads[0].active;                
                   report();
               })
@@ -293,30 +330,23 @@ const hideChats = [
 
     this.sdk.on('connection_lost', () => {
       console.log('connection_lost')
+      this.setState({
+        userData: []
+      })
     })
     this.sdk.on('disconnected', reason => {
       console.log('disconnected')
       console.log(reason)
     })
     this.sdk.on('connection_restored', payload => {
-      console.log('connection_restored')
-      console.log(payload.chatsSummary)
-      console.log(payload.totalChats)
       this.getChatsSummary(0,25);
-
     })
     this.sdk.on('customer_id', id => {
-      console.log('customer id is', id)
       this.setState({
         customerId: id
       })
     })
-    // this.sdk.on('last_seen_timestamp_updated', payload => {
-    //   console.log('last_seen_timestamp_updated')
-    //   console.log(payload.chat)
-    //   console.log(payload.user)
-    //   console.log(payload.timestamp)
-    // })
+
     this.sdk.on('new_event', (payload) => {
       console.log('new_event from HOME')
       if (this._isMounted) {
@@ -326,24 +356,14 @@ const hideChats = [
       }      
     })
     this.sdk.on('user_data', (user) => {
-    //  console.log('user_data');
       this.addGlobalUsers(user);
-  //    this.onChatUsersUpdated(user);
     })
-    // this.sdk.on('user_is_typing', (payload) => {
-    //   this.handleTypingIndicator(payload,true);
-    // })
-    // this.sdk.on('user_stopped_typing', (payload) => {
-    //   this.handleTypingIndicator(payload,false);
-    // })
     this.sdk.on('thread_closed', ({ chat }) => {
-      console.log('thread_closed')
-      console.log(chat)
       this.getChatsSummary(0,25);
     })
     this.sdk.on('thread_summary', (thread_summary) => {
-      console.log('thread_summary')
-      console.log(thread_summary)
+      //console.log('thread_summary')
+      //console.log(thread_summary)
     })
   }
 
@@ -412,6 +432,7 @@ const hideChats = [
           title: 'Rick\'s Ace Hardware',
           subtitle: chat.title.toUpperCase(),
           isActive: chat.isActive,
+          adminLastSeen: chat.adminLastSeen,
           userData: this.state.userData
         },
         navigatorButtons: {
@@ -498,11 +519,18 @@ const hideChats = [
                             flexDirection: 'row',
                           }}>
                             <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
-                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
+                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
+                              sameDay: 'h:mm a',
+                              nextDay: '[Tomorrow]',
+                              nextWeek: 'ddd',
+                              lastDay: '[Yesterday]',
+                              lastWeek: '[Last] ddd',
+                              sameElse: 'MM/DD/YY'
+                          })}</Text>
                             <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                         </View>
                         <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text}</Text>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
                       </View>
                     </View>
   
@@ -518,7 +546,8 @@ const hideChats = [
                     marginTop: 30,
                     paddingHorizontal: 16
                   }]}>Previous Chats</Text>
-                {!previousChats.length && <Text style={{flex:1,fontFamily: 'HelveticaNeue-CondensedBold',color:'#999',textAlign:'center'}}>No previous chats</Text>}  
+
+                {!previousChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No previous chats</Text></View>}  
                 {previousChats.map(chat => (
                   <TouchableHighlight
                     key={chat.id}
@@ -537,11 +566,18 @@ const hideChats = [
                             flexDirection: 'row',
                           }}>
                             <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
-                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).format('h:mm a')}</Text>
+                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
+                              sameDay: 'h:mm a',
+                              nextDay: '[Tomorrow]',
+                              nextWeek: 'ddd',
+                              lastDay: '[Yesterday]',
+                              lastWeek: '[Last] ddd',
+                              sameElse: 'MM/DD/YY'
+                          })}</Text>
                             <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                         </View>
                         <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text}</Text>
+                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
                       </View>
                     </View>
   
@@ -673,7 +709,7 @@ const hideChats = [
     time: {
       fontSize: 12,
       color: '#6c6c6c',
-      flex: 1,
+      flex: 3,
       textAlign: 'right',
       marginRight: 7
     },  

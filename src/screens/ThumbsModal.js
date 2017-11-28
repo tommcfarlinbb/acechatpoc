@@ -131,7 +131,7 @@ What went wrong and what did you like?
                     <View style={[styles.rateButton,{borderTopLeftRadius:0,borderBottomLeftRadius:0,borderLeftWidth:0},this.state.rating === 'down' && styles.rateSelected]}>
                     <View style={styles.rateContent}>
                     <Image style={{height: 32,width: 36,marginBottom:13,marginTop:2}} source={images.thumbsDown} />
-                      <Text style={styles.rateContentTitle}>Rate good</Text>
+                      <Text style={styles.rateContentTitle}>Rate bad</Text>
                     </View>
                   </View>
                 </TouchableWithoutFeedback>
