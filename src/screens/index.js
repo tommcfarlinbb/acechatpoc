@@ -59,6 +59,7 @@ export function registerScreens(store,Provider) {
   Navigation.registerComponent('ThumbsModal', () => ThumbsModal);
     Navigation.registerComponent('ChatIOsdk', () => ChatIOsdk);
     Navigation.registerComponent('Availability', () => Availability);
-    Navigation.registerComponent('Home', () => Home, store, Provider);
+    Navigation.registerComponent('Home', () => Home);
+  //  Navigation.registerComponent('Home', () => Home, store, Provider);
   //  Navigation.registerComponent('CustomButton', () => CustomButton);
 }
