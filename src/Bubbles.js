@@ -81,10 +81,11 @@ export default class Bubbles extends Component {
   }
 
   render() {
-    const { size, spaceBetween, typing } = this.props;
+    const { size, spaceBetween, typing, loader } = this.props;
     let width = size * 9 + spaceBetween * 2;
     const height = size * 2;
     if (typing) width = width-9;
+    if (loader) width = width-15;
 
     return (<Surface width={width} height={height}>
       {this.renderBubble(0)}

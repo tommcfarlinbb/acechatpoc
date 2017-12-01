@@ -20,11 +20,14 @@ import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
 import Bubbles from '../Bubbles';
-import Rx from 'rxjs'
+//import Rx from 'rxjs'
 import moment from 'moment';
 import { isWithinMinutes } from '../utils/isWithinMinutes';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
+import Header from '../components/Header';
+import Modal from 'react-native-modal';
+import ThumbsModal from './ThumbsModal';
 
 let { isSameDay, isSameUser, warnDeprecated } = utils;
 
@@ -40,7 +43,9 @@ const images = {
 
 class CustomGiftedChat extends GiftedChat {  
   renderMessages() {
+    
     const AnimatedView = this.props.isAnimated === true ? Animated.View : View;
+
     return (
       <AnimatedView style={{
         height: this.state.messagesContainerHeight,
@@ -284,6 +289,16 @@ class CustomBubble extends Bubble {
 }
 
 const styles = {
+  general: StyleSheet.create({
+    RNcontainer: {
+      flex: 1,
+      flexDirection:'column',
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%'
+    },
+  }),
   left: StyleSheet.create({
     container: {
       marginRight: 8
@@ -319,14 +334,16 @@ export default class ChatIO extends React.Component {
   constructor(props) {
     super(props);
 
+    let { customerId, chatId, isActive, adminLastSeen, sdk } = this.props.navigation.state.params;
+    
     this.state = {
       messages: [],
       users: [],
       userData: [],
-      customerId: this.props.customerId || null,
-      chatId: this.props.chatId || null,
-      isActive: this.props.isActive || false,
-      sneakPeakEnabled: this.props.isActive || false,
+      customerId: customerId || null,
+      chatId: chatId || null,
+      isActive: isActive || false,
+      sneakPeakEnabled: isActive || false,
       loadEarlier: false,
       isLoading: true,
       typingText: null,
@@ -334,11 +351,12 @@ export default class ChatIO extends React.Component {
       connected: false,
       PING: null,
       username: null,
+      isModalVisible: false,
       myLastMessage: null,
-      adminLastSeen: this.props.adminLastSeen || null,
+      adminLastSeen: adminLastSeen || null,
       minInputToolbarHeight: 64
     };
-    this.sdk = this.props.sdk;
+    this.sdk = sdk;
    // this.socket = new WebSocket('wss://api.chat.io/customer/v0.2/rtm/ws?license_id='+config.chatio_license);
    
     this._isMounted = false;
@@ -353,36 +371,41 @@ export default class ChatIO extends React.Component {
     this.onLoadEarlier = this.onLoadEarlier.bind(this);
 
     this._isAlright = null  ;
-    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+  //  this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
   }
 
-  onNavigatorEvent(event) { 
-    console.log(event)
-    if (event.type == 'NavBarButtonPress') {
-      if (event.id == 'back') { 
-        this.props.navigator.pop({
-          passProps: {
-            reload: true
-          }
-        });
-      }
-      if (event.id == 'end') { 
-        this.endChat(this.state.chatId);
-        //this.props.navigator.pop();
-      }
-      if (event.id == 'close') { 
-        this.props.navigator.dismissModal();
-      }
-    }
-  }
+  _showModal = () => this.setState({ isModalVisible: true })
+  
+  _hideModal = () => this.setState({ isModalVisible: false })
+
+  // onNavigatorEvent(event) { 
+  //   console.log(event)
+  //   if (event.type == 'NavBarButtonPress') {
+  //     if (event.id == 'back') { 
+  //       this.props.navigator.pop({
+  //         passProps: {
+  //           reload: true
+  //         }
+  //       });
+  //     }
+  //     if (event.id == 'end') { 
+  //       this.endChat(this.state.chatId);
+  //       //this.props.navigator.pop();
+  //     }
+  //     if (event.id == 'close') { 
+  //       this.props.navigator.dismissModal();
+  //     }
+  //   }
+  // }
   componentWillMount() {
-    this.props.navigator.setStyle({
-      navBarCustomView: 'Header',
-      navBarCustomViewInitialProps: {
-        title: this.props.title,
-        subtitle: this.props.subtitle
-      }
-    });
+    console.log('----componentWillMount----')
+    // this.props.navigator.setStyle({
+    //   navBarCustomView: 'Header',
+    //   navBarCustomViewInitialProps: {
+    //     title: this.props.title,
+    //     subtitle: this.props.subtitle
+    //   }
+    // });
   }
 
   updateMessages = (message) => {
@@ -391,10 +414,11 @@ export default class ChatIO extends React.Component {
     });
   }
 
-  endChat = (id) => {
+  endChat = () => {
     
     if (this.state.isActive) {
-      this.sdk.closeThread(id).then(response => {
+      
+      this.sdk.closeThread(this.state.chatId).then(response => {
         this.setState({
           sneakPeakEnabled: false,
           messages: [{
@@ -409,17 +433,19 @@ export default class ChatIO extends React.Component {
             isActive: false
           });
           setTimeout(() => {
-            this.props.navigator.showLightBox({
-              screen: "ThumbsModal", 
-              passProps: {
-                updateHandler: this.updateMessages
-              },
-              style: {
-                backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
-                backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
-                tapBackgroundToDismiss: true // dismisses LightBox on background taps (optional)
-              }
-            });
+            this._showModal();
+
+            // this.props.navigator.showLightBox({
+            //   screen: "ThumbsModal", 
+            //   passProps: {
+            //     updateHandler: this.updateMessages
+            //   },
+            //   style: {
+            //     backgroundBlur: "none", // 'dark' / 'light' / 'xlight' / 'none' - the type of blur on the background
+            //     backgroundColor: "rgba(0,0,0,.5)", // tint color for the background, you can specify alpha here (optional)
+            //     tapBackgroundToDismiss: true // dismisses LightBox on background taps (optional)
+            //   }
+            // });
           },600)
 
         }, 200);
@@ -442,8 +468,12 @@ export default class ChatIO extends React.Component {
 
   apiSendStartChat = () => {
     
-    if (!(this.props.name && this.props.email && this.props.description)) {
+    if (!(this.props.navigation.state.params.name && this.props.navigation.state.params.email && this.props.navigation.state.params.description)) {
       return false;
+    }
+
+    if (this.props.navigation.state.params && this.props.navigation.state.params.callback) {
+      this.props.navigation.state.params.callback();
     }
     console.log('starting chat')
     this.sdk.startChat()
@@ -460,9 +490,9 @@ export default class ChatIO extends React.Component {
         let payload = { fields: {} }
         let chatKey = 'chat_'+chat.id;
         let catkey = 'category_'+chat.id;
-        payload.fields[catkey] = this.props.area;   
+        payload.fields[catkey] = this.props.navigation.state.params.area;   
      //   let chatKeyLastVisit = 'lastVisit_'+chat.id;
-        payload.fields[chatKey] = this.props.description;
+        payload.fields[chatKey] = this.props.navigation.state.params.description;
      //   payload.fields[chatKeyLastVisit] = Date.now().toString();
         // ////////////////////////////////
         // ////////////////////////////////
@@ -477,17 +507,17 @@ export default class ChatIO extends React.Component {
               "name": "name",
               "label": "Your name:",
               "required": true,
-              "value": this.props.name
+              "value": this.props.navigation.state.params.name
             },
             {
               "type": "email",
               "name": "email",
               "label": "E-mail:",
               "required": true,
-              "value": this.props.email
+              "value": this.props.navigation.state.params.email
             }]
         });
-        this.apiSendChatMessage(chat.id,this.props.description,true).then(response => {
+        this.apiSendChatMessage(chat.id,this.props.navigation.state.params.description,true).then(response => {
           console.log(response)
         });
 
@@ -526,7 +556,7 @@ export default class ChatIO extends React.Component {
             sent: true,
             user: {
               _id: message.author,
-              name: this.props.name || this.state.username
+              name: this.props.navigation.state.params.name || this.state.username
             }
           }, ...this.state.messages]
         });
@@ -554,8 +584,8 @@ export default class ChatIO extends React.Component {
   apiSendLogin = () => {
     this.sendMessage("login", {
       customer: {
-        name: this.props.name,
-        email: this.props.email
+        name: this.props.navigation.state.params.name,
+        email: this.props.navigation.state.params.email
       }
     });  
   }
@@ -566,16 +596,17 @@ export default class ChatIO extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
+    console.log(this.props)
   //  this.sdk = init({ license: config.chatio_license });
 
     if (this.sdk && this._isMounted) {
-    
-      if (this.props.chatId) {
+      console.log(this.props.navigation.state.params.chatId)
+      if (this.props.navigation.state.params.chatId) {
         
         // previous chat
         this.setState({
-          chatId: this.props.chatId,
-          userData: this.props.userData
+          chatId: this.props.navigation.state.params.chatId,
+          userData: this.props.navigation.state.params.userData
         })
         // UPDATE USER OBJECT with last time youve viewed chat
        //  let payload = { fields: {} }
@@ -583,16 +614,16 @@ export default class ChatIO extends React.Component {
         //  payload.fields[catkey] = 'Hardware';        
        //  this.sdk.updateCustomer(payload);
 
-        this.sdk.updateLastSeenTimestamp(this.props.chatId,Date.now());
-        this.getChatHistory(this.props.chatId);
+        this.sdk.updateLastSeenTimestamp(this.props.navigation.state.params.chatId,Date.now());
+        this.getChatHistory(this.props.navigation.state.params.chatId);
       } else {
         // new chat
         this.setState({
           isActive: true
         })
         let payload = {
-          name: this.props.name,
-          email: this.props.email
+          name: this.props.navigation.state.params.name,
+          email: this.props.navigation.state.params.email
         }
         this.setCustomerInfo(payload);
         this.apiSendStartChat(); 
@@ -604,13 +635,13 @@ export default class ChatIO extends React.Component {
     }
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
-      if (!this.props.name || !this.props.email) {
+      if (!this.props.navigation.state.params.name || !this.props.navigation.state.params.email) {
         console.log('===========--------- NOT SURE HOW WE GOT HERE ----------=================')
         return false;
       }
       this.setCustomerInfo({
-        name: this.props.name,
-        email: this.props.email
+        name: this.props.navigation.state.params.name,
+        email: this.props.navigation.state.params.email
       });
       this.apiSendStartChat();  
     })
@@ -655,7 +686,7 @@ export default class ChatIO extends React.Component {
     this._connectionRestoredHandler = (payload) => {
       console.log('connection_restored')
       console.log(payload)
-      console.log(this.props.chatId);
+      console.log(this.props.navigation.state.params.chatId);
       //this.getChatHistory(this.props.chatId);
     };
     this.sdk.on('connection_restored', this._connectionRestoredHandler);
@@ -899,7 +930,7 @@ export default class ChatIO extends React.Component {
     console.log("GETTING CHAT HISTORY")
     const history = this.sdk.getChatHistory(id);
     
-    let userData = this.props.userData.slice();
+    let userData = this.props.navigation.state.params.userData.slice();
     let users = [];
     for (i=0; i<userData.length; i++) {
       if (userData[i].type === 'customer') {
@@ -957,6 +988,7 @@ export default class ChatIO extends React.Component {
 
   componentWillUnmount() {
     this._isMounted = false;
+    console.log('----componentWillUnmount----')
     console.log('Unmount ===> remove event listeners')
 
     this.sdk.off('connection_lost', this._connectionLostHandler);
@@ -1005,7 +1037,7 @@ export default class ChatIO extends React.Component {
   onIncomingEvent = (payload) => {
     let event    = payload.event;
     let avatar   = null;
-    let username = this.props.name;
+    let username = this.props.navigation.state.params.name;
     this.setState({
       sneakPeakEnabled: true
     })
@@ -1068,7 +1100,7 @@ export default class ChatIO extends React.Component {
               createdAt: event.timestamp * 1000,
               user: {
                 _id: event.author_id,
-                name: this.props.name
+                name: this.props.navigation.state.params.name
               }
             }, ...this.state.messages]
           });
@@ -1136,7 +1168,7 @@ export default class ChatIO extends React.Component {
             sent: true,
             user: {
               _id: this.state.customerId,
-              name: this.props.name || this.state.username
+              name: this.props.navigation.state.params.name || this.state.username
             }
           }, ...this.state.messages]
         });
@@ -1324,10 +1356,12 @@ export default class ChatIO extends React.Component {
       return (
         <View style={{
            padding:10,
-           paddingTop:12,
-           marginTop:10,
+           paddingTop:10,
+           marginTop:3,
+           borderTopWidth: .5,
+           borderTopColor: '#aaa',
            backgroundColor:'#fff',
-           height:60
+           height:61
          }}
         >
             {/* <Text style={[Common.fontRegular,{marginBottom:3,textAlign:'center'}]}>Reopen Chat?</Text> */}
@@ -1546,54 +1580,112 @@ export default class ChatIO extends React.Component {
       this.sdk.setSneakPeek(this.state.chatId,'');
      }
    }
+   
+ }
 
-   
-   
+ goBackHome = () => {
+    if (this.props.navigation.state.params && this.props.navigation.state.params.goBackFromChat) {
+      this.props.navigation.state.params.goBackFromChat();
+    }
+    this.props.navigation.goBack();
  }
 
   render() {
     if (this.state.isLoading) {
       return (
-        <View style={{backgroundColor:'#eee6d9',justifyContent:'center',alignItems:'center',flex: 1}}>  
-          <Bubbles size={8} color="#d80024" />
+        <View style={styles.general.RNcontainer}>
+        <Header 
+          navigation={this.props.navigation} 
+          left="back" 
+          onPressLeft={this.goBackHome}
+          right={this.state.isActive ? "end" : null} 
+          onPressRight={this.endChat}
+          storeTitle={this.props.navigation.state.params.storeTitle}
+          title={this.props.navigation.state.params.title} />
+        <View style={{
+          flex: 1,
+          backgroundColor: '#eee6d9',
+          width:'100%'
+        }}>
+          
+              
+            <View style={{backgroundColor:'#eee6d9',justifyContent:'center',alignItems:'center',flex: 1}}>  
+              <Bubbles size={8} color="#d80024" />
+            </View>
+
+        </View>
         </View>
       )
     } else {
       return (
-        <View style={{backgroundColor:'#eee6d9',flex: 1}}>          
-          <View style={styles.container}>
-            <AuthWebView />
+        <View style={styles.general.RNcontainer}>
+          <Header 
+            navigation={this.props.navigation} 
+            left="back" 
+            onPressLeft={this.goBackHome}
+            right={this.state.isActive ? "end" : null} 
+            onPressRight={this.endChat}
+            storeTitle={this.props.navigation.state.params.storeTitle}
+            title={this.props.navigation.state.params.title} />
+            <Modal 
+              style={{flex:1,justifyContent:'center',alignItems:'center'}}
+              isVisible={this.state.isModalVisible}
+              onBackdropPress={() => this.setState({ isModalVisible: false })}
+              backdropOpacity={0.40}
+            >
+            <ThumbsModal 
+            updateHandler={this.updateMessages}
+            closeHandler={this._hideModal}
+            />
+          </Modal>
+          <View style={{
+            flex: 1,
+            backgroundColor: '#eee6d9',
+            width:'100%'
+          }}>
+            
+            <View style={{backgroundColor:'#eee6d9',flex:1}}>        
+              <View style={{
+                height:1,
+                backgroundColor:'#eee6d9'
+              }}>
+                <AuthWebView />
+              </View>              
+              <CustomGiftedChat
+                messages={this.state.messages}
+                onSend={this.onSend}
+                loadEarlier={this.state.loadEarlier}
+                onLoadEarlier={this.onLoadEarlier}
+                isLoadingEarlier={this.state.isLoadingEarlier}
+                user={{_id: this.state.customerId} }
+                renderMessage={this.renderMessage}
+                renderActions={this.renderCustomActions}
+                renderBubble={this.renderBubble}
+                renderAvatar={this.renderAvatar}
+                renderSystemMessage={this.renderSystemMessage}
+                renderCustomView={this.renderCustomView}
+                renderFooter={this.renderFooter}
+                renderDay={this.renderDay}
+                renderMessageText={this.renderMessageText}
+                renderTicks={this.renderTicks}
+                myLastMessage={this.state.myLastMessage}
+                adminLastSeen={this.state.adminLastSeen}
+                renderInputToolbar={this.renderInputToolbar}
+                renderComposer={this.renderComposer}
+                renderSend={this.renderSend}
+                renderMessageImage={this.renderMessageImage}
+                onInputTextChanged={this.onInputTextChanged}
+
+                onImageSend={this.onImageSend}
+
+                minInputToolbarHeight={this.state.isActive ? 64 : 64}
+              />              
+            </View>
+
           </View>
-          <CustomGiftedChat
-            messages={this.state.messages}
-            onSend={this.onSend}
-            loadEarlier={this.state.loadEarlier}
-            onLoadEarlier={this.onLoadEarlier}
-            isLoadingEarlier={this.state.isLoadingEarlier}
-            user={{_id: this.state.customerId} }
-            renderMessage={this.renderMessage}
-            renderActions={this.renderCustomActions}
-            renderBubble={this.renderBubble}
-            renderAvatar={this.renderAvatar}
-            renderSystemMessage={this.renderSystemMessage}
-            renderCustomView={this.renderCustomView}
-            renderFooter={this.renderFooter}
-            renderDay={this.renderDay}
-            renderMessageText={this.renderMessageText}
-            renderTicks={this.renderTicks}
-            myLastMessage={this.state.myLastMessage}
-            adminLastSeen={this.state.adminLastSeen}
-            renderInputToolbar={this.renderInputToolbar}
-            renderComposer={this.renderComposer}
-            renderSend={this.renderSend}
-            renderMessageImage={this.renderMessageImage}
-            onInputTextChanged={this.onInputTextChanged}
 
-            onImageSend={this.onImageSend}
-
-            minInputToolbarHeight={this.state.isActive ? 64 : 70}
-          />
         </View>
+      
       );
     }
     

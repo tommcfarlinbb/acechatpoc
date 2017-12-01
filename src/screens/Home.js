@@ -22,7 +22,8 @@ import { init } from '@livechat/chat.io-customer-sdk';
 import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
-import Rx from 'rxjs'
+import Header from '../components/Header'
+//import Rx from 'rxjs'
 // import { bindActionCreators } from 'redux';
 // import { connect } from 'react-redux';
 // import * as actions from '../actions';
@@ -43,7 +44,7 @@ const hideChats = [
   'OZ0H23E5X2'
 ]
 
-  class Home extends Component {
+class Home extends Component {
     constructor(props) {
       super(props);
       
@@ -59,9 +60,10 @@ const hideChats = [
         previousChats: [],
         customerId: null,
         userData: [],
+        loadingText: 'Loading...',
         isLoading: true
       }
-      this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+  //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     getChatsSummary = (offset,limit,fullChatList) => {
       console.log('getChatsSummary');
@@ -108,18 +110,18 @@ const hideChats = [
         })
     }
 
-    onNavigatorEvent(event) {
-      switch(event.id) {
-        case 'willAppear':
-        this.setState({
-          userData: []
-        })
-        if (this.state.isConnected) {
-          this.getChatsSummary(0,25);
-        }
-        break;
-      }
-    }
+    // onNavigatorEvent(event) {
+    //   switch(event.id) {
+    //     case 'willAppear':
+    //     this.setState({
+    //       userData: []
+    //     })
+    //     if (this.state.isConnected) {
+    //       this.getChatsSummary(0,25);
+    //     }
+    //     break;
+    //   }
+    // }
   
   
   iterateOver = (list, iterator, callback, totalChats, fullChatList, offset) => {
@@ -135,6 +137,7 @@ const hideChats = [
           // done looping through loaded chats
           if (doneCount === list.length) {
             // all chats loaded
+            console.log(fullDoneCount,totalChats)
             if (fullDoneCount === totalChats) {
               callback(fullChatList);
             } else {
@@ -236,21 +239,22 @@ const hideChats = [
   componentDidMount() {
     
     this._isMounted = true;
+    this.props.navigation.navigate('AvailabilityModal');
 
-    this.props.navigator.showModal({
-      screen: 'Availability',
-      title: 'CHAT AVAILABILITY',     
-      passProps: {
-      },
-      animationType: 'none',
-      navigatorButtons: {
-        leftButtons: [{
-          id: 'close',
-          disableIconTint: true,
-          icon: require('../img/close_icn.png')
-        }]
-      }
-    });
+    // this.props.navigator.showModal({
+    //   screen: 'Availability',
+    //   title: 'CHAT AVAILABILITY',     
+    //   passProps: {
+    //   },
+    //   animationType: 'none',
+    //   navigatorButtons: {
+    //     leftButtons: [{
+    //       id: 'close',
+    //       disableIconTint: true,
+    //       icon: require('../img/close_icn.png')
+    //     }]
+    //   }
+    // });
 
     this.sdk = init({ 
       license: config.chatio_license,
@@ -339,6 +343,8 @@ const hideChats = [
       console.log(reason)
     })
     this.sdk.on('connection_restored', payload => {
+      console.log('connection_restored')
+      console.log(payload)
       this.getChatsSummary(0,25);
     })
     this.sdk.on('customer_id', id => {
@@ -387,22 +393,60 @@ const hideChats = [
     //     title: 'All Chats'
     //   });
     // };
+    resetLoadingState = () => {
+      setTimeout(() => {
+        this.setState({
+          isLoading: false,
+          loadingText: 'Loading...'
+        })
+      },1000);
+
+    }
+    beginChatCallback = (obj) => {
+      this.setState({
+        isLoading: true,
+        loadingText: 'Starting Chat...'
+      })
+      let newChatProps = {
+        area: obj.area,
+        name: obj.name,
+        email: obj.email,
+        description: obj.description,
+        sdk: this.sdk,
+        customerId: obj.customerId,
+        storeTitle: 'Rick\'s Ace Hardware',
+        title: obj.description,
+        goBackFromChat: this.goBackFromChat,
+        callback: this.resetLoadingState
+      }
+      //console.log(newChatProps)
+      setTimeout(() => {
+        this.props.navigation.navigate('Chat',newChatProps);
+      }, 1000);
+
+
+    }
     onPressNewChat = () => {
-      this.props.navigator.showModal({
-        screen: 'NewChat',
-        title: 'NEW ISSUE',     
-        passProps: {
-          sdk: this.sdk,
-          customerId: this.state.customerId
-        },
-        navigatorButtons: {
-          leftButtons: [{
-            id: 'close',
-            disableIconTint: true,
-            icon: require('../img/close_icn.png')
-          }]
-        }
+      this.props.navigation.navigate('NewChatModal', {
+        sdk: this.sdk,
+        customerId: this.state.customerId,
+        callback: this.beginChatCallback
       });
+      // this.props.navigator.showModal({
+      //   screen: 'NewChat',
+      //   title: 'NEW ISSUE',     
+      //   passProps: {
+      //     sdk: this.sdk,
+      //     customerId: this.state.customerId
+      //   },
+      //   navigatorButtons: {
+      //     leftButtons: [{
+      //       id: 'close',
+      //       disableIconTint: true,
+      //       icon: require('../img/close_icn.png')
+      //     }]
+      //   }
+      // });
     }
     renderAuthView() {
       return (
@@ -420,49 +464,60 @@ const hideChats = [
         });
       }
     }
+    goBackFromChat = () => {
+      this.getChatsSummary(0,25);
+    }
+
     loadChat = (chat) => {
       console.log('load chat with id: '+chat.id)
       chat.myLastVisit = Date.now();
-      this.props.navigator.push({
-        screen: 'ChatIOsdk',
-        passProps: {
-          sdk: this.sdk,
-          customerId: this.state.customerId,
-          chatId: chat.id,
-          title: 'Rick\'s Ace Hardware',
-          subtitle: chat.title.toUpperCase(),
-          isActive: chat.isActive,
-          adminLastSeen: chat.adminLastSeen,
-          userData: this.state.userData
-        },
-        navigatorButtons: {
-          leftButtons: [{
-            id: 'back',
-            disableIconTint: true,
-            icon: require('../img/back_icn.png')
-          },
-          // {
-          //   id: 'custom-button',
-          //   component: 'CustomButton', 
-          //   passProps: {
-          //     text: 'test'
-          //   }
-          // }
-          ],
-          rightButtons: [{
-            id: 'end',
-            disableIconTint: true,
-            icon: require('../img/end-chat.png')  
-          }]
-        }
+
+      this.props.navigation.navigate('Chat', {
+        sdk: this.sdk,
+        customerId: this.state.customerId,
+        chatId: chat.id,
+        storeTitle: 'Rick\'s Ace Hardware',
+        title: chat.title.toUpperCase(),
+        isActive: chat.isActive,
+        adminLastSeen: chat.adminLastSeen,
+        userData: this.state.userData,
+        goBackFromChat: this.goBackFromChat
       });
+
+      // this.props.navigator.push({
+      //   screen: 'ChatIOsdk',
+      //   passProps: {
+      //     sdk: this.sdk,
+      //     customerId: this.state.customerId,
+      //     chatId: chat.id,
+      //     title: 'Rick\'s Ace Hardware',
+      //     subtitle: chat.title.toUpperCase(),
+      //     isActive: chat.isActive,
+      //     adminLastSeen: chat.adminLastSeen,
+      //     userData: this.state.userData
+      //   },
+      //   navigatorButtons: {
+      //     leftButtons: [{
+      //       id: 'back',
+      //       disableIconTint: true,
+      //       icon: require('../img/back_icn.png')
+      //     },
+      //     ],
+      //     rightButtons: [{
+      //       id: 'end',
+      //       disableIconTint: true,
+      //       icon: require('../img/end-chat.png')  
+      //     }]
+      //   }
+      // });
     }
     renderChats(chats) {    
       if (this.state.isLoading) {
         return (
           <View style={styles.container}>
             { this.renderAuthView() }
-            <Bubbles size={8} color="#d80024" />
+            <Bubbles loader={true} size={8} color="#d80024" />
+            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
           </View>
         );
       }  else {
@@ -609,7 +664,16 @@ const hideChats = [
         chats
       } = this.state;
       return (
-        this.renderChats(chats)
+        <View style={styles.RNcontainer}>
+          <Header navigation={this.props.navigation} title="CHAT" />
+          <View style={{
+             flex: 1,
+             backgroundColor: '#eee6d9',
+             width:'100%'
+           }}>
+            {this.renderChats(chats)}
+          </View>
+        </View>        
       )
     }
   }
@@ -621,8 +685,16 @@ const hideChats = [
       justifyContent: 'center',
       alignItems: 'center',
       paddingTop: 0,
-      marginTop: -130,
+    //  marginTop: -130,
       backgroundColor: '#eee6d9'
+    },
+    RNcontainer: {
+      flex: 1,
+      flexDirection:'column',
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%'
     },
     linearGradient: {
       flex: 1,
@@ -661,7 +733,7 @@ const hideChats = [
     containerChats: {
       flex: 1,
       paddingTop: 20,
-      backgroundColor: '#eee6d9'
+      backgroundColor: '#eee6d9',
     },
     row: {
       height: 80,

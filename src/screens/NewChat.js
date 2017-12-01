@@ -13,6 +13,8 @@ import {
 
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
+import Header from '../components/Header'
+
 const images = {
   plumbing: require('../img/plumbing.png'),
   plumbing_icn: require('../img/plumbing_icn.png'),
@@ -28,39 +30,39 @@ const images = {
 };
 
 export default class NewChat extends Component {
-  static navigatorStyle = {
-    navBarTextColor: '#f4002d',
-    navBarTextFontSize: 18,
-    navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
-  };
+  // static navigatorStyle = {
+  //   navBarTextColor: '#f4002d',
+  //   navBarTextFontSize: 18,
+  //   navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
+  // };
   constructor(props) {
     super(props);
+
+    console.log('------------PROPS---------------')
+    console.log(this.props)
     this.state = {
       area: null,
       firstName: 'Brand',
       lastName: 'McBranderson',
       email: 'brander@bb.com',
       description: null,
-      customerId: this.props.customerId || null
+      customerId: this.props.navigation.state.params.customerId || null
     }
-    this.sdk = this.props.sdk;
-    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+    this.sdk = this.props.navigation.state.params.sdk;
+//    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 
   }
-  onNavigatorEvent(event) { 
-    console.log(event)
-    if (event.type == 'NavBarButtonPress') {
-      if (event.id == 'close') { 
-        this.props.navigator.dismissModal();
-      }
-    }
-  }
+  // onNavigatorEvent(event) { 
+  //   console.log(event)
+  //   if (event.type == 'NavBarButtonPress') {
+  //     if (event.id == 'close') { 
+  //       this.props.navigator.dismissModal();
+  //     }
+  //   }
+  // }
   beginChat = () => {
- //   const subtitle = this.state.description.toUpperCase();
-    this.props.navigator.push({
-      screen: 'ChatIOsdk',
-      title: 'Rick\'s Ace Hardware',
-      passProps: {
+    this.props.navigation.state.params.callback({
+        loading: true,
         area: this.state.area,
         name: this.state.firstName + ' ' + this.state.lastName,
         email: this.state.email,
@@ -69,23 +71,38 @@ export default class NewChat extends Component {
         customerId: this.state.customerId,
         title: 'Rick\'s Ace Hardware',
         subtitle: this.state.description,
-      },
-      navigatorButtons: {
-        leftButtons: [{
-          id: 'close',
-          disableIconTint: true,
-          icon: require('../img/back_icn.png')
-        }],
-        rightButtons: [{
-          id: 'end',
-          title: 'End Chat',
-          buttonColor: '#5b5b5b',
-          buttonFontSize: 16,
-          buttonFontFamily: 'HelveticaNeue-CondensedBold'
-
-        }]
-      }
     });
+    this.props.navigation.goBack();
+
+    // this.props.navigator.push({
+    //   screen: 'ChatIOsdk',
+    //   title: 'Rick\'s Ace Hardware',
+    //   passProps: {
+    //     area: this.state.area,
+    //     name: this.state.firstName + ' ' + this.state.lastName,
+    //     email: this.state.email,
+    //     description: this.state.description,
+    //     sdk: this.sdk,
+    //     customerId: this.state.customerId,
+    //     title: 'Rick\'s Ace Hardware',
+    //     subtitle: this.state.description,
+    //   },
+    //   navigatorButtons: {
+    //     leftButtons: [{
+    //       id: 'close',
+    //       disableIconTint: true,
+    //       icon: require('../img/back_icn.png')
+    //     }],
+    //     rightButtons: [{
+    //       id: 'end',
+    //       title: 'End Chat',
+    //       buttonColor: '#5b5b5b',
+    //       buttonFontSize: 16,
+    //       buttonFontFamily: 'HelveticaNeue-CondensedBold'
+
+    //     }]
+    //   }
+    // });
   }
   pressArea = (area) => {
     this.setState({
@@ -117,55 +134,73 @@ export default class NewChat extends Component {
       );
     })
     return (
-      <View style={styles.container}>
-        <View style={{flex: 1,width:'100%'}}>
+      <View style={styles.RNcontainer}>
+        <Header 
+          navigation={this.props.navigation} 
+          left="close" 
+          onPressLeft={() => this.props.navigation.goBack()}
+          title="NEW ISSUE" />
+        <View style={{
+          flex: 1,
+          backgroundColor: '#eee6d9',
+          width:'100%'
+        }}>
+          
+          <View style={styles.container}>
+            <View style={{flex: 1,width:'100%'}}>
+                <View style={{padding:15,paddingBottom:0}}>
+                  <Text style={styles.header}>Contact Information</Text>
+                  <View style={{
+                    flexDirection: 'row',
+                  }}>
+                    <TextInput style={[Common.fontRegular,styles.input,styles.firstName]} onChangeText={text => this.setState({firstName: text})} value={this.state.firstName} autoCorrect={false}  placeholder="First Name *" />
+                    <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name *" />
+                  </View>
+                </View>
+                <View style={{paddingLeft:15,paddingRight:15,marginBottom: 10}}>
+                  <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email *" />
+                </View>
 
-            <View style={{padding:15,paddingBottom:0}}>
-              <Text style={styles.header}>Contact Information</Text>
-              <View style={{
-                flexDirection: 'row',
-              }}>
-                <TextInput style={[Common.fontRegular,styles.input,styles.firstName]} onChangeText={text => this.setState({firstName: text})} value={this.state.firstName} autoCorrect={false}  placeholder="First Name *" />
-                <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name *" />
-              </View>
+                <View style={{padding:15,paddingBottom:0,height: 220}}>
+                  <Text style={styles.header}>What area do you need assitance?</Text>
+                  <View style={{
+                    flexDirection: 'row',
+                    flex: 1,
+                    flexWrap: 'wrap',                
+                    justifyContent: 'flex-start'
+                  }}>
+                    { areaList }
+                  </View>
+                </View>
+
+
+                <View style={{padding:15,paddingBottom:0}}>
+                  <Text style={styles.header}>Please provide a brief description</Text>
+                  <View>
+                    <TextInput style={[Common.fontRegular,styles.inputDescription]} onChangeText={text => this.setState({description: text})}  placeholder="Description (40 characters)" />
+                  </View>
+                </View>
+
             </View>
-            <View style={{paddingLeft:15,paddingRight:15,marginBottom: 10}}>
-              <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email *" />
+          
+            <View style={{padding: 10,height:60,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
+              <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.beginChat}
+                >
+                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>BEGIN CHAT</Text>
+                </LinearGradient>
+                </TouchableOpacity>
             </View>
-
-            <View style={{padding:15,paddingBottom:0,height: 220}}>
-              <Text style={styles.header}>What area do you need assitance?</Text>
-              <View style={{
-                flexDirection: 'row',
-                flex: 1,
-                flexWrap: 'wrap',                
-                justifyContent: 'flex-start'
-              }}>
-                { areaList }
-              </View>
-            </View>
+          </View>
 
 
-            <View style={{padding:15,paddingBottom:0}}>
-              <Text style={styles.header}>Please provide a brief description</Text>
-              <View>
-                <TextInput style={[Common.fontRegular,styles.inputDescription]} onChangeText={text => this.setState({description: text})}  placeholder="Description (40 characters)" />
-              </View>
-            </View>
-
+          
         </View>
-       
-        <View style={{padding: 10,height:60,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
-          <TouchableOpacity
-              style={styles.button}
-              onPress={this.beginChat}
-            >
-            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-               <Text style={styles.buttonText}>BEGIN CHAT</Text>
-            </LinearGradient>
-            </TouchableOpacity>
-        </View>
-      </View>
+      </View> 
+
+      
     );
   }
 }
@@ -177,6 +212,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 20,
     backgroundColor: '#eee6d9'
+  },
+  RNcontainer: {
+    flex: 1,
+    flexDirection:'column',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
   },
   input: {
     height: 45,

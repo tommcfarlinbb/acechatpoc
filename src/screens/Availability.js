@@ -15,6 +15,7 @@ import Bubbles from '../Bubbles';
 
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
+import Header from '../components/Header'
 
 
 const zipCodeList = ['63005','63011','63017','63021','63141','63001','63006','63022','63024','63032','63045','63099','63119','63122','63124','63131','63141','63144','63145','63146','63151','63167','63198','63043','63044','63074','63114','63141','63146','63011','63017','63021','63040','63088','62258','59047'];
@@ -42,16 +43,16 @@ export default class Availability extends Component {
       customerId: this.props.customerId || null
     }
     this.sdk = this.props.sdk;
-    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+   // this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 
   }
-  onNavigatorEvent(event) { 
-    if (event.type == 'NavBarButtonPress') {
-      if (event.id == 'close') { 
-        this.props.navigator.dismissModal();
-      }
-    }
-  }
+  // onNavigatorEvent(event) { 
+  //   if (event.type == 'NavBarButtonPress') {
+  //     if (event.id == 'close') { 
+  //       this.props.navigator.dismissModal();
+  //     }
+  //   }
+  // }
   sendEmail = () => {
     let email = this.state.email;
     this.setState({
@@ -93,9 +94,24 @@ export default class Availability extends Component {
     })
     // setTimeout(() => {
     fetch(zipSearch)  
-      .then((response) => response.json())
+      .then((response) => {
+        console.log(response)
+        if (response.status === 400) {
+          response._bodyText = "{\"invalid\":true}";
+          response._bodyInit = "{\"invalid\":true}";
+        }
+        return response.json()
+      })
       .then((responseData) => {
+        console.log('THEN THEN')
         console.log(responseData);
+        if (responseData.invalid) {
+          this.setState({
+            zipError: true,
+            isSearching: null
+          })
+          return false;
+        }
         if (!responseData.length) {
           this.setState({
             showNotAvailable: true,
@@ -103,11 +119,12 @@ export default class Availability extends Component {
           })
         } else {
            let storeTitle = responseData[0].title; // Bellevue Builders Supply
-           this.props.navigator.dismissModal({
-             animationType: 'slide-down'
-           });
+           this.props.navigation.goBack();
         }
       })
+      .catch((error) => {
+        console.error(error);
+      });
       // if (~zipCodeList.indexOf(zip)) {
       //   this.props.navigator.dismissModal({
       //     animationType: 'slide-down'
@@ -287,10 +304,26 @@ export default class Availability extends Component {
 
   render() {
     return (
-      <View style={styles.container}>        
-        {this.renderZipContent()}
-        {this.renderSearching()}
+      <View style={styles.RNcontainer}>
+        <Header 
+          navigation={this.props.navigation} 
+          left="close" 
+          onPressLeft={() => this.props.navigation.goBack()}
+          title="AVAILABILITY" />
+        <View style={{
+          flex: 1,
+          backgroundColor: '#eee6d9',
+          width:'100%'
+        }}>
+        
+          <View style={styles.container}>        
+            {this.renderZipContent()}
+            {this.renderSearching()}
+          </View>
+
+        </View>
       </View>
+
     );   
   }
 }
@@ -301,6 +334,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#eee6d9'
+  },
+  RNcontainer: {
+    flex: 1,
+    flexDirection:'column',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
   },
   input: {
     height: 45,
