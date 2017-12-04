@@ -34,20 +34,7 @@ export default class ThumbsModal extends Component {
       rating: null,
       error: false,
     }
-    
-    this.sdk = this.props.sdk;
-    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
-
   }
-  onNavigatorEvent(event) { 
-    console.log(event)
-    if (event.type == 'NavBarButtonPress') {
-      if (event.id == 'close') { 
-        this.props.navigator.dismissModal();
-      }
-    }
-  }
-
   
   pressRate = (rating) => {
     this.setState({
@@ -55,7 +42,9 @@ export default class ThumbsModal extends Component {
     })
   }
   closeModal = () => {
-    this.props.navigator.dismissLightBox();
+   if (this.props.closeHandler) {
+     this.props.closeHandler();
+   }
   }
   submitRating = () => {
     console.log(this.state.rating)

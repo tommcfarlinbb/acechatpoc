@@ -1,18 +1,27 @@
 
-import { Navigation } from 'react-native-navigation';
+//import { Navigation } from 'react-native-navigation';
 import React, { Component } from 'react';
 import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 
 
-//import Chat from './Chat';
-//import ChatIO from './ChatIO';
  import ChatIOsdk from './ChatIOsdk';
  import NewChat from './NewChat';
  import Home from './Home';
- import Header from './Header';
- import ThumbsModal from './ThumbsModal';
-// import Test from './Test';
+ import Details from './Details';
+ import Something from './Something';
+ //import Header from './Header';
+ //import ThumbsModal from './ThumbsModal';
+
  import Availability from './Availability';
+
+export default {
+  home: Home,
+  details: Details,
+  newChat: NewChat,
+  something: Something,
+  chat: ChatIOsdk,
+  availability: Availability
+};
 
 //  const images = {
 //     thumbs: require('../img/thumbs.png')
@@ -49,16 +58,19 @@ import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 //       alignItems: 'center',
 //     },
 //   });
-export function registerScreens(store,Provider) {
+// export function registerScreens(store,Provider) {
     
-    Navigation.registerComponent('Header', () => Header);    
-    Navigation.registerComponent('NewChat', () => NewChat);
-  //  Navigation.registerComponent('Chat', () => Chat);
- //   Navigation.registerComponent('Test', () => Test);    
-  //  Navigation.registerComponent('ChatIO', () => ChatIO);
-  Navigation.registerComponent('ThumbsModal', () => ThumbsModal);
-    Navigation.registerComponent('ChatIOsdk', () => ChatIOsdk);
-    Navigation.registerComponent('Availability', () => Availability);
-    Navigation.registerComponent('Home', () => Home, store, Provider);
-  //  Navigation.registerComponent('CustomButton', () => CustomButton);
-}
+//     Navigation.registerComponent('Header', () => Header);    
+//     Navigation.registerComponent('NewChat', () => NewChat);
+//   //  Navigation.registerComponent('Chat', () => Chat);
+//  //   Navigation.registerComponent('Test', () => Test);    
+//   //  Navigation.registerComponent('ChatIO', () => ChatIO);
+//   Navigation.registerComponent('ThumbsModal', () => ThumbsModal);
+//     Navigation.registerComponent('ChatIOsdk', () => ChatIOsdk);
+//     Navigation.registerComponent('Availability', () => Availability);
+//     Navigation.registerComponent('Home', () => Home);
+//   //  Navigation.registerComponent('Home', () => Home, store, Provider);
+//   //  Navigation.registerComponent('CustomButton', () => CustomButton);
+// }
+
+

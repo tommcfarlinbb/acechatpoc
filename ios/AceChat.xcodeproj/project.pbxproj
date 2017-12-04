@@ -25,7 +25,6 @@
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		1F4061341FBD6A6E00AA1580 /* libART.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F40610F1FBD6A3700AA1580 /* libART.a */; };
 		1F4061AF1FC3575000AA1580 /* libRCTCameraRoll.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F4061AE1FC3570A00AA1580 /* libRCTCameraRoll.a */; };
-		1FD2C7F41FA964E0006E7FD1 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FD2C7F21FA96160006E7FD1 /* libReactNativeNavigation.a */; };
 		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -176,13 +175,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3DBE0D0D1F3B181C0099AA32;
 			remoteInfo = "fishhook-tvOS";
-		};
-		1FD2C7F11FA96160006E7FD1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1FD2C7D21FA96160006E7FD1 /* ReactNativeNavigation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D8AFADBD1BEE6F3F00A4592D;
-			remoteInfo = ReactNativeNavigation;
 		};
 		1FD2C8231FA969E8006E7FD1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -371,7 +363,6 @@
 		17377CD2CD3F4DD09EA2DD57 /* HelveticaNeueLTStd-MdCnO.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "HelveticaNeueLTStd-MdCnO.otf"; path = "../src/fonts/HelveticaNeueLTStd-MdCnO.otf"; sourceTree = "<group>"; };
 		1F4061091FBD6A3700AA1580 /* ART.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ART.xcodeproj; path = "../node_modules/react-native/Libraries/ART/ART.xcodeproj"; sourceTree = "<group>"; };
 		1F4061A91FC3570A00AA1580 /* RCTCameraRoll.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTCameraRoll.xcodeproj; path = "../node_modules/react-native/Libraries/CameraRoll/RCTCameraRoll.xcodeproj"; sourceTree = "<group>"; };
-		1FD2C7D21FA96160006E7FD1 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		2556D06C6D9F40D89A402B12 /* BVLinearGradient.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = BVLinearGradient.xcodeproj; path = "../node_modules/react-native-linear-gradient/BVLinearGradient.xcodeproj"; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* AceChat-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AceChat-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* AceChat-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AceChat-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -403,7 +394,6 @@
 			files = (
 				1F4061AF1FC3575000AA1580 /* libRCTCameraRoll.a in Frameworks */,
 				1F4061341FBD6A6E00AA1580 /* libART.a in Frameworks */,
-				1FD2C7F41FA964E0006E7FD1 /* libReactNativeNavigation.a in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
@@ -602,14 +592,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		1FD2C7D31FA96160006E7FD1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				1FD2C7F21FA96160006E7FD1 /* libReactNativeNavigation.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		1FD2C7F31FA964E0006E7FD1 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -640,7 +622,6 @@
 			children = (
 				1F4061A91FC3570A00AA1580 /* RCTCameraRoll.xcodeproj */,
 				1F4061091FBD6A3700AA1580 /* ART.xcodeproj */,
-				1FD2C7D21FA96160006E7FD1 /* ReactNativeNavigation.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
 				00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */,
@@ -895,10 +876,6 @@
 					ProductGroup = 146834001AC3E56700842450 /* Products */;
 					ProjectRef = 146833FF1AC3E56700842450 /* React.xcodeproj */;
 				},
-				{
-					ProductGroup = 1FD2C7D31FA96160006E7FD1 /* Products */;
-					ProjectRef = 1FD2C7D21FA96160006E7FD1 /* ReactNativeNavigation.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -1028,13 +1005,6 @@
 			fileType = archive.ar;
 			path = "libfishhook-tvOS.a";
 			remoteRef = 1FD2C7EE1FA96160006E7FD1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1FD2C7F21FA96160006E7FD1 /* libReactNativeNavigation.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libReactNativeNavigation.a;
-			remoteRef = 1FD2C7F11FA96160006E7FD1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		1FD2C8241FA969E8006E7FD1 /* libthird-party.a */ = {
