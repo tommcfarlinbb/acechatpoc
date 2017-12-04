@@ -56,6 +56,7 @@ class Home extends Component {
       this.state = {
         isConnected: false,
         chats: [],
+        stores: [],
         activeChats: [],
         previousChats: [],
         customerId: null,
@@ -236,47 +237,13 @@ class Home extends Component {
   //   })
   // }
 
-  componentDidMount() {
-    
-    this._isMounted = true;
-    this.props.navigation.navigate('AvailabilityModal');
-
-    // this.props.navigator.showModal({
-    //   screen: 'Availability',
-    //   title: 'CHAT AVAILABILITY',     
-    //   passProps: {
-    //   },
-    //   animationType: 'none',
-    //   navigatorButtons: {
-    //     leftButtons: [{
-    //       id: 'close',
-    //       disableIconTint: true,
-    //       icon: require('../img/close_icn.png')
-    //     }]
-    //   }
-    // });
-
+  initSdk = () => {
     this.sdk = init({ 
       license: config.chatio_license,
-      clientId: '087dde4e017557c9d1cf0bab5c0e8547',
+      clientId: '963149243bc08609533c36c485c55b3f',
       redirectUri: 'https://app.chat.io/'
     });
 
-
-    // Rx.Observable.from(this.sdk)
-    // .subscribe(([ eventName, eventData ]) => {        
-    //     console.log(eventName, eventData)
-    //     switch(eventName) {
-    //       case 'connected':
-    //         console.log('9999999999 CONNNECTED FROM RX 999999999999999')
-    //         let { chatsSummary, totalChats } = eventData;
-    //         console.log(chatsSummary, totalChats);
-    //         break;
-    //     }
-    //     // if (eventName === 'user_data') {
-    //     //   console.log('-----------------RX.OBSERVABLE-----------------')
-    //     // }
-    // })
 
 
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
@@ -287,17 +254,6 @@ class Home extends Component {
         isConnected: true
       })
 
-      // let payload = { fields: {} }
-      // let chatKey = 'chat_OZ0R1WKT7L';
-      // let catkey = 'category_OZ0R1WKT7L';
-      // payload.fields[catkey] = 'Other';   
-   
-      // payload.fields[chatKey] = 'other other other other';
-   
-      // // ////////////////////////////////
-      // // ////////////////////////////////
-
-      // this.sdk.updateCustomer(payload);
 
       this.iterateOver(chatsSummary, (chat, report, fields) => {
         console.log(fields)
@@ -344,7 +300,6 @@ class Home extends Component {
     })
     this.sdk.on('connection_restored', payload => {
       console.log('connection_restored')
-      console.log(payload)
       this.getChatsSummary(0,25);
     })
     this.sdk.on('customer_id', id => {
@@ -371,6 +326,47 @@ class Home extends Component {
       //console.log('thread_summary')
       //console.log(thread_summary)
     })
+
+
+  }
+
+  setStores = (stores) => {
+    // populate stores
+    console.log(stores)
+    // this.setState({
+    //   stores: stores
+    // })
+  }
+  componentDidMount() {
+    this._isMounted = true;
+    this.props.navigation.navigate('AvailabilityModal',{
+      setStoresCallback: this.setStores
+    });
+    // init sdk and set up event listeners
+    this.initSdk();
+
+    // this.props.navigator.showModal({
+    //   screen: 'Availability',
+    //   title: 'CHAT AVAILABILITY',     
+    //   passProps: {
+    //   },
+    //   animationType: 'none',
+    //   navigatorButtons: {
+    //     leftButtons: [{
+    //       id: 'close',
+    //       disableIconTint: true,
+    //       icon: require('../img/close_icn.png')
+    //     }]
+    //   }
+    // });
+
+    // this.sdk = init({ 
+    //   license: config.chatio_license,
+    //   clientId: '963149243bc08609533c36c485c55b3f',
+    //   redirectUri: 'https://app.chat.io/'
+    // });
+   // this.initSdk();
+
   }
 
 
@@ -511,7 +507,39 @@ class Home extends Component {
       //   }
       // });
     }
-    renderChats(chats) {    
+    renderChats(stores,chats) {  
+      if (stores.length) {
+        return (
+          <View style={styles.containerChats}>
+          { this.renderAuthView() }
+          <ScrollView>
+
+            {stores.map(store => {
+              return (
+              <TouchableHighlight
+                key={store.id}
+              // onPress={() => this.loadChat(chat)}
+                underlayColor={'#eee'}
+                style={styles.row}
+              >
+                <View style={{                  
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}>           
+                    
+                    <View style={styles.chat}>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.description]}>{store.title}</Text>
+                  </View>
+                </View>
+
+              </TouchableHighlight>
+
+            ) } )}  
+
+            </ScrollView>
+          </View>  
+        );
+      }
       if (this.state.isLoading) {
         return (
           <View style={styles.container}>
@@ -521,6 +549,7 @@ class Home extends Component {
           </View>
         );
       }  else {
+        
         if (chats.length) {
 
           let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); }
@@ -529,7 +558,6 @@ class Home extends Component {
                                    .sort((a, b) => { return b.order - a.order });
 
           return (
-            // {categories.map(category => (
             
             <View style={styles.containerChats}>
               { this.renderAuthView() }
@@ -644,15 +672,17 @@ class Home extends Component {
           );
         }
         return (
-          <View style={styles.container}>
+          <View style={styles.containerNoChats}>
             { this.renderAuthView() }
-            <Text style={styles.noChats}>You do not have a chat history.</Text>
-            <Text style={[styles.noChats,{color: '#888',marginTop: 15, marginBottom: 30}]}>Create a new issue below to chat with one of our Ace representatives near you!</Text>
+            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
             <TouchableOpacity
               style={styles.button}
               onPress={this.onPressNewChat}
             >
-              <Text style={styles.buttonText}>CREATE NEW ISSUE</Text>
+              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+                <Text style={styles.buttonText}>START NEW CHAT</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         );
@@ -661,7 +691,8 @@ class Home extends Component {
     }
     render() {
       const {
-        chats
+        chats,
+        stores
       } = this.state;
       return (
         <View style={styles.RNcontainer}>
@@ -671,7 +702,7 @@ class Home extends Component {
              backgroundColor: '#eee6d9',
              width:'100%'
            }}>
-            {this.renderChats(chats)}
+            {this.renderChats(stores,chats)}
           </View>
         </View>        
       )
@@ -688,6 +719,15 @@ class Home extends Component {
     //  marginTop: -130,
       backgroundColor: '#eee6d9'
     },
+    containerNoChats: {
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      paddingTop: 0,
+      marginTop: 130,
+      backgroundColor: '#eee6d9'
+    },
     RNcontainer: {
       flex: 1,
       flexDirection:'column',
@@ -698,6 +738,17 @@ class Home extends Component {
     },
     linearGradient: {
       flex: 1,
+      paddingLeft: 15,
+      paddingRight: 15,
+      borderRadius: 5,
+      borderWidth: 0,
+      width: 195,
+      height: 40,
+      justifyContent: 'center',
+      padding: 10
+    },
+    linearGradientNoHistory: {
+      
       paddingLeft: 15,
       paddingRight: 15,
       borderRadius: 5,

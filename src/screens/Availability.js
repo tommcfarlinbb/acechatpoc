@@ -19,7 +19,7 @@ import Header from '../components/Header'
 
 
 const zipCodeList = ['63005','63011','63017','63021','63141','63001','63006','63022','63024','63032','63045','63099','63119','63122','63124','63131','63141','63144','63145','63146','63151','63167','63198','63043','63044','63074','63114','63141','63146','63011','63017','63021','63040','63088','62258','59047'];
-
+const storeIdList = ['00033','00491','15102','16035','16113','6457'];
 let { width, height } = Dimensions.get('window')
 
 
@@ -86,7 +86,7 @@ export default class Availability extends Component {
       return;
     }
 
-    let zipSearch = 'https://storc.brandingbrand.com/v1/stores/acehardware?zip='+zip+'&limit=10';
+    let zipSearch = 'https://storc.brandingbrand.com/v1/stores/acehardware?zip='+zip+'&radius=50';
 
     console.log(zipSearch)
     this.setState({
@@ -95,7 +95,6 @@ export default class Availability extends Component {
     // setTimeout(() => {
     fetch(zipSearch)  
       .then((response) => {
-        console.log(response)
         if (response.status === 400) {
           response._bodyText = "{\"invalid\":true}";
           response._bodyInit = "{\"invalid\":true}";
@@ -103,7 +102,6 @@ export default class Availability extends Component {
         return response.json()
       })
       .then((responseData) => {
-        console.log('THEN THEN')
         console.log(responseData);
         if (responseData.invalid) {
           this.setState({
@@ -118,7 +116,19 @@ export default class Availability extends Component {
             isSearching: null
           })
         } else {
-           let storeTitle = responseData[0].title; // Bellevue Builders Supply
+           let validStores = responseData.filter((store) => {
+             return ~storeIdList.indexOf(store.custom.store_id);
+           })
+           
+           if (!validStores.length) {
+            this.setState({
+              showNotAvailable: true,
+              isSearching: null
+            })
+            return false;
+           }
+           // now show list of stores
+           this.props.navigation.state.params.setStoresCallback(validStores);
            this.props.navigation.goBack();
         }
       })
@@ -309,7 +319,7 @@ export default class Availability extends Component {
           navigation={this.props.navigation} 
           left="close" 
           onPressLeft={() => this.props.navigation.goBack()}
-          title="AVAILABILITY" />
+          title="CHAT AVAILABILITY" />
         <View style={{
           flex: 1,
           backgroundColor: '#eee6d9',
