@@ -1,5 +1,5 @@
 
-import { Navigation } from 'react-native-navigation';
+//import { Navigation } from 'react-native-navigation';
 import React, { Component } from 'react';
 import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 
@@ -22,13 +22,6 @@ export default {
   chat: ChatIOsdk,
   availability: Availability
 };
-
-
-
-
-
-
-
 
 //  const images = {
 //     thumbs: require('../img/thumbs.png')
