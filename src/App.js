@@ -8,27 +8,7 @@ import {
   View
 } from 'react-native';
 
-// import { Navigation } from 'react-native-navigation';
-// import { registerScreens } from './screens';
-// import configureStore from './store/configureStore';
-// import { Provider } from 'react-redux';
-
-//const store = configureStore();
-//registerScreens(store, Provider);
-
-// Navigation.startSingleScreenApp({
-//   screen: {
-//     screen: 'Home',
-//     title: 'CHAT',
-//     navigatorStyle: {
-//       navBarTextColor: '#f4002d',
-//       navBarTextFontSize: 18,
-//       navBarTextFontFamily: 'HelveticaNeue-CondensedBold'
-//     },
-//     navigatorButtons: {}
-//   }
-// });
-import { StackNavigator } from 'react-navigation'; // 1.0.0-beta.14
+import { StackNavigator } from 'react-navigation';
 
 import screens from './screens';
 
@@ -47,13 +27,6 @@ const StackModalNavigator = (routeConfigs, navigatorConfig) => {
   }, {
     mode: 'modal',
     headerMode: 'none',
-    // transitionConfig: () => ({
-    //   transitionSpec: {
-    //     duration: 0,
-    //   },
-    // })
-
-
   });
 
   return ModalStackNavigator;

@@ -567,9 +567,12 @@ class Home extends Component {
                     style={styles.button}
                     onPress={this.onPressNewChat}
                   >
-                    <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                    {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                     <Text style={styles.buttonText}>START NEW CHAT</Text>
-                    </LinearGradient>
+                    </LinearGradient> */}
+                   <View style={styles.linearGradient}>
+                    <Text style={styles.buttonText}>START NEW CHAT</Text>
+                    </View>
                   
 
                   </TouchableOpacity>
@@ -680,9 +683,12 @@ class Home extends Component {
               style={styles.button}
               onPress={this.onPressNewChat}
             >
-              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+              {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
                 <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </LinearGradient>
+              </LinearGradient> */}
+              <View style={styles.linearGradientNoHistory}>
+                <Text style={styles.buttonText}>START NEW CHAT</Text>
+              </View>
             </TouchableOpacity>
           </View>
         );
@@ -744,11 +750,12 @@ class Home extends Component {
       borderWidth: 0,
       width: 195,
       height: 40,
+      backgroundColor: '#e31836',
       justifyContent: 'center',
       padding: 10
     },
     linearGradientNoHistory: {
-      
+      backgroundColor: '#e31836',
       paddingLeft: 15,
       paddingRight: 15,
       borderRadius: 5,

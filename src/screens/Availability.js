@@ -225,9 +225,12 @@ export default class Availability extends Component {
                     style={[styles.button,{width:195,height:40}]}
                     onPress={() => { return null; }}
                   >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                     <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
-                  </LinearGradient>
+                  </LinearGradient> */}
+                  <View style={styles.linearGradient}>
+                    <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
               {this.state.emailError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid email address.</Text>}
@@ -261,9 +264,12 @@ export default class Availability extends Component {
                   style={styles.button}
                   onPress={this.sendEmail}
                 >
-                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                   <Text style={styles.buttonText}>SUBMIT</Text>
-                </LinearGradient>
+                </LinearGradient> */}
+                <View  style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>SUBMIT</Text>
+                </View>
               </TouchableOpacity>
             </View>
             {this.state.emailError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid email address.</Text>}
@@ -299,9 +305,12 @@ export default class Availability extends Component {
               style={styles.button}
               onPress={this.searchZip}
             >
-            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+            <View style={styles.linearGradient}>
               <Text style={styles.buttonText}>SUBMIT</Text>
-            </LinearGradient>
+            </View>
+            {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+              <Text style={styles.buttonText}>SUBMIT</Text>
+            </LinearGradient> */}
           </TouchableOpacity>
         </View>
         {this.state.zipError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid zip code.</Text>}
@@ -432,6 +441,7 @@ const styles = StyleSheet.create({
   },
   linearGradient: {
     flex: 1,
+    backgroundColor: '#e31836',
     paddingLeft: 15,
     paddingRight: 15,
     borderRadius: 5,

@@ -1375,9 +1375,12 @@ export default class ChatIO extends React.Component {
                     style={[commonStyles.button,{marginRight:10}]}
                     onPress={this.onReopenChat}
                   >
-                    <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient, {width:250}]}>
+                  {/* <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient, {width:250}]}>
                     <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
-                    </LinearGradient>                 
+                    </LinearGradient>    */}
+                    <View style={[commonStyles.linearGradient, {width:250}]}>
+                      <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
+                    </View>                 
 
                   </TouchableOpacity>
             </View>
@@ -1752,6 +1755,7 @@ const commonStyles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 0,
     height: 38,
+    backgroundColor: '#e31836',
     justifyContent: 'center',
     width:'100%'
   },
