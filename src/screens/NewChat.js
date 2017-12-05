@@ -188,12 +188,12 @@ export default class NewChat extends Component {
                   style={styles.button}
                   onPress={this.beginChat}
                 >
-                {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                   <Text style={styles.buttonText}>BEGIN CHAT</Text>
-                </LinearGradient> */}
-                <View style={styles.linearGradient}>
+                </LinearGradient>
+                {/* <View style={styles.linearGradient}>
                   <Text style={styles.buttonText}>BEGIN CHAT</Text>
-                </View>
+                </View> */}
                 </TouchableOpacity>
             </View>
           </View>
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 0,
     width: '100%',
-    backgroundColor: '#e31836',
+  //  backgroundColor: '#e31836',
     height: 40,
     justifyContent: 'center',
     padding: 10

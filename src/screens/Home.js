@@ -19,7 +19,7 @@ import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
 
-import Bubbles from '../Bubbles';
+//import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
@@ -337,7 +337,11 @@ class Home extends Component {
     //   stores: stores
     // })
   }
+  componentWillUnmount() {
+    console.log('HOME - componentWillUnmount')
+  }
   componentDidMount() {
+    console.log('HOME - componentDidMount')
     this._isMounted = true;
     this.props.navigation.navigate('AvailabilityModal',{
       setStoresCallback: this.setStores
@@ -544,7 +548,7 @@ class Home extends Component {
         return (
           <View style={styles.container}>
             { this.renderAuthView() }
-            <Bubbles loader={true} size={8} color="#d80024" />
+            {/* <Bubbles loader={true} size={8} color="#d80024" /> */}
             <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
           </View>
         );
@@ -567,13 +571,13 @@ class Home extends Component {
                     style={styles.button}
                     onPress={this.onPressNewChat}
                   >
-                    {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                    <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                     <Text style={styles.buttonText}>START NEW CHAT</Text>
-                    </LinearGradient> */}
-                   <View style={styles.linearGradient}>
+                    </LinearGradient>
+                   {/* <View style={styles.linearGradient}>
                     <Text style={styles.buttonText}>START NEW CHAT</Text>
                     </View>
-                  
+                   */}
 
                   </TouchableOpacity>
                   
@@ -683,12 +687,12 @@ class Home extends Component {
               style={styles.button}
               onPress={this.onPressNewChat}
             >
-              {/* <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
                 <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </LinearGradient> */}
-              <View style={styles.linearGradientNoHistory}>
+              </LinearGradient>
+              {/* <View style={styles.linearGradientNoHistory}>
                 <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </View>
+              </View> */}
             </TouchableOpacity>
           </View>
         );
@@ -750,12 +754,10 @@ class Home extends Component {
       borderWidth: 0,
       width: 195,
       height: 40,
-      backgroundColor: '#e31836',
       justifyContent: 'center',
       padding: 10
     },
     linearGradientNoHistory: {
-      backgroundColor: '#e31836',
       paddingLeft: 15,
       paddingRight: 15,
       borderRadius: 5,
