@@ -305,9 +305,9 @@ export default class Availability extends Component {
               style={styles.button}
               onPress={this.searchZip}
             >
-            <View style={styles.linearGradient}>
+            {/* <View style={styles.linearGradient}>
               <Text style={styles.buttonText}>SUBMIT</Text>
-            </View>
+            </View> */}
             <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
               <Text style={styles.buttonText}>SUBMIT</Text>
             </LinearGradient>
