@@ -34,10 +34,7 @@ const StackModalNavigator = (routeConfigs, navigatorConfig) => {
 
 const RootNavigator = StackNavigator({
   Home: {
-    screen: screens.home,
-    navigationOptions: {
-      headerTitle: 'CHATS',
-    },
+    screen: screens.home
   },
   Availability: {
     screen: screens.availability
@@ -56,7 +53,7 @@ const RootNavigator = StackNavigator({
   },
 
 }, {
-  headerMode: 'float'
+  headerMode: 'none'
 });
 
 // const RootNavigator = StackNavigator({

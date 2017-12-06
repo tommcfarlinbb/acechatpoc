@@ -9,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
   TouchableHighlight,
+  TouchableWithoutFeedback,
   View
 } from 'react-native';
 
@@ -25,6 +26,7 @@ import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
 import Availability from './Availability';
+import NewChat from './NewChat';
 import Modal from 'react-native-modal';
 
 import Storage from 'react-native-storage';
@@ -98,7 +100,10 @@ class Home extends Component {
         firstName: null,
         lastName: null,
         email: null,
-        showAvailabilityModal: true
+        showAvailabilityModal: false,
+        showNewChatModal: false,
+        initialState: true
+
       }
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
@@ -119,6 +124,7 @@ class Home extends Component {
             chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
             const threadsArr = [chat.lastEvent.thread]
             chat.title = fields['chat_'+chat.id];
+            chat.storeTitle = fields['store_'+chat.id];
             chat.area  = fields['category_'+chat.id];
 
             for (var user in chat.lastSeenTimestamps) {
@@ -275,7 +281,9 @@ class Home extends Component {
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
-    console.log(storeConfig);
+    if (this.sdk) {
+      this.sdk.destroy();
+    }
     this.sdk = init({ 
       license: storeConfig.license,
       clientId: storeConfig.clientId,
@@ -297,6 +305,7 @@ class Home extends Component {
         console.log(fields)
           chat.title         = fields['chat_'+chat.id];
           chat.area          = fields['category_'+chat.id];
+          chat.storeTitle    = fields['store_'+chat.id];
           chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
           chat.adminLastSeen = null;
           if (chat.lastEvent) {
@@ -372,6 +381,7 @@ class Home extends Component {
     // populate stores
     console.log(stores)
     this.setState({
+      initialState: false,
       stores: stores,
       showStores: true,
       isLoading: false
@@ -382,6 +392,8 @@ class Home extends Component {
   }
   componentDidMount() {
     console.log('HOME - componentDidMount')
+    console.log(this.sdk);
+
     this._isMounted = true;
 
     storage.load({
@@ -407,31 +419,12 @@ class Home extends Component {
       console.warn(err);
     });
 
-    // this.props.navigation.navigate('AvailabilityModal',{
-    //   setStoresCallback: this.setStores
-    // });
+    setTimeout(() => {
+      this.setState({showAvailabilityModal:true})
+    },500);
+
   }
 
-
-
-    // currentChat = () => {
-    //   this.props.navigator.push({
-    //     screen: 'ChatIO',
-    //     title: 'Chat'
-    //   });
-    // };
-    // newChat = () => {
-    //   this.props.navigator.push({
-    //     screen: 'ChatIO',
-    //     title: 'New Chat'
-    //   });
-    // };
-    // allChats = () => {
-    //   this.props.navigator.push({
-    //     screen: 'AllChats',
-    //     title: 'All Chats'
-    //   });
-    // };
     resetLoadingState = () => {
       setTimeout(() => {
         this.setState({
@@ -453,7 +446,7 @@ class Home extends Component {
         description: obj.description,
         sdk: this.sdk,
         customerId: obj.customerId,
-        storeTitle: 'Rick\'s Ace Hardware',
+        storeTitle: this.state.selectedStore.title,
         title: obj.description,
         goBackFromChat: this.goBackFromChat,
         callback: this.resetLoadingState
@@ -466,30 +459,7 @@ class Home extends Component {
 
     }
     onPressNewChat = () => {
-      this.props.navigation.navigate('NewChatModal', {
-        sdk: this.sdk,
-        store: this.state.selectedStore,
-        customerId: this.state.customerId,
-        callback: this.beginChatCallback,
-        firstName: this.state.firstName,
-        lastName: this.state.lastName,
-        email: this.state.email,
-      });
-      // this.props.navigator.showModal({
-      //   screen: 'NewChat',
-      //   title: 'NEW ISSUE',     
-      //   passProps: {
-      //     sdk: this.sdk,
-      //     customerId: this.state.customerId
-      //   },
-      //   navigatorButtons: {
-      //     leftButtons: [{
-      //       id: 'close',
-      //       disableIconTint: true,
-      //       icon: require('../img/close_icn.png')
-      //     }]
-      //   }
-      // });
+      this._showModal('NewChat');
     }
     renderAuthView() {
       return (
@@ -546,7 +516,7 @@ class Home extends Component {
         sdk: this.sdk,
         customerId: this.state.customerId,
         chatId: chat.id,
-        storeTitle: 'Rick\'s Ace Hardware',
+        storeTitle: chat.storeTitle,
         title: chat.title.toUpperCase(),
         isActive: chat.isActive,
         adminLastSeen: chat.adminLastSeen,
@@ -581,45 +551,147 @@ class Home extends Component {
       //   }
       // });
     }
-    renderAddress(store) {      
+    renderAddress(store,addressStyles) {  
+      addressStyles = addressStyles || {};    
       return (
         <View>
           {store.address.map(line => {
             return (
-              <Text key={line} numberOfLines={1} style={[Common.fontRegular,styles.message]}>{line}</Text>
+              <Text key={line} numberOfLines={1} style={[Common.fontRegular,styles.message,addressStyles]}>{line}</Text>
             );
           })}
         </View>
       )
     }
 
-    _showModal = () => this.setState({ showAvailabilityModal: true })    
-    _hideModal = () => this.setState({ showAvailabilityModal: false })
+    _showModal = (modal) => {
+      switch(modal) {
+        case "Availability":
+          this.setState({ showAvailabilityModal: true });
+          break;
+        case "NewChat":
+          this.setState({ showNewChatModal: true });
+          break;
+      }
+      
+    }    
+    _hideModal = (modal) => {
+      switch(modal) {
+        case "Availability":
+          this.setState({ showAvailabilityModal: false });
+          break;
+        case "NewChat":
+          this.setState({ showNewChatModal: false });
+          break;
+      }
+    }
 
+    renderNewChatModal() {
+      return (
+        <Modal 
+        style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+        isVisible={this.state.showNewChatModal}
+        animationInTiming={400}
+        animationOutTiming={400}
+        backdropTransitionInTiming={1}
+        backdropTransitionOutTiming={1}
+        backdropOpacity={0}
+      >
+        <NewChat 
+          closeHandler={() => this._hideModal('NewChat')}          
+          sdk={this.sdk}
+          store={this.state.selectedStore}
+          customerId={this.state.customerId}
+          callback={this.beginChatCallback}
+          firstName={this.state.firstName}
+          lastName={this.state.lastName}
+          email={this.state.email}
+        />
+      </Modal>
+      )
+    }
     renderAvailabilityModal() {
       return (
         <Modal 
         style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
         isVisible={this.state.showAvailabilityModal}
-        animationInTiming={1}
-        animationOutTiming={350}
+        animationInTiming={400}
+        animationOutTiming={400}
         backdropTransitionInTiming={1}
         backdropTransitionOutTiming={1}
-        backdropOpacity={0.40}
+        backdropOpacity={0}
       >
         <Availability 
-          closeHandler={this._hideModal}
+          closeHandler={() => this._hideModal('Availability')}
           setStoresCallback={this.setStores}
         />
       </Modal>
       )
     }
+    renderStoreStatus() {
+      let { selectedStore } = this.state;
+      return (
+        <View style={{
+          backgroundColor: '#f3efe8',
+          borderBottomWidth: 1,
+          borderBottomColor: '#e2d3bc',
+          borderTopWidth: 1,
+          borderTopColor: '#e2d3bc',
+          paddingTop: 8,
+          marginBottom: 10,
+          marginTop: 5
+        }}>
+          <View style={{flexDirection:'column',flex:1,paddingLeft:10,paddingRight:10,marginBottom:5,alignItems:'flex-start'}}>
+            <View>
+              <View style={{
+                flexDirection: 'row',
+                flex: 1,
+                width: '100%',
+                justifyContent: 'space-between'
+              }}>
+                  <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
+                  <TouchableWithoutFeedback
+                    onPress={() => this._showModal('Availability')}
+                  >
+                    <View><Text style={[Common.fontMedium,{fontSize:13,height:15,color:'#f4002d'}]}>change store</Text></View>
+                  </TouchableWithoutFeedback>
+              </View>
+              {this.renderAddress(selectedStore,{fontSize:13,lineHeight:13,height:14})}
+
+            </View>
+          </View>
+        </View>
+      )
+    }
     renderChats(stores,chats) {
+      if (this.state.initialState) {
+        return (
+          <View style={styles.containerChats}>
+          { this.renderAuthView() }
+          <ScrollView style={{paddingTop:20}}>
+            <View style={[styles.containerNoChats]}>
+              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
+              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 7}]}>You must select a location to check chat availability.</Text>
+              <TouchableOpacity
+                  style={[styles.button,{height:40}]}
+                  onPress={() => this._showModal('Availability')}
+                >
+                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>CHAT AVAILABILITY</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                
+            </View>
+            
+          </ScrollView>
+          </View>
+        );
+      }
       if (this.state.isLoading) {
         return (
           <View style={styles.container}>
             { this.renderAuthView() }
-            {<Bubbles loader={true} size={8} color="#d80024" />}
+            <Bubbles loader={true} size={8} color="#d80024" />
             <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
           </View>
         );
@@ -629,9 +701,9 @@ class Home extends Component {
         return (
           <View style={styles.containerChats}>
           { this.renderAuthView() }
-          <ScrollView>
+          <ScrollView style={{paddingTop:20}}>
             <View style={[styles.containerNoChats,{marginTop:30}]}>
-              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Ace Chat is available at your location!.</Text>
+              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Ace Chat is available at your location!</Text>
               <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1,marginTop: 8, marginBottom: 7}]}>Select a location you would like to chat with.</Text>
             </View>
             {stores.map(store => {
@@ -673,14 +745,16 @@ class Home extends Component {
         return (          
           <View style={styles.containerChats}>
             { this.renderAuthView() }
-            <ScrollView>
-              <View style={{flex:1,alignItems:'center',marginBottom:30}}>
+            <ScrollView style={{paddingTop:0}}>
+            {this.renderStoreStatus()}
+              <View style={{flex:1,alignItems:'center',marginBottom:20}}>
+                
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button,{height:40}]}
                   onPress={this.onPressNewChat}
                 >
                   <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-                  <Text style={styles.buttonText}>START NEW CHAT</Text>
+                    <Text style={styles.buttonText}>START NEW CHAT</Text>
                   </LinearGradient>
                   {/* <View style={styles.linearGradient}>
                   <Text style={styles.buttonText}>START NEW CHAT</Text>
@@ -716,7 +790,7 @@ class Home extends Component {
                       <View style={{                  
                           flexDirection: 'row',
                         }}>
-                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
                           <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
                             sameDay: 'h:mm a',
                             nextDay: '[Tomorrow]',
@@ -763,7 +837,7 @@ class Home extends Component {
                       <View style={{                  
                           flexDirection: 'row',
                         }}>
-                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
                           <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
                             sameDay: 'h:mm a',
                             nextDay: '[Tomorrow]',
@@ -814,7 +888,7 @@ class Home extends Component {
       } = this.state;
       return (
         <View style={styles.RNcontainer}>
-          {/* <Header navigation={this.props.navigation} title="CHAT" /> */}
+          <Header navigation={this.props.navigation} title="CHAT" />
           <View style={{
              flex: 1,
              backgroundColor: '#eee6d9',
@@ -822,6 +896,7 @@ class Home extends Component {
            }}>
             {this.renderChats(stores,chats)}
             {this.renderAvailabilityModal()}
+            {this.renderNewChatModal()}
           </View>
         </View>        
       )
@@ -901,7 +976,6 @@ class Home extends Component {
     },
     containerChats: {
       flex: 1,
-      paddingTop: 20,
       backgroundColor: '#eee6d9',
     },
     row: {

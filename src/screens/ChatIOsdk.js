@@ -263,7 +263,7 @@ class CustomBubble extends Bubble {
     return (
       <View>        
         <View style={[bubbleStyles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
-          <View style={[bubbleStyles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position]]}>
+          <View style={[bubbleStyles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position], this.props.currentMessage.image && {backgroundColor:'transparent'}]}>
             <TouchableWithoutFeedback
               onLongPress={this.onLongPress}
               accessibilityTraits="text"
@@ -351,7 +351,7 @@ export default class ChatIO extends React.Component {
       connected: false,
       PING: null,
       username: null,
-      isModalVisible: true,
+      isModalVisible: false,
       myLastMessage: null,
       adminLastSeen: adminLastSeen || null,
       minInputToolbarHeight: 64
@@ -361,7 +361,6 @@ export default class ChatIO extends React.Component {
    
     this._isMounted = false;
     this.onSend = this.onSend.bind(this);
-    this.onReceive = this.onReceive.bind(this);
     this.renderCustomActions = this.renderCustomActions.bind(this);
     this.renderBubble = this.renderBubble.bind(this);
   //  this.renderMessage = this.renderMessage.bind(this);
@@ -490,9 +489,11 @@ export default class ChatIO extends React.Component {
         let payload = { fields: {} }
         let chatKey = 'chat_'+chat.id;
         let catkey = 'category_'+chat.id;
+        let storekey = 'store_'+chat.id;
         payload.fields[catkey] = this.props.navigation.state.params.area;   
      //   let chatKeyLastVisit = 'lastVisit_'+chat.id;
         payload.fields[chatKey] = this.props.navigation.state.params.description;
+        payload.fields[storekey] = this.props.navigation.state.params.storeTitle;
      //   payload.fields[chatKeyLastVisit] = Date.now().toString();
         // ////////////////////////////////
         // ////////////////////////////////
@@ -906,8 +907,7 @@ export default class ChatIO extends React.Component {
       }
 
       messages = [...messages,...newMessages];
-      console.log('---------------====================-------------')
-      console.log(settings.lastMessage)
+
       this.setState({
         myLastMessage: settings.lastMessage
       })
@@ -919,7 +919,7 @@ export default class ChatIO extends React.Component {
         });
       } else {
         // load more
-        console.log('load more')
+        console.log('------------------------- load more -------------------------')
         this.loadHistory(history,messages,users,settings);
       }
 
@@ -1082,36 +1082,6 @@ export default class ChatIO extends React.Component {
 
   }
 
-  onIncomingChatThread = (msg) => {
-    let chat = msg.payload.chat;
-    console.log(chat)
-
-    // wrong chat id
-    if (this.state.chatId && chat.id != this.state.chatId) {
-      return;
-    }
-    if (this._isMounted) {
-      chat.thread.events.forEach((event,idx) => {
-        if (event.type === 'message') {
-          this.setState({
-            messages: [{
-              text: event.text,
-              _id: event.id,
-              createdAt: event.timestamp * 1000,
-              user: {
-                _id: event.author_id,
-                name: this.props.navigation.state.params.name
-              }
-            }, ...this.state.messages]
-          });
-        }
-      });
-      this.setState({
-        users: chat.users
-      });
-
-    }
-  }
   addGlobalUsers = (user) => {
     if (this._isMounted) {
       this.setState({
@@ -1237,58 +1207,6 @@ export default class ChatIO extends React.Component {
         }}
       />
     );
-  }
-
-  answerDemo(messages) {
-    if (messages.length > 0) {
-      if ((messages[0].image || messages[0].location) || !this._isAlright) {
-        this.setState((previousState) => {
-          return {
-            typingText: 'React Native is typing'
-          };
-        });
-      }
-    }
-
-    setTimeout(() => {
-      if (this._isMounted === true) {
-        if (messages.length > 0) {
-          if (messages[0].image) {
-            this.onReceive('Nice picture!');
-          } else if (messages[0].location) {
-            this.onReceive('My favorite place');
-          } else {
-            if (!this._isAlright) {
-              this._isAlright = true;
-              this.onReceive('Alright');
-            }
-          }
-        }
-      }
-
-      this.setState((previousState) => {
-        return {
-          typingText: null,
-        };
-      });
-    }, 1000);
-  }
-
-  onReceive(text) {
-    this.setState((previousState) => {
-      return {
-        messages: GiftedChat.append(previousState.messages, {
-          _id: Math.round(Math.random() * 1000000),
-          text: text,
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: 'React Native',
-            // avatar: 'https://facebook.github.io/react/img/logo_og.png',
-          },
-        }),
-      };
-    });
   }
 
   renderCustomActions(props) {

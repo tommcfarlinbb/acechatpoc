@@ -43,15 +43,15 @@ export default class NewChat extends Component {
     console.log(this.props)
     this.state = {
       area: null,
-      firstName: this.props.navigation.state.params.firstName || null,
-      lastName: this.props.navigation.state.params.lastName || null,
-      email: this.props.navigation.state.params.email || null,
-      store: this.props.navigation.state.params.store,
+      firstName: this.props.firstName || null,
+      lastName: this.props.lastName || null,
+      email: this.props.email || null,
+      store: this.props.store,
       errors: {},
       description: null,
-      customerId: this.props.navigation.state.params.customerId || null
+      customerId: this.props.customerId || null
     }
-    this.sdk = this.props.navigation.state.params.sdk;
+    this.sdk = this.props.sdk;
 //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 
   }
@@ -90,7 +90,7 @@ export default class NewChat extends Component {
       }
     });
     
-    this.props.navigation.state.params.callback({
+    this.props.callback({
         loading: true,
         area: this.state.area,
         name: this.state.firstName + ' ' + this.state.lastName,
@@ -101,7 +101,7 @@ export default class NewChat extends Component {
         title: 'Rick\'s Ace Hardware',
         subtitle: this.state.description,
     });
-    this.props.navigation.goBack();
+    this.props.closeHandler();
 
     // this.props.navigator.push({
     //   screen: 'ChatIOsdk',
@@ -180,9 +180,8 @@ export default class NewChat extends Component {
     return (
       <View style={styles.RNcontainer}>
         <Header 
-          navigation={this.props.navigation} 
           left="close" 
-          onPressLeft={() => this.props.navigation.goBack()}
+          onPressLeft={this.props.closeHandler}
           title="NEW ISSUE" />
         <View style={{
           flex: 1,
