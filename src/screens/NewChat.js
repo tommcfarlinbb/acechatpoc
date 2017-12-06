@@ -19,10 +19,11 @@ const images = {
   plumbing: require('../img/plumbing.png'),
   plumbing_icn: require('../img/plumbing_icn.png'),
   lawn: require('../img/lawn.png'),
+  electrical: require('../img/electrical.png'),
   paint: require('../img/paint.png'),
   outdoors: require('../img/outdoors.png'),
   hardware: require('../img/hardware.png'),
-  auto: require('../img/auto.png'),
+  heatingCooling: require('../img/heatingCooling.png'),
   tools: require('../img/tools.png'),
   indoor: require('../img/indoor.png'),
   other: require('../img/other.png'),
@@ -42,9 +43,11 @@ export default class NewChat extends Component {
     console.log(this.props)
     this.state = {
       area: null,
-      firstName: 'Brand',
-      lastName: 'McBranderson',
-      email: 'brander@bb.com',
+      firstName: this.props.navigation.state.params.firstName || null,
+      lastName: this.props.navigation.state.params.lastName || null,
+      email: this.props.navigation.state.params.email || null,
+      store: this.props.navigation.state.params.store,
+      errors: {},
       description: null,
       customerId: this.props.navigation.state.params.customerId || null
     }
@@ -61,6 +64,32 @@ export default class NewChat extends Component {
   //   }
   // }
   beginChat = () => {
+    if (!(this.state.firstName && this.state.description)) {      
+      let errors = {};
+      if (!this.state.firstName) {
+        errors.firstName = true;
+      }
+      if (!this.state.description) {
+        errors.description = true;
+      }
+      this.setState({
+        errors: errors
+      });
+      return false;
+    }
+    this.setState({
+      errors: false
+    });
+
+    storage.save({
+      key: 'userState', 
+      data: { 
+        firstName: this.state.firstName,
+        lastName: this.state.lastName,
+        email: this.state.email
+      }
+    });
+    
     this.props.navigation.state.params.callback({
         loading: true,
         area: this.state.area,
@@ -109,17 +138,26 @@ export default class NewChat extends Component {
       area: area
     })
   }
+  renderError() {
+    if (this.state.errors && (this.state.errors.firstName || this.state.errors.description) && (!this.state.firstName || !this.state.description)) {
+      return (
+        <Text style={[Common.fontMedium,{marginTop:10,paddingLeft:15,fontSize:13,color:'#f4002d'}]}>Please complete the required fields above</Text>
+      )
+    }
+    return null;
+  }
   render() {
     let areas = [
+      { name: 'Electrical', icon: 'electrical' },
       { name: 'Plumbing', icon: 'plumbing_icn' },
-      { name: 'Lawn', icon: 'lawn' },
-      { name: 'Painting', icon: 'paint' },
-      { name: 'Outdoors', icon: 'outdoors' },
-      { name: 'Hardware', icon: 'hardware' },
-      { name: 'Auto', icon: 'auto' },
       { name: 'Tools', icon: 'tools' },
-      { name: 'Indoors', icon: 'indoor' },
-      { name: 'Other', icon: 'other' }
+      { name: 'Lawn & Garden', icon: 'lawn' },
+      { name: 'Heating & Cooling', icon: 'heatingCooling' },
+      { name: 'Home Goods', icon: 'indoor' },
+      { name: 'Hardware', icon: 'hardware' },
+      { name: 'Outdoor Living', icon: 'outdoors' },
+      { name: 'Paint', icon: 'paint' },
+      { name: 'Other', icon: 'other' }      
     ];
     let areaList = areas.map((area,idx) => {
       return (
@@ -127,7 +165,13 @@ export default class NewChat extends Component {
           <View style={[styles.areaItem, this.state.area === area.name && styles.areaItemActive]}>
             <View style={styles.areaContent}>
               <Image style={styles.areaImage} source={images[area.icon]} />
-              <Text style={styles.areaContentTitle}>{area.name}</Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                height: 32
+              }}>
+                <Text style={styles.areaContentTitle}>{area.name}</Text>
+              </View>              
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -149,20 +193,20 @@ export default class NewChat extends Component {
           <View style={styles.container}>
             <View style={{flex: 1,width:'100%'}}>
                 <View style={{padding:15,paddingBottom:0}}>
-                  <Text style={styles.header}>Contact Information</Text>
+                  <Text style={styles.header}>Contact information:</Text>
                   <View style={{
                     flexDirection: 'row',
                   }}>
-                    <TextInput style={[Common.fontRegular,styles.input,styles.firstName]} onChangeText={text => this.setState({firstName: text})} value={this.state.firstName} autoCorrect={false}  placeholder="First Name *" />
-                    <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name *" />
+                    <TextInput style={[Common.fontRegular,styles.input,styles.firstName,this.state.errors.firstName && !this.state.firstName && styles.inputError]} onChangeText={text => this.setState({firstName: text})} value={this.state.firstName} autoCorrect={false}  placeholder="First Name *" />
+                    <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name (optional)" />
                   </View>
                 </View>
                 <View style={{paddingLeft:15,paddingRight:15,marginBottom: 10}}>
-                  <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email *" />
+                  <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email (optional)" />
                 </View>
 
                 <View style={{padding:15,paddingBottom:0,height: 220}}>
-                  <Text style={styles.header}>What area do you need assitance?</Text>
+                  <Text style={styles.header}>Select topic:</Text>
                   <View style={{
                     flexDirection: 'row',
                     flex: 1,
@@ -175,11 +219,12 @@ export default class NewChat extends Component {
 
 
                 <View style={{padding:15,paddingBottom:0}}>
-                  <Text style={styles.header}>Please provide a brief description</Text>
+                  <Text style={styles.header}>Briefly describe your issue:</Text>
                   <View>
-                    <TextInput style={[Common.fontRegular,styles.inputDescription]} onChangeText={text => this.setState({description: text})}  placeholder="Description (40 characters)" />
+                    <TextInput style={[Common.fontRegular,styles.inputDescription,this.state.errors.description && !this.state.description && styles.inputError]} onChangeText={text => this.setState({description: text})}  placeholder="Description *" />
                   </View>
                 </View>
+                {this.renderError()}
 
             </View>
           
@@ -213,7 +258,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 5,
     backgroundColor: '#eee6d9'
   },
   RNcontainer: {
@@ -237,15 +282,16 @@ const styles = StyleSheet.create({
   },
   firstName: {
     borderTopLeftRadius: 5,
-    borderRightWidth: 0
+    borderRightColor: '#f6f4f0'
   },
   lastName: {
     borderTopRightRadius: 5,
-    borderLeftColor: '#f6f4f0'
+    borderLeftWidth: 0
+    
   },
   header: {
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 5,
     color: '#5b5b5b',
     fontFamily: 'HelveticaNeueLTStd-MdCn'
   },
@@ -281,12 +327,17 @@ const styles = StyleSheet.create({
     flex: 1
   },
   areaImage: {
-    marginBottom: 11
+    marginBottom: 5
   },  
   areaContentTitle: {
     fontFamily: 'HelveticaNeueLTStd-Cn',
     fontSize: 12,
-    marginBottom: 6
+    flex: 1,
+    alignItems: 'center',
+    lineHeight: 11,
+    marginTop: 2,
+    justifyContent: 'center',
+    textAlign: 'center',
   },
   areaItem: {
     height: 80,
@@ -302,6 +353,12 @@ const styles = StyleSheet.create({
     borderColor: '#f4002d',
     backgroundColor: '#fdeff1',
     borderWidth: 2,
+  },
+  inputError: {
+    borderColor: '#f4002d',
+    backgroundColor: '#fdeff1',
+    borderRightColor: '#f4002d',
+    borderRightWidth: 1
   },
   linearGradient: {
     flex: 1,

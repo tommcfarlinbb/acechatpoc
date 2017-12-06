@@ -351,7 +351,7 @@ export default class ChatIO extends React.Component {
       connected: false,
       PING: null,
       username: null,
-      isModalVisible: false,
+      isModalVisible: true,
       myLastMessage: null,
       adminLastSeen: adminLastSeen || null,
       minInputToolbarHeight: 64

@@ -1,6 +1,7 @@
 
 import React, { Component } from 'react';
 import {
+  AsyncStorage,
   Platform,
   StyleSheet,
   ScrollView,
@@ -19,10 +20,38 @@ import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
 
-//import Bubbles from '../Bubbles';
+import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
+import Availability from './Availability';
+import Modal from 'react-native-modal';
+
+import Storage from 'react-native-storage';
+
+let storage = new Storage({
+	// maximum capacity, default 1000 
+	size: 1000,
+
+	// Use AsyncStorage for RN, or window.localStorage for web.
+	// If not set, data would be lost after reload.
+	storageBackend: AsyncStorage,
+	
+	// expire time, default 1 day(1000 * 3600 * 24 milliseconds).
+	// can be null, which means never expire.
+	defaultExpires: null,
+	
+	// cache data in the memory. default is true.
+	enableCache: true,
+	
+	// if data was not found in storage or expired,
+	// the corresponding sync method will be invoked and return 
+	// the latest data.
+	sync : {
+		// we'll talk about the details later.
+	}
+})	
+global.storage = storage;
 //import Rx from 'rxjs'
 // import { bindActionCreators } from 'redux';
 // import { connect } from 'react-redux';
@@ -30,13 +59,14 @@ import Header from '../components/Header'
 const images = {
   arrowRight: require('../img/arrow-right.png'),
   Plumbing: require('../img/circle/plumbing.png'),  
-  Lawn: require('../img/circle/lawn.png'),
-  Painting: require('../img/circle/paint.png'),
-  Outdoors: require('../img/circle/outdoor.png'),
+  "Lawn & Garden": require('../img/circle/lawn.png'),
+  Electrical: require('../img/circle/electrical.png'),
+  Paint: require('../img/circle/paint.png'),
+  "Outdoor Living": require('../img/circle/outdoor.png'),
   Hardware: require('../img/circle/hardware.png'),
-  Auto: require('../img/circle/auto.png'),
+  "Heating & Cooling": require('../img/circle/heatingCooling.png'),
   Tools: require('../img/circle/tools.png'),
-  Indoors: require('../img/circle/indoor.png'),
+  "Home Goods": require('../img/circle/indoor.png'),
   Other: require('../img/circle/other.png'),
 };
 
@@ -62,7 +92,13 @@ class Home extends Component {
         customerId: null,
         userData: [],
         loadingText: 'Loading...',
-        isLoading: true
+        showStores: false,
+        selectedStore: null,
+        isLoading: true,
+        firstName: null,
+        lastName: null,
+        email: null,
+        showAvailabilityModal: true
       }
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
@@ -237,10 +273,12 @@ class Home extends Component {
   //   })
   // }
 
-  initSdk = () => {
+  initSdk = (store) => {
+    let storeConfig = config.stores[store.custom.store_id];
+    console.log(storeConfig);
     this.sdk = init({ 
-      license: config.chatio_license,
-      clientId: '963149243bc08609533c36c485c55b3f',
+      license: storeConfig.license,
+      clientId: storeConfig.clientId,
       redirectUri: 'https://app.chat.io/'
     });
 
@@ -333,9 +371,11 @@ class Home extends Component {
   setStores = (stores) => {
     // populate stores
     console.log(stores)
-    // this.setState({
-    //   stores: stores
-    // })
+    this.setState({
+      stores: stores,
+      showStores: true,
+      isLoading: false
+    })
   }
   componentWillUnmount() {
     console.log('HOME - componentWillUnmount')
@@ -343,34 +383,33 @@ class Home extends Component {
   componentDidMount() {
     console.log('HOME - componentDidMount')
     this._isMounted = true;
-    this.props.navigation.navigate('AvailabilityModal',{
-      setStoresCallback: this.setStores
+
+    storage.load({
+      key: 'userState',
+    }).then(user => {
+      console.log(user);
+      this.setState({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      })
+    }).catch(err => {
+
     });
-    // init sdk and set up event listeners
-    this.initSdk();
 
-    // this.props.navigator.showModal({
-    //   screen: 'Availability',
-    //   title: 'CHAT AVAILABILITY',     
-    //   passProps: {
-    //   },
-    //   animationType: 'none',
-    //   navigatorButtons: {
-    //     leftButtons: [{
-    //       id: 'close',
-    //       disableIconTint: true,
-    //       icon: require('../img/close_icn.png')
-    //     }]
-    //   }
+
+    storage.load({
+      key: 'savedStore',
+    }).then(store => {
+      console.log('saved store: ',store);
+    }).catch(err => {
+      console.log('savedStore fail')
+      console.warn(err);
+    });
+
+    // this.props.navigation.navigate('AvailabilityModal',{
+    //   setStoresCallback: this.setStores
     // });
-
-    // this.sdk = init({ 
-    //   license: config.chatio_license,
-    //   clientId: '963149243bc08609533c36c485c55b3f',
-    //   redirectUri: 'https://app.chat.io/'
-    // });
-   // this.initSdk();
-
   }
 
 
@@ -429,8 +468,12 @@ class Home extends Component {
     onPressNewChat = () => {
       this.props.navigation.navigate('NewChatModal', {
         sdk: this.sdk,
+        store: this.state.selectedStore,
         customerId: this.state.customerId,
-        callback: this.beginChatCallback
+        callback: this.beginChatCallback,
+        firstName: this.state.firstName,
+        lastName: this.state.lastName,
+        email: this.state.email,
       });
       // this.props.navigator.showModal({
       //   screen: 'NewChat',
@@ -466,6 +509,33 @@ class Home extends Component {
     }
     goBackFromChat = () => {
       this.getChatsSummary(0,25);
+    }
+
+    selectStore = (store) => {      
+      console.log('init sdk with store:')
+      console.log(store)
+      this.setState({
+        isLoading: true,
+        showStores: false,
+        selectedStore: store
+      });
+      storage.save({
+        key: 'savedStore', 
+        data: store
+      });
+      this.initSdk(store);
+
+      // this.props.navigation.navigate('Chat', {
+      //   sdk: this.sdk,
+      //   customerId: this.state.customerId,
+      //   chatId: chat.id,
+      //   storeTitle: 'Rick\'s Ace Hardware',
+      //   title: chat.title.toUpperCase(),
+      //   isActive: chat.isActive,
+      //   adminLastSeen: chat.adminLastSeen,
+      //   userData: this.state.userData,
+      //   goBackFromChat: this.goBackFromChat
+      // });
     }
 
     loadChat = (chat) => {
@@ -511,29 +581,78 @@ class Home extends Component {
       //   }
       // });
     }
-    renderChats(stores,chats) {  
-      if (stores.length) {
+    renderAddress(store) {      
+      return (
+        <View>
+          {store.address.map(line => {
+            return (
+              <Text key={line} numberOfLines={1} style={[Common.fontRegular,styles.message]}>{line}</Text>
+            );
+          })}
+        </View>
+      )
+    }
+
+    _showModal = () => this.setState({ showAvailabilityModal: true })    
+    _hideModal = () => this.setState({ showAvailabilityModal: false })
+
+    renderAvailabilityModal() {
+      return (
+        <Modal 
+        style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+        isVisible={this.state.showAvailabilityModal}
+        animationInTiming={1}
+        animationOutTiming={350}
+        backdropTransitionInTiming={1}
+        backdropTransitionOutTiming={1}
+        backdropOpacity={0.40}
+      >
+        <Availability 
+          closeHandler={this._hideModal}
+          setStoresCallback={this.setStores}
+        />
+      </Modal>
+      )
+    }
+    renderChats(stores,chats) {
+      if (this.state.isLoading) {
+        return (
+          <View style={styles.container}>
+            { this.renderAuthView() }
+            {<Bubbles loader={true} size={8} color="#d80024" />}
+            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
+          </View>
+        );
+      }
+
+      if (this.state.showStores && stores.length) {
         return (
           <View style={styles.containerChats}>
           { this.renderAuthView() }
           <ScrollView>
-
+            <View style={[styles.containerNoChats,{marginTop:30}]}>
+              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Ace Chat is available at your location!.</Text>
+              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1,marginTop: 8, marginBottom: 7}]}>Select a location you would like to chat with.</Text>
+            </View>
             {stores.map(store => {
               return (
               <TouchableHighlight
                 key={store.id}
-              // onPress={() => this.loadChat(chat)}
+                onPress={() => this.selectStore(store)}
                 underlayColor={'#eee'}
-                style={styles.row}
+                style={[styles.row,{height:74}]}
               >
                 <View style={{                  
                     flexDirection: 'row',
                     alignItems: 'center',
-                  }}>           
-                    
+                    paddingLeft: 8
+                  }}>                               
                     <View style={styles.chat}>
-                      <Text numberOfLines={1} style={[Common.fontRegular,styles.description]}>{store.title}</Text>
-                  </View>
+                      <Text numberOfLines={1} style={[Common.fontBold,styles.description]}>{store.title}</Text>
+                      {this.renderAddress(store)}
+                    </View>
+                    <Image style={{height: 14,width: 8,marginTop:-2}} source={images.arrowRight} />
+
                 </View>
 
               </TouchableHighlight>
@@ -544,159 +663,148 @@ class Home extends Component {
           </View>  
         );
       }
-      if (this.state.isLoading) {
-        return (
-          <View style={styles.container}>
-            { this.renderAuthView() }
-            {/* <Bubbles loader={true} size={8} color="#d80024" /> */}
-            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
-          </View>
-        );
-      }  else {
         
-        if (chats.length) {
+      if (chats.length) {
 
-          let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); }
-                                ).sort((a, b) => { return b.order - a.order });
-          let previousChats = chats.filter(chat => { return !chat.isActive && chat.title && !~hideChats.indexOf(chat.id); })
-                                   .sort((a, b) => { return b.order - a.order });
-
-          return (
-            
-            <View style={styles.containerChats}>
-              { this.renderAuthView() }
-              <ScrollView>
-                <View style={{flex:1,alignItems:'center',marginBottom:30}}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={this.onPressNewChat}
-                  >
-                    <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-                    <Text style={styles.buttonText}>START NEW CHAT</Text>
-                    </LinearGradient>
-                   {/* <View style={styles.linearGradient}>
-                    <Text style={styles.buttonText}>START NEW CHAT</Text>
-                    </View>
-                   */}
-
-                  </TouchableOpacity>
-                  
-                </View>
-                <Text
-                  style={[Common.fontMedium,{
-                    fontSize: 16,
-                    color: '#5b5b5b',
-                    marginBottom: 7,
-                    paddingHorizontal: 16
-                  }]}>Open Chats</Text>
-                {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No open chats</Text></View>}
-                {activeChats.map(chat => {
-                  return (
-                  <TouchableHighlight
-                    key={chat.id}
-                    onPress={() => this.loadChat(chat)}
-                    underlayColor={'#eee'}
-                    style={styles.row}
-                  >
-                    <View style={{                  
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}>
-                        <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
-                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
-                        <View style={styles.chat}>
-                        <View style={{                  
-                            flexDirection: 'row',
-                          }}>
-                            <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
-                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
-                              sameDay: 'h:mm a',
-                              nextDay: '[Tomorrow]',
-                              nextWeek: 'ddd',
-                              lastDay: '[Yesterday]',
-                              lastWeek: '[Last] ddd',
-                              sameElse: 'MM/DD/YY'
-                          })}</Text>
-                            <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
-                        </View>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
-                      </View>
-                    </View>
-  
-                  </TouchableHighlight>
-  
-                ) } )}     
-  
-                <Text
-                  style={[Common.fontMedium,{
-                    fontSize: 16,
-                    color: '#5b5b5b',
-                    marginBottom: 7,
-                    marginTop: 30,
-                    paddingHorizontal: 16
-                  }]}>Previous Chats</Text>
-
-                {!previousChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No previous chats</Text></View>}  
-                {previousChats.map(chat => (
-                  <TouchableHighlight
-                    key={chat.id}
-                    onPress={() => this.loadChat(chat)}
-                    underlayColor={'#eee'}
-                    style={styles.row}
-                  >
-                    <View style={{                  
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}>
-                        <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
-                        <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
-                        <View style={styles.chat}>
-                        <View style={{                  
-                            flexDirection: 'row',
-                          }}>
-                            <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
-                            <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
-                              sameDay: 'h:mm a',
-                              nextDay: '[Tomorrow]',
-                              nextWeek: 'ddd',
-                              lastDay: '[Yesterday]',
-                              lastWeek: '[Last] ddd',
-                              sameElse: 'MM/DD/YY'
-                          })}</Text>
-                            <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
-                        </View>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                        <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
-                      </View>
-                    </View>
-  
-                  </TouchableHighlight>
-  
-                ))} 
-              </ScrollView>
-            </View>
-          );
-        }
-        return (
-          <View style={styles.containerNoChats}>
+        let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); }
+                              ).sort((a, b) => { return b.order - a.order });
+        let previousChats = chats.filter(chat => { return !chat.isActive && chat.title && !~hideChats.indexOf(chat.id); })
+                                  .sort((a, b) => { return b.order - a.order });
+        return (          
+          <View style={styles.containerChats}>
             { this.renderAuthView() }
-            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
-            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={this.onPressNewChat}
-            >
-              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
-                <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </LinearGradient>
-              {/* <View style={styles.linearGradientNoHistory}>
-                <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </View> */}
-            </TouchableOpacity>
+            <ScrollView>
+              <View style={{flex:1,alignItems:'center',marginBottom:30}}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={this.onPressNewChat}
+                >
+                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>START NEW CHAT</Text>
+                  </LinearGradient>
+                  {/* <View style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>START NEW CHAT</Text>
+                  </View>
+                  */}
+
+                </TouchableOpacity>
+                
+              </View>
+              <Text
+                style={[Common.fontMedium,{
+                  fontSize: 16,
+                  color: '#5b5b5b',
+                  marginBottom: 7,
+                  paddingHorizontal: 16
+                }]}>Open Chats</Text>
+              {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No open chats</Text></View>}
+              {activeChats.map(chat => {
+                return (
+                <TouchableHighlight
+                  key={chat.id}
+                  onPress={() => this.loadChat(chat)}
+                  underlayColor={'#eee'}
+                  style={styles.row}
+                >
+                  <View style={{                  
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                      <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
+                      <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
+                      <View style={styles.chat}>
+                      <View style={{                  
+                          flexDirection: 'row',
+                        }}>
+                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                          <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
+                            sameDay: 'h:mm a',
+                            nextDay: '[Tomorrow]',
+                            nextWeek: 'ddd',
+                            lastDay: '[Yesterday]',
+                            lastWeek: '[Last] ddd',
+                            sameElse: 'MM/DD/YY'
+                        })}</Text>
+                          <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
+                      </View>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
+                    </View>
+                  </View>
+
+                </TouchableHighlight>
+
+              ) } )}     
+
+              <Text
+                style={[Common.fontMedium,{
+                  fontSize: 16,
+                  color: '#5b5b5b',
+                  marginBottom: 7,
+                  marginTop: 30,
+                  paddingHorizontal: 16
+                }]}>Previous Chats</Text>
+
+              {!previousChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No previous chats</Text></View>}  
+              {previousChats.map(chat => (
+                <TouchableHighlight
+                  key={chat.id}
+                  onPress={() => this.loadChat(chat)}
+                  underlayColor={'#eee'}
+                  style={styles.row}
+                >
+                  <View style={{                  
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                      <View style={[styles.newMessageDotOff, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageDotOn]} />
+                      <Image style={{height: 40,width: 40,marginRight: 10}} source={images[chat.area]} />
+                      <View style={styles.chat}>
+                      <View style={{                  
+                          flexDirection: 'row',
+                        }}>
+                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>Rick's Ace Hardware</Text>
+                          <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
+                            sameDay: 'h:mm a',
+                            nextDay: '[Tomorrow]',
+                            nextWeek: 'ddd',
+                            lastDay: '[Yesterday]',
+                            lastWeek: '[Last] ddd',
+                            sameElse: 'MM/DD/YY'
+                        })}</Text>
+                          <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
+                      </View>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
+                    </View>
+                  </View>
+
+                </TouchableHighlight>
+
+              ))} 
+            </ScrollView>
           </View>
         );
-      } 
+      }
+      return (
+        <View style={styles.containerNoChats}>
+          { this.renderAuthView() }
+          <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
+          <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={this.onPressNewChat}
+          >
+            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+              <Text style={styles.buttonText}>START NEW CHAT</Text>
+            </LinearGradient>
+            {/* <View style={styles.linearGradientNoHistory}>
+              <Text style={styles.buttonText}>START NEW CHAT</Text>
+            </View> */}
+          </TouchableOpacity>
+        </View>
+      );
+      
       
     }
     render() {
@@ -713,6 +821,7 @@ class Home extends Component {
              width:'100%'
            }}>
             {this.renderChats(stores,chats)}
+            {this.renderAvailabilityModal()}
           </View>
         </View>        
       )

@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-//import Bubbles from '../Bubbles';
+import Bubbles from '../Bubbles';
 
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
@@ -128,56 +128,19 @@ export default class Availability extends Component {
             return false;
            }
            // now show list of stores
-           this.props.navigation.state.params.setStoresCallback(validStores);
-           this.props.navigation.goBack();
+           //this.props.navigation.state.params.setStoresCallback(validStores);
+           //this.props.navigation.goBack();
+           this.props.setStoresCallback(validStores);
+           setTimeout(() => {
+            this.props.closeHandler();
+           },500);
+           
         }
       })
       .catch((error) => {
         console.error(error);
       });
-      // if (~zipCodeList.indexOf(zip)) {
-      //   this.props.navigator.dismissModal({
-      //     animationType: 'slide-down'
-      //   });
-      // } else {
-      //   // not avail in your area
-      //   this.setState({
-      //     showNotAvailable: true,
-      //     isSearching: null
-      //   })
-      // }
 
-  //  }, 2000); 
-    // simulating network
-    // this.props.navigator.push({
-    //   screen: 'ChatIOsdk',
-    //   title: 'Rick\'s Ace Hardware',
-    //   passProps: {
-    //     area: this.state.area,
-    //     name: this.state.firstName + ' ' + this.state.lastName,
-    //     email: this.state.email,
-    //     description: this.state.description,
-    //     sdk: this.sdk,
-    //     customerId: this.state.customerId,
-    //     title: 'Rick\'s Ace Hardware',
-    //     subtitle: this.state.description,
-    //   },
-    //   navigatorButtons: {
-    //     leftButtons: [{
-    //       id: 'close',
-    //       disableIconTint: true,
-    //       icon: require('../img/back_icn.png')
-    //     }],
-    //     rightButtons: [{
-    //       id: 'end',
-    //       title: 'End Chat',
-    //       buttonColor: '#5b5b5b',
-    //       buttonFontSize: 16,
-    //       buttonFontFamily: 'HelveticaNeue-CondensedBold'
-
-    //     }]
-    //   }
-    // });
   }
   pressArea = (area) => {
     this.setState({
@@ -201,7 +164,7 @@ export default class Availability extends Component {
           width: width
         }}>
           <View style={{marginTop:-150}}>
-            {/* <Bubbles size={8} color="#d80024" /> */}
+            {<Bubbles size={8} color="#d80024" />}
             <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.isSearching}</Text>
           </View>
         </View>
@@ -327,7 +290,7 @@ export default class Availability extends Component {
         <Header 
           navigation={this.props.navigation} 
           left="close" 
-          onPressLeft={() => this.props.navigation.goBack()}
+          onPressLeft={this.props.closeHandler}
           title="CHAT AVAILABILITY" />
         <View style={{
           flex: 1,
