@@ -102,6 +102,7 @@ class Home extends Component {
         email: null,
         showAvailabilityModal: false,
         showNewChatModal: false,
+        initialLoad: true,
         initialState: true
 
       }
@@ -281,98 +282,103 @@ class Home extends Component {
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
+    console.log(this.sdk);
     if (this.sdk) {
       this.sdk.destroy();
     }
-    this.sdk = init({ 
-      license: storeConfig.license,
-      clientId: storeConfig.clientId,
-      redirectUri: 'https://app.chat.io/'
-    });
+    setTimeout(() => {
 
-
-
-    this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
-      console.log('on connected', { chatsSummary, totalChats })
-      this.updateChatHistory(chatsSummary);
-      this.setState({
-        isLoading: false,
-        isConnected: true
-      })
-
-
-      this.iterateOver(chatsSummary, (chat, report, fields) => {
-        console.log(fields)
-          chat.title         = fields['chat_'+chat.id];
-          chat.area          = fields['category_'+chat.id];
-          chat.storeTitle    = fields['store_'+chat.id];
-          chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
-          chat.adminLastSeen = null;
-          if (chat.lastEvent) {
-
-            for (var user in chat.lastSeenTimestamps) {
-              if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
-                if ((user != this.state.customerId) && (!chat.adminLastSeen || chat.lastSeenTimestamps[user] > chat.adminLastSeen)) {
-                  chat.adminLastSeen = chat.lastSeenTimestamps[user]
-                }                  
+      this.sdk = init({ 
+        license: storeConfig.license,
+        clientId: storeConfig.clientId,
+        redirectUri: 'https://app.chat.io/'
+      });
+  
+  
+  
+      this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
+        console.log('on connected', { chatsSummary, totalChats })
+        this.updateChatHistory(chatsSummary);
+        this.setState({
+          isLoading: false,
+          isConnected: true
+        })
+  
+  
+        this.iterateOver(chatsSummary, (chat, report, fields) => {
+          console.log(fields)
+            chat.title         = fields['chat_'+chat.id];
+            chat.area          = fields['category_'+chat.id];
+            chat.storeTitle    = fields['store_'+chat.id];
+            chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
+            chat.adminLastSeen = null;
+            if (chat.lastEvent) {
+  
+              for (var user in chat.lastSeenTimestamps) {
+                if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
+                  if ((user != this.state.customerId) && (!chat.adminLastSeen || chat.lastSeenTimestamps[user] > chat.adminLastSeen)) {
+                    chat.adminLastSeen = chat.lastSeenTimestamps[user]
+                  }                  
+                }
               }
-            }
-            
-            const threadsArr = [chat.lastEvent.thread]
-            this.sdk.getChatThreads(chat.id, threadsArr)
-              .then(threads => {
-                  chat.isActive = threads[0].active;                
-                  report();
-              })
-              .catch(error => {
-                  console.log(error)
-              });
-          } else {
-            report();
-          }
-
               
-      }, this.setChatState, totalChats, chatsSummary);
-    })
-
-    this.sdk.on('connection_lost', () => {
-      console.log('connection_lost')
-      this.setState({
-        userData: []
+              const threadsArr = [chat.lastEvent.thread]
+              this.sdk.getChatThreads(chat.id, threadsArr)
+                .then(threads => {
+                    chat.isActive = threads[0].active;                
+                    report();
+                })
+                .catch(error => {
+                    console.log(error)
+                });
+            } else {
+              report();
+            }
+  
+                
+        }, this.setChatState, totalChats, chatsSummary);
       })
-    })
-    this.sdk.on('disconnected', reason => {
-      console.log('disconnected')
-      console.log(reason)
-    })
-    this.sdk.on('connection_restored', payload => {
-      console.log('connection_restored')
-      this.getChatsSummary(0,25);
-    })
-    this.sdk.on('customer_id', id => {
-      this.setState({
-        customerId: id
+  
+      this.sdk.on('connection_lost', () => {
+        console.log('connection_lost')
+        this.setState({
+          userData: []
+        })
       })
-    })
+      this.sdk.on('disconnected', reason => {
+        console.log('disconnected')
+        console.log(reason)
+      })
+      this.sdk.on('connection_restored', payload => {
+        console.log('connection_restored')
+        this.getChatsSummary(0,25);
+      })
+      this.sdk.on('customer_id', id => {
+        this.setState({
+          customerId: id
+        })
+      })
+  
+      this.sdk.on('new_event', (payload) => {
+        console.log('new_event from HOME')
+        if (this._isMounted) {
+          console.log(payload)
+          this.updateChats(payload);
+       //   this.onIncomingEvent(payload);
+        }      
+      })
+      this.sdk.on('user_data', (user) => {
+        this.addGlobalUsers(user);
+      })
+      this.sdk.on('thread_closed', ({ chat }) => {
+        this.getChatsSummary(0,25);
+      })
+      this.sdk.on('thread_summary', (thread_summary) => {
+        //console.log('thread_summary')
+        //console.log(thread_summary)
+      })
 
-    this.sdk.on('new_event', (payload) => {
-      console.log('new_event from HOME')
-      if (this._isMounted) {
-        console.log(payload)
-        this.updateChats(payload);
-     //   this.onIncomingEvent(payload);
-      }      
-    })
-    this.sdk.on('user_data', (user) => {
-      this.addGlobalUsers(user);
-    })
-    this.sdk.on('thread_closed', ({ chat }) => {
-      this.getChatsSummary(0,25);
-    })
-    this.sdk.on('thread_summary', (thread_summary) => {
-      //console.log('thread_summary')
-      //console.log(thread_summary)
-    })
+    },300);
 
 
   }
@@ -389,6 +395,7 @@ class Home extends Component {
   }
   componentWillUnmount() {
     console.log('HOME - componentWillUnmount')
+    console.log(this.sdk)
   }
   componentDidMount() {
     console.log('HOME - componentDidMount')
@@ -419,8 +426,9 @@ class Home extends Component {
       console.warn(err);
     });
 
+    this.setState({showAvailabilityModal:true})
     setTimeout(() => {
-      this.setState({showAvailabilityModal:true})
+      this.setState({initialLoad:false})
     },500);
 
   }
@@ -615,7 +623,7 @@ class Home extends Component {
         <Modal 
         style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
         isVisible={this.state.showAvailabilityModal}
-        animationInTiming={400}
+        animationInTiming={this.state.initialLoad ? 1 : 400}
         animationOutTiming={400}
         backdropTransitionInTiming={1}
         backdropTransitionOutTiming={1}

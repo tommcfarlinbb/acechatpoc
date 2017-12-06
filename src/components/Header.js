@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#e3e3e3'
+    borderBottomColor: '#d7d6d7'
   },
   titleSmall: {
     color: '#000',
