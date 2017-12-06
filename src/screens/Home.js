@@ -814,7 +814,7 @@ class Home extends Component {
       } = this.state;
       return (
         <View style={styles.RNcontainer}>
-          <Header navigation={this.props.navigation} title="CHAT" />
+          {/* <Header navigation={this.props.navigation} title="CHAT" /> */}
           <View style={{
              flex: 1,
              backgroundColor: '#eee6d9',
