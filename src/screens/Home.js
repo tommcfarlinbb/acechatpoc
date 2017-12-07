@@ -414,7 +414,7 @@ class Home extends Component {
     console.log('HOME - componentWillUnmount')
     console.log(this.sdk)
     if (this.sdk) {
-      this.sdk.destroy();
+    //  this.sdk.destroy();
     }
   }
   componentDidMount() {
