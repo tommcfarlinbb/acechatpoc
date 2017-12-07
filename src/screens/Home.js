@@ -286,7 +286,7 @@ class Home extends Component {
     if (this.sdk) {
       this.sdk.destroy();
     }
-    setTimeout(() => {
+
 
       this.sdk = init({ 
         license: storeConfig.license,
@@ -295,7 +295,7 @@ class Home extends Component {
       });
   
   
-      console.log(this.sdk);
+
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
         console.log('on connected', { chatsSummary, totalChats })
         this.updateChatHistory(chatsSummary);
@@ -378,7 +378,9 @@ class Home extends Component {
         //console.log(thread_summary)
       })
 
-    },300);
+      setTimeout(() => {
+        this.getChatsSummary(0,25);
+      },500)
 
 
   }
