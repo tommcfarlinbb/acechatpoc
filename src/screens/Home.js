@@ -296,15 +296,15 @@ class Home extends Component {
 
 
       console.log(this.sdk)
-      if (this.state.isConnected) {
-        this.sdk.getChatsSummary({
-          offset: offset,
-          limit: limit,
-         })
-          .then(({chatsSummary,totalChats}) => {
-            console.log(chatsSummary,totalChats)
-          });
-      }
+   
+      this.sdk.getChatsSummary({
+        offset: 0,
+        limit: 25,
+        })
+        .then(({chatsSummary,totalChats}) => {
+          console.log(chatsSummary,totalChats)
+        });
+    
 
   
 
