@@ -293,10 +293,19 @@ class Home extends Component {
         clientId: storeConfig.clientId,
         redirectUri: 'https://app.chat.io/'
       });
+
+
+      
   
   
 
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
+
+        storage.save({
+          key: 'sdk', 
+          data: this.sdk
+        });
+
         console.log('on connected', { chatsSummary, totalChats })
         this.updateChatHistory(chatsSummary);
         this.setState({
@@ -378,10 +387,6 @@ class Home extends Component {
         //console.log(thread_summary)
       })
 
-      setTimeout(() => {
-        this.getChatsSummary(0,25);
-      },500)
-
 
   }
 
@@ -428,6 +433,15 @@ class Home extends Component {
       console.warn(err);
     });
 
+    storage.load({
+      key: 'sdk',
+    }).then(sdk => {
+      console.log(sdk)
+      this.sdk = sdk;      
+    }).catch(err => {
+      console.log('sdk load fail')
+      console.warn(err);
+    });
     
     setTimeout(() => {
       this.setState({showAvailabilityModal:true})
