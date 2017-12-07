@@ -41,7 +41,7 @@ export default class CustomActions extends React.Component {
   }
 
   onActionsPress() {
-    const options = ['Take a Photo or Video','Choose From Gallery','Cancel'];
+    const options = ['Choose From Gallery','Cancel'];
     const cancelButtonIndex = options.length - 1;
     this.context.actionSheet().showActionSheetWithOptions({
       options,
@@ -51,10 +51,6 @@ export default class CustomActions extends React.Component {
       console.log(buttonIndex)
       switch (buttonIndex) {
         case 0:
-          // TAKE A PHOTO OR VIDEO
-          
-          break;
-        case 1:
           // CHOSE FROM GALLERY
           this.setModalVisible(true);
           // navigator.geolocation.getCurrentPosition(
