@@ -300,10 +300,13 @@ class Home extends Component {
   
 
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
+        console.log(this.sdk);
 
         storage.save({
           key: 'sdk', 
-          data: this.sdk
+          data: {
+            sdk: this.sdk
+          }
         });
 
         console.log('on connected', { chatsSummary, totalChats })
@@ -430,17 +433,17 @@ class Home extends Component {
       console.log('saved store: ',store);
     }).catch(err => {
       console.log('savedStore fail')
-      console.warn(err);
+    //  console.warn(err);
     });
 
     storage.load({
       key: 'sdk',
-    }).then(sdk => {
-      console.log(sdk)
-      this.sdk = sdk;      
+    }).then(data => {
+      console.log(data)
+      this.sdk = data.sdk;      
     }).catch(err => {
       console.log('sdk load fail')
-      console.warn(err);
+     // console.warn(err);
     });
     
     setTimeout(() => {
