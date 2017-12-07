@@ -436,15 +436,18 @@ class Home extends Component {
     //  console.warn(err);
     });
 
-    storage.load({
-      key: 'sdk',
-    }).then(data => {
-      console.log(data)
-      this.sdk = data.sdk;      
-    }).catch(err => {
-      console.log('sdk load fail')
-     // console.warn(err);
+    storage.remove({
+      key: 'sdk'
     });
+    // storage.load({
+    //   key: 'sdk',
+    // }).then(data => {
+    //   console.log(data)
+    //   this.sdk = data.sdk;      
+    // }).catch(err => {
+    //   console.log('sdk load fail')
+    //  // console.warn(err);
+    // });
     
     setTimeout(() => {
       this.setState({showAvailabilityModal:true})
