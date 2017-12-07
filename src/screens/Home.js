@@ -295,7 +295,7 @@ class Home extends Component {
       });
   
   
-  
+      console.log(this.sdk);
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
         console.log('on connected', { chatsSummary, totalChats })
         this.updateChatHistory(chatsSummary);
