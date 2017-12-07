@@ -443,34 +443,31 @@ class Home extends Component {
       key: 'savedStore',
     }).then(store => {
       console.log('saved store: ',store);
+      this.setState({
+        selectedStore: store
+      })
     }).catch(err => {
-      console.log('savedStore fail')
-    //  console.warn(err);
     });
 
-    // storage.remove({
-    //   key: 'sdk'
-    // });
-    // storage.load({
-    //   key: 'sdk',
-    // }).then(data => {
-    //   console.log(data)
-    //   this.sdk = data.sdk;      
-    // }).catch(err => {
-    //   console.log('sdk load fail')
-    //  // console.warn(err);
-    // });
     
     setTimeout(() => {
-      this.setState({showAvailabilityModal:true})
+      if (this.state.selectedStore) {
+        this.setState({
+          isLoading: true,
+          showStores: false,
+        });
+        this.initSdk(this.state.selectedStore);
+      } else {
+        this.setState({showAvailabilityModal:true})
+        setTimeout( () => {
+          this.setState({
+            isLoading:false
+          })
+        },400)
+      }
       this.setState({
         initialLoad:false
       })
-      setTimeout( () => {
-        this.setState({
-          isLoading:false
-        })
-      },400)
     },1000);
 
   }
