@@ -454,6 +454,7 @@ class Home extends Component {
       if (this.state.selectedStore) {
         this.setState({
           isLoading: true,
+          initialState: false,
           showStores: false,
         });
         this.initSdk(this.state.selectedStore);
