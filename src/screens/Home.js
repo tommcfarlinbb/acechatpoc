@@ -406,6 +406,9 @@ class Home extends Component {
   componentWillUnmount() {
     console.log('HOME - componentWillUnmount')
     console.log(this.sdk)
+    if (this.sdk) {
+      this.sdk.destroy();
+    }
   }
   componentDidMount() {
     console.log('HOME - componentDidMount')
@@ -436,9 +439,9 @@ class Home extends Component {
     //  console.warn(err);
     });
 
-    storage.remove({
-      key: 'sdk'
-    });
+    // storage.remove({
+    //   key: 'sdk'
+    // });
     // storage.load({
     //   key: 'sdk',
     // }).then(data => {
