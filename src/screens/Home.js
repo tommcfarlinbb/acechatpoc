@@ -426,10 +426,18 @@ class Home extends Component {
       console.warn(err);
     });
 
-    this.setState({showAvailabilityModal:true})
+    
     setTimeout(() => {
-      this.setState({initialLoad:false})
-    },500);
+      this.setState({showAvailabilityModal:true})
+      this.setState({
+        initialLoad:false
+      })
+      setTimeout( () => {
+        this.setState({
+          isLoading:false
+        })
+      },400)
+    },1000);
 
   }
 
@@ -623,7 +631,7 @@ class Home extends Component {
         <Modal 
         style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
         isVisible={this.state.showAvailabilityModal}
-        animationInTiming={this.state.initialLoad ? 1 : 400}
+        animationInTiming={this.state.initialLoad ? 400 : 400}
         animationOutTiming={400}
         backdropTransitionInTiming={1}
         backdropTransitionOutTiming={1}
@@ -643,18 +651,16 @@ class Home extends Component {
           backgroundColor: '#f3efe8',
           borderBottomWidth: 1,
           borderBottomColor: '#e2d3bc',
-          borderTopWidth: 1,
-          borderTopColor: '#e2d3bc',
           paddingTop: 8,
           marginBottom: 10,
-          marginTop: 5
+          height:58,
+          width:'100%'
         }}>
           <View style={{flexDirection:'column',flex:1,paddingLeft:10,paddingRight:10,marginBottom:5,alignItems:'flex-start'}}>
             <View>
-              <View style={{
+            <View style={{
                 flexDirection: 'row',
-                flex: 1,
-                width: '100%',
+                width:'100%',
                 justifyContent: 'space-between'
               }}>
                   <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
@@ -672,11 +678,21 @@ class Home extends Component {
       )
     }
     renderChats(stores,chats) {
+      if (this.state.isLoading) {
+        return (
+          <View style={styles.container}>
+            { this.renderAuthView() }
+            <Bubbles loader={true} size={8} color="#d80024" />
+            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
+          </View>
+        );
+      }
+
       if (this.state.initialState) {
         return (
           <View style={styles.containerChats}>
           { this.renderAuthView() }
-          <ScrollView style={{paddingTop:20}}>
+          <ScrollView style={{paddingTop:5}}>
             <View style={[styles.containerNoChats]}>
               <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
               <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 7}]}>You must select a location to check chat availability.</Text>
@@ -695,21 +711,13 @@ class Home extends Component {
           </View>
         );
       }
-      if (this.state.isLoading) {
-        return (
-          <View style={styles.container}>
-            { this.renderAuthView() }
-            <Bubbles loader={true} size={8} color="#d80024" />
-            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
-          </View>
-        );
-      }
+
 
       if (this.state.showStores && stores.length) {
         return (
           <View style={styles.containerChats}>
           { this.renderAuthView() }
-          <ScrollView style={{paddingTop:20}}>
+          <ScrollView style={{paddingTop:0}}>
             <View style={[styles.containerNoChats,{marginTop:30}]}>
               <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Ace Chat is available at your location!</Text>
               <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1,marginTop: 8, marginBottom: 7}]}>Select a location you would like to chat with.</Text>
@@ -720,7 +728,7 @@ class Home extends Component {
                 key={store.id}
                 onPress={() => this.selectStore(store)}
                 underlayColor={'#eee'}
-                style={[styles.row,{height:74}]}
+                style={[styles.row,{height:70}]}
               >
                 <View style={{                  
                     flexDirection: 'row',
@@ -869,21 +877,31 @@ class Home extends Component {
         );
       }
       return (
-        <View style={styles.containerNoChats}>
+        <View style={[styles.containerChats,{
+          alignItems: 'center',
+          paddingTop: 0,
+          flexDirection: 'column',
+          justifyContent: 'flex-start'
+        }]}>
           { this.renderAuthView() }
-          <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
-          <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.onPressNewChat}
-          >
-            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
-              <Text style={styles.buttonText}>START NEW CHAT</Text>
-            </LinearGradient>
-            {/* <View style={styles.linearGradientNoHistory}>
-              <Text style={styles.buttonText}>START NEW CHAT</Text>
-            </View> */}
-          </TouchableOpacity>
+          
+          { this.renderStoreStatus() } 
+          <View style={{marginTop: 80,}}>
+            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={this.onPressNewChat}
+            >
+              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+                <Text style={styles.buttonText}>START NEW CHAT</Text>
+              </LinearGradient>
+              {/* <View style={styles.linearGradientNoHistory}>
+                <Text style={styles.buttonText}>START NEW CHAT</Text>
+              </View> */}
+            </TouchableOpacity>
+          </View>
+        
         </View>
       );
       
@@ -980,7 +998,7 @@ class Home extends Component {
       top: -400,
       backgroundColor: '#eee6d9',
       height: 1
-      
+       
     },
     containerChats: {
       flex: 1,

@@ -141,7 +141,7 @@ export default class NewChat extends Component {
   renderError() {
     if (this.state.errors && (this.state.errors.firstName || this.state.errors.description) && (!this.state.firstName || !this.state.description)) {
       return (
-        <Text style={[Common.fontMedium,{marginTop:10,paddingLeft:15,fontSize:13,color:'#f4002d'}]}>Please complete the required fields above</Text>
+        <Text style={[Common.fontMedium,{marginTop:10,paddingLeft:10,fontSize:13,color:'#f4002d'}]}>Please complete the required fields above</Text>
       )
     }
     return null;
@@ -190,8 +190,8 @@ export default class NewChat extends Component {
         }}>
           
           <View style={styles.container}>
-            <View style={{flex: 1,width:'100%'}}>
-                <View style={{padding:15,paddingBottom:0}}>
+            <ScrollView style={{flex: 1,width:'100%'}}>
+                <View style={{padding:10,paddingBottom:0}}>
                   <Text style={styles.header}>Contact information:</Text>
                   <View style={{
                     flexDirection: 'row',
@@ -200,12 +200,12 @@ export default class NewChat extends Component {
                     <TextInput style={[Common.fontRegular,styles.input,styles.lastName]} onChangeText={text => this.setState({lastName: text})} value={this.state.lastName} autoCorrect={false} placeholder="Last Name (optional)" />
                   </View>
                 </View>
-                <View style={{paddingLeft:15,paddingRight:15,marginBottom: 10}}>
+                <View style={{paddingLeft:10,paddingRight:10,marginBottom: 10}}>
                   <TextInput style={[Common.fontRegular,styles.inputEmail]} onChangeText={text => this.setState({email: text})} value={this.state.email} autoCorrect={false} autoCapitalize="none" placeholder="Email (optional)" />
                 </View>
 
-                <View style={{padding:15,paddingBottom:0,height: 220}}>
-                  <Text style={styles.header}>Select topic:</Text>
+                <View style={{padding:7,paddingLeft:8,paddingBottom:0,marginBottom:6}}>
+                  <Text style={[styles.header,{paddingLeft:2}]}>Select topic:</Text>
                   <View style={{
                     flexDirection: 'row',
                     flex: 1,
@@ -217,7 +217,7 @@ export default class NewChat extends Component {
                 </View>
 
 
-                <View style={{padding:15,paddingBottom:0}}>
+                <View style={{padding:10,paddingBottom:0}}>
                   <Text style={styles.header}>Briefly describe your issue:</Text>
                   <View>
                     <TextInput style={[Common.fontRegular,styles.inputDescription,this.state.errors.description && !this.state.description && styles.inputError]} onChangeText={text => this.setState({description: text})}  placeholder="Description *" />
@@ -225,9 +225,9 @@ export default class NewChat extends Component {
                 </View>
                 {this.renderError()}
 
-            </View>
+            </ScrollView>
           
-            <View style={{padding: 10,height:60,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
+            <View style={{padding: 10,height:58,backgroundColor:'#fff',width:'100%',alignItems:'center'}}>
               <TouchableOpacity
                   style={styles.button}
                   onPress={this.beginChat}
@@ -269,19 +269,20 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   input: {
-    height: 45,
+    height: 42,
     flex: 1,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderColor: '#aaa',
-    fontSize: 15,     
+    fontSize: 14,     
     padding: 10,
-    paddingLeft: 15, 
+    paddingLeft: 10, 
     paddingTop: 14,
   },
   firstName: {
     borderTopLeftRadius: 5,
-    borderRightColor: '#f6f4f0'
+    borderRightColor: '#ddd',
+    borderRightWidth: 1
   },
   lastName: {
     borderTopRightRadius: 5,
@@ -289,19 +290,19 @@ const styles = StyleSheet.create({
     
   },
   header: {
-    fontSize: 16,
-    marginBottom: 5,
+    fontSize: 15,
+    marginBottom: 3,
     color: '#5b5b5b',
     fontFamily: 'HelveticaNeueLTStd-MdCn'
   },
   inputEmail: {
-    height: 45,
+    height: 42,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderColor: '#aaa',
     fontSize: 14,
     padding: 10,
-    paddingLeft: 15,
+    paddingLeft: 10,
     paddingTop: 14,
     borderTopWidth: 0,
     borderBottomLeftRadius: 5,
@@ -309,14 +310,14 @@ const styles = StyleSheet.create({
   },
 
   inputDescription: {
-    height: 45,
+    height: 42,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderRadius: 5,
     borderColor: '#aaa',
-    fontSize: 15,
+    fontSize: 14,
     padding: 10,
-    paddingLeft: 15,
+    paddingLeft: 10,
     paddingTop: 14,
   },
   areaContent: {
@@ -326,27 +327,29 @@ const styles = StyleSheet.create({
     flex: 1
   },
   areaImage: {
-    marginBottom: 5
+    marginBottom: 5,
+
   },  
   areaContentTitle: {
     fontFamily: 'HelveticaNeueLTStd-Cn',
-    fontSize: 12,
+    fontSize: 11,
     flex: 1,
     alignItems: 'center',
-    lineHeight: 11,
-    marginTop: 2,
+    lineHeight: 10,
+    paddingTop: 3,
+    paddingHorizontal: 4,
     justifyContent: 'center',
     textAlign: 'center',
   },
   areaItem: {
     height: 80,
-    width: 65,
+    width: 58,
     backgroundColor: '#fff',
     borderRadius: 5,
     borderWidth: 1,
     borderColor: '#ccc',
-    marginBottom: 10,
-    marginRight: 4
+    marginBottom: 5,
+    marginRight: 3
   },
   areaItemActive: {
     borderColor: '#f4002d',
@@ -361,13 +364,13 @@ const styles = StyleSheet.create({
   },
   linearGradient: {
     flex: 1,
-    paddingLeft: 15,
-    paddingRight: 15,
+    paddingLeft: 10,
+    paddingRight: 10,
     borderRadius: 5,
     borderWidth: 0,
     width: '100%',
   //  backgroundColor: '#e31836',
-    height: 40,
+    height: 38,
     justifyContent: 'center',
     padding: 10
   },

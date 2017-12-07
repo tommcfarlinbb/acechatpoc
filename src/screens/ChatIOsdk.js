@@ -466,14 +466,15 @@ export default class ChatIO extends React.Component {
 
 
   apiSendStartChat = () => {
-    
-    if (!(this.props.navigation.state.params.name && this.props.navigation.state.params.email && this.props.navigation.state.params.description)) {
+    console.log('111')
+    if (!(this.props.navigation.state.params.name && this.props.navigation.state.params.description)) {
       return false;
     }
-
+    console.log('2222')
     if (this.props.navigation.state.params && this.props.navigation.state.params.callback) {
       this.props.navigation.state.params.callback();
     }
+    console.log('333')
     console.log('starting chat')
     this.sdk.startChat()
       .then(chat => {
@@ -1172,8 +1173,8 @@ export default class ChatIO extends React.Component {
       <MessageImage 
         {...props}
         imageStyle={{
-          width: 265,
-          height: 206,
+          width: 245,
+          height: 190,
           borderRadius: 10,
           margin: 0
         }}

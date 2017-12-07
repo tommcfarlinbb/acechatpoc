@@ -179,11 +179,11 @@ export default class Availability extends Component {
         return (
           <View style={{flex: 1,width:'100%',paddingTop: 120}}>
           
-              <View style={{padding:15,paddingBottom:0}}>
+              <View style={{padding:10,paddingBottom:0}}>
                 <Text style={[styles.header,{textAlign:'center'}]}>We got it!</Text>
                 <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:35,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
               </View>
-              <View style={{flexDirection: 'row',justifyContent: 'center',paddingLeft:15,paddingRight:15,marginBottom: 10}}>
+              <View style={{flexDirection: 'row',justifyContent: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
                 <TouchableOpacity
                     style={[styles.button,{width:195,height:40}]}
                     onPress={() => { return null; }}
@@ -204,11 +204,11 @@ export default class Availability extends Component {
       return (
         <View style={{flex: 1,width:'100%',paddingTop: 120}}>
         
-            <View style={{padding:15,paddingBottom:0}}>
+            <View style={{padding:10,paddingBottom:0}}>
               <Text style={[styles.header,{textAlign:'center'}]}>Unfortunately, Ace Chat is not yet available near you.</Text>
               <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:35,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Enter your email below and we’ll email you when Ace Chat is available in your neighborhood!</Text>
             </View>
-            <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:15,paddingRight:15,marginBottom: 10}}>
+            <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
               <TextInput 
                 style={[Common.fontRegular,styles.inputEmail,{flex:1}]} 
                 onChangeText={text => {
@@ -245,10 +245,10 @@ export default class Availability extends Component {
     return (
      <View style={{flex: 1,width:'100%',paddingTop: 20}}>
     
-        <View style={{padding:15,paddingBottom:0}}>
+        <View style={{padding:10,paddingBottom:0}}>
           <Text style={styles.header}>Enter your ZIP code to see if an Ace representative is available to chat near you.</Text>
         </View>
-        <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:15,paddingRight:15,marginBottom: 10}}>
+        <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
           <TextInput 
             style={[Common.fontRegular,styles.inputEmail,{flex:1}]} 
             onChangeText={text => {
@@ -326,15 +326,15 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   input: {
-    height: 45,
+    height: 42,
     flex: 1,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderColor: '#aaa',
     fontSize: 15,     
     padding: 10,
-    paddingLeft: 15, 
-    paddingTop: 14,
+    paddingLeft: 10, 
+    paddingTop: 10,
   },
   firstName: {
     borderTopLeftRadius: 5,
@@ -351,27 +351,27 @@ const styles = StyleSheet.create({
     fontFamily: 'HelveticaNeueLTStd-MdCn'
   },
   inputEmail: {
-    height: 45,
+    height: 42,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderColor: '#aaa',
     fontSize: 14,
     padding: 10,
-    paddingLeft: 15,
-    paddingTop: 14,
+    paddingLeft: 10,
+    paddingTop: 10,
     borderRadius: 5
   },
 
   inputDescription: {
-    height: 45,
+    height: 42,
     backgroundColor: '#fff',
     borderWidth: .5,
     borderRadius: 5,
     borderColor: '#aaa',
     fontSize: 15,
     padding: 10,
-    paddingLeft: 15,
-    paddingTop: 14,
+    paddingLeft: 10,
+    paddingTop: 10,
   },
   areaContent: {
     flexDirection: 'column',
@@ -405,12 +405,12 @@ const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
     //backgroundColor: '#e31836',
-    paddingLeft: 15,
-    paddingRight: 15,
+    paddingLeft: 10,
+    paddingRight: 10,
     borderRadius: 5,
     borderWidth: 0,
     width: '100%',
-    height: 45,
+    height: 42,
     justifyContent: 'center',
     padding: 10
   },
