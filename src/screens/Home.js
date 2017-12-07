@@ -295,15 +295,15 @@ class Home extends Component {
       });
 
 
-      console.log(this.sdk)
+      // console.log(this.sdk)
    
-      this.sdk.getChatsSummary({
-        offset: 0,
-        limit: 25,
-        })
-        .then(({chatsSummary,totalChats}) => {
-          console.log(chatsSummary,totalChats)
-        });
+      // this.sdk.getChatsSummary({
+      //   offset: 0,
+      //   limit: 25,
+      //   })
+      //   .then(({chatsSummary,totalChats}) => {
+      //     console.log(chatsSummary,totalChats)
+      //   });
     
 
   
@@ -416,7 +416,7 @@ class Home extends Component {
     console.log('HOME - componentWillUnmount')
     console.log(this.sdk)
     if (this.sdk) {
-    //  this.sdk.destroy();
+      this.sdk.destroy();
     }
   }
   componentDidMount() {
