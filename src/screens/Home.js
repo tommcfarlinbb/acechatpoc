@@ -716,6 +716,7 @@ class Home extends Component {
           callback={this.beginChatCallback}
           firstName={this.state.firstName}
           lastName={this.state.lastName}
+          avoidKeyboard={true}
           email={this.state.email}
         />
       </Modal>
@@ -764,7 +765,7 @@ class Home extends Component {
           title={this.state.chatProps.title}
           goBackFromChat={this.goBackFromChat}
           callback={this.resetLoadingState}
-
+          avoidKeyboard={true}
           chatId={this.state.chatProps.chatId}
           isActive={this.state.chatProps.isActive}
           adminLastSeen={this.state.chatProps.adminLastSeen}

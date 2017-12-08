@@ -1519,7 +1519,7 @@ export default class ChatIO extends React.Component {
       <View style={{
         height: 0,
         backgroundColor: 'transparent'
-      }}><AuthWebView style={styles.commonStyles.auth} /></View>
+      }}><AuthWebView /></View>
     )
   }
   return null;
@@ -1708,14 +1708,6 @@ const commonStyles = StyleSheet.create({
   //  backgroundColor: '#e31836',
     justifyContent: 'center',
     width:'100%'
-  },
-  auth: {
-    position: 'absolute',
-    left: 500,
-    top: -400,
-    backgroundColor: '#eee6d9',
-    height: 1
-     
   },
   button: {
     alignItems: 'center',
