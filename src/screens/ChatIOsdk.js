@@ -233,6 +233,19 @@ class CustomBubble extends Bubble {
           </View>
         )
     }
+    if (currentMessage.pending) {
+      return (
+        <View>
+          <Text style={{
+            fontFamily: 'HelveticaNeueLTStd-MdCn',
+            fontSize: 11,
+            marginTop: 4,
+            marginBottom: -3,
+            color: '#5b5b5b'
+          }}>Sending...</Text>
+        </View>
+      )
+    }
     if (currentMessage.createdAt >= myLastMessage) {
       return (
         <View>
@@ -334,7 +347,7 @@ export default class ChatIO extends React.Component {
   constructor(props) {
     super(props);
 
-    let { customerId, chatId, isActive, adminLastSeen, sdk } = this.props.navigation.state.params;
+    let { customerId, chatId, isActive, adminLastSeen, sdk } = this.props;
     
     this.state = {
       messages: [],
@@ -466,16 +479,12 @@ export default class ChatIO extends React.Component {
 
 
   apiSendStartChat = () => {
-    console.log('111')
-    if (!(this.props.navigation.state.params.name && this.props.navigation.state.params.description)) {
+    if (!(this.props.name && this.props.description)) {
       return false;
     }
-    console.log('2222')
-    if (this.props.navigation.state.params && this.props.navigation.state.params.callback) {
-      this.props.navigation.state.params.callback();
+    if (this.props && this.props.callback) {
+      this.props.callback();
     }
-    console.log('333')
-    console.log('starting chat')
     this.sdk.startChat()
       .then(chat => {
         this.setState({
@@ -491,10 +500,10 @@ export default class ChatIO extends React.Component {
         let chatKey = 'chat_'+chat.id;
         let catkey = 'category_'+chat.id;
         let storekey = 'store_'+chat.id;
-        payload.fields[catkey] = this.props.navigation.state.params.area;   
+        payload.fields[catkey] = this.props.area;   
      //   let chatKeyLastVisit = 'lastVisit_'+chat.id;
-        payload.fields[chatKey] = this.props.navigation.state.params.description;
-        payload.fields[storekey] = this.props.navigation.state.params.storeTitle;
+        payload.fields[chatKey] = this.props.description;
+        payload.fields[storekey] = this.props.storeTitle;
      //   payload.fields[chatKeyLastVisit] = Date.now().toString();
         // ////////////////////////////////
         // ////////////////////////////////
@@ -509,19 +518,20 @@ export default class ChatIO extends React.Component {
               "name": "name",
               "label": "Your name:",
               "required": true,
-              "value": this.props.navigation.state.params.name
+              "value": this.props.name
             },
             {
               "type": "email",
               "name": "email",
               "label": "E-mail:",
               "required": true,
-              "value": this.props.navigation.state.params.email
+              "value": this.props.email
             }]
         });
-        this.apiSendChatMessage(chat.id,this.props.navigation.state.params.description,true).then(response => {
-          console.log(response)
-        });
+        setTimeout(() => {
+          this.apiSendChatMessage(chat.id,this.props.description,true);
+        },100);
+
 
       })
       .catch(error => {
@@ -558,7 +568,7 @@ export default class ChatIO extends React.Component {
             sent: true,
             user: {
               _id: message.author,
-              name: this.props.navigation.state.params.name || this.state.username
+              name: this.props.name || this.state.username
             }
           }, ...this.state.messages]
         });
@@ -586,8 +596,8 @@ export default class ChatIO extends React.Component {
   apiSendLogin = () => {
     this.sendMessage("login", {
       customer: {
-        name: this.props.navigation.state.params.name,
-        email: this.props.navigation.state.params.email
+        name: this.props.name,
+        email: this.props.email
       }
     });  
   }
@@ -603,13 +613,13 @@ export default class ChatIO extends React.Component {
   //  this.sdk = init({ license: config.chatio_license });
 
     if (this.sdk && this._isMounted) {
-      console.log(this.props.navigation.state.params.chatId)
-      if (this.props.navigation.state.params.chatId) {
+      console.log(this.props.chatId)
+      if (this.props.chatId) {
         
         // previous chat
         this.setState({
-          chatId: this.props.navigation.state.params.chatId,
-          userData: this.props.navigation.state.params.userData
+          chatId: this.props.chatId,
+          userData: this.props.userData
         })
         // UPDATE USER OBJECT with last time youve viewed chat
        //  let payload = { fields: {} }
@@ -617,16 +627,16 @@ export default class ChatIO extends React.Component {
         //  payload.fields[catkey] = 'Hardware';        
        //  this.sdk.updateCustomer(payload);
 
-        this.sdk.updateLastSeenTimestamp(this.props.navigation.state.params.chatId,Date.now());
-        this.getChatHistory(this.props.navigation.state.params.chatId);
+        this.sdk.updateLastSeenTimestamp(this.props.chatId,Date.now());
+        this.getChatHistory(this.props.chatId);
       } else {
         // new chat
         this.setState({
           isActive: true
         })
         let payload = {
-          name: this.props.navigation.state.params.name,
-          email: this.props.navigation.state.params.email
+          name: this.props.name,
+          email: this.props.email
         }
         this.setCustomerInfo(payload);
         this.apiSendStartChat(); 
@@ -638,13 +648,13 @@ export default class ChatIO extends React.Component {
     }
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
       console.log('on connected', { chatsSummary, totalChats })
-      if (!this.props.navigation.state.params.name || !this.props.navigation.state.params.email) {
+      if (!this.props.name || !this.props.email) {
         console.log('===========--------- NOT SURE HOW WE GOT HERE ----------=================')
         return false;
       }
       this.setCustomerInfo({
-        name: this.props.navigation.state.params.name,
-        email: this.props.navigation.state.params.email
+        name: this.props.name,
+        email: this.props.email
       });
       this.apiSendStartChat();  
     })
@@ -689,7 +699,7 @@ export default class ChatIO extends React.Component {
     this._connectionRestoredHandler = (payload) => {
       console.log('connection_restored')
       console.log(payload)
-      console.log(this.props.navigation.state.params.chatId);
+      console.log(this.props.chatId);
       //this.getChatHistory(this.props.chatId);
     };
     this.sdk.on('connection_restored', this._connectionRestoredHandler);
@@ -855,7 +865,6 @@ export default class ChatIO extends React.Component {
 
   loadHistory = (history,messages,users,settings) => {
     history.next().then(result => {
-      console.log('HELLO')
       const events = result.value;
       let newMessages = [];
       console.log(result.done)
@@ -929,10 +938,10 @@ export default class ChatIO extends React.Component {
   }
 
   getChatHistory = (id) => {
-    console.log("GETTING CHAT HISTORY")
     const history = this.sdk.getChatHistory(id);
     
-    let userData = this.props.navigation.state.params.userData.slice();
+    let userData = this.props.userData.slice();
+
     let users = [];
     for (i=0; i<userData.length; i++) {
       if (userData[i].type === 'customer') {
@@ -1039,7 +1048,7 @@ export default class ChatIO extends React.Component {
   onIncomingEvent = (payload) => {
     let event    = payload.event;
     let avatar   = null;
-    let username = this.props.navigation.state.params.name;
+    let username = this.props.name;
     this.setState({
       sneakPeakEnabled: true
     })
@@ -1103,22 +1112,24 @@ export default class ChatIO extends React.Component {
       console.log(images)
       const file = {
         uri: images[0].uri,
-        type: 'image/jpeg', // optional
+        //type: 'image/jpeg', // optional
         name: images[0].filename, // optional
       }
+      let randomId = Math.round(Math.random() * 1000000);
+      this.setState({
+        messages: [{
+          image: images[0].uri,
+          _id: randomId,
+          createdAt: Date.now(),
+          sent: true,
+          pending: true,
+          user: {
+            _id: this.state.customerId,
+            name: this.props.name || this.state.username
+          }
+        }, ...this.state.messages]
+      });
 
-      // this.setState({
-      //   messages: [{
-      //     image: images[0].uri,
-      //     _id: Math.round(Math.random() * 1000000),
-      //     createdAt: Date.now(),
-      //     sent: true,
-      //     user: {
-      //       _id: this.state.customerId,
-      //       name: this.props.name || this.state.username
-      //     }
-      //   }, ...this.state.messages]
-      // });
 
       this.sdk.sendFile(
         this.state.chatId,
@@ -1133,18 +1144,23 @@ export default class ChatIO extends React.Component {
       .then(response => {
         console.log('file uploaded!')
         console.log(response)
+
+        let messagesCopy = this.state.messages.slice();
+        for (i=0; i<messagesCopy.length; i++) {
+          if (messagesCopy[i].image && messagesCopy[i]._id === randomId) {
+            messagesCopy[i].pending = false;
+            if (this.state.myLastMessage < messagesCopy[i].createdAt) {
+              this.setState({
+                myLastMessage: messagesCopy[i].createdAt
+              });
+            }        
+          }
+        }
         this.setState({
-          messages: [{
-            image: images[0].uri,
-            _id: Math.round(Math.random() * 1000000),
-            createdAt: Date.now(),
-            sent: true,
-            user: {
-              _id: this.state.customerId,
-              name: this.props.navigation.state.params.name || this.state.username
-            }
-          }, ...this.state.messages]
+          messages: messagesCopy
         });
+
+
       })
       .catch(error => {
         console.log('error!')
@@ -1508,10 +1524,10 @@ export default class ChatIO extends React.Component {
  }
 
  goBackHome = () => {
-    if (this.props.navigation.state.params && this.props.navigation.state.params.goBackFromChat) {
-      this.props.navigation.state.params.goBackFromChat();
+    if (this.props && this.props.goBackFromChat) {
+      this.props.goBackFromChat();
     }
-    this.props.navigation.goBack();
+ //   this.props.navigation.goBack();
  }
 
   render() {
@@ -1524,8 +1540,8 @@ export default class ChatIO extends React.Component {
           onPressLeft={this.goBackHome}
           right={this.state.isActive ? "end" : null} 
           onPressRight={this.endChat}
-          storeTitle={this.props.navigation.state.params.storeTitle}
-          title={this.props.navigation.state.params.title} />
+          storeTitle={this.props.storeTitle}
+          title={this.props.title} />
         <View style={{
           flex: 1,
           backgroundColor: '#eee6d9',
@@ -1549,13 +1565,13 @@ export default class ChatIO extends React.Component {
             onPressLeft={this.goBackHome}
             right={this.state.isActive ? "end" : null} 
             onPressRight={this.endChat}
-            storeTitle={this.props.navigation.state.params.storeTitle}
-            title={this.props.navigation.state.params.title} />
+            storeTitle={this.props.storeTitle}
+            title={this.props.title} />
             <Modal 
               style={{flex:1,justifyContent:'center',alignItems:'center'}}
               isVisible={this.state.isModalVisible}
               onBackdropPress={() => this.setState({ isModalVisible: false })}
-              backdropOpacity={0.40}
+              backdropOpacity={0.50}
             >
             <ThumbsModal 
             updateHandler={this.updateMessages}

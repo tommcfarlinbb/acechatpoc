@@ -21,12 +21,16 @@ import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
 import { init } from '@livechat/chat.io-customer-sdk';
 
+
+
 import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
 import Availability from './Availability';
 import NewChat from './NewChat';
+import ChatIO from './ChatIOsdk';
+
 import Modal from 'react-native-modal';
 
 import Storage from 'react-native-storage';
@@ -93,6 +97,7 @@ class Home extends Component {
         previousChats: [],
         customerId: null,
         userData: [],
+        chatProps: {},
         loadingText: 'Loading...',
         showStores: false,
         selectedStore: null,
@@ -101,6 +106,8 @@ class Home extends Component {
         lastName: null,
         email: null,
         showAvailabilityModal: false,
+        showAChatModal: false,
+        showCameraModal: false,
         showNewChatModal: false,
         initialLoad: true,
         initialState: true
@@ -483,6 +490,7 @@ class Home extends Component {
 
     }
     beginChatCallback = (obj) => {
+      console.log(obj)
       this.setState({
         isLoading: true,
         loadingText: 'Starting Chat...'
@@ -492,16 +500,20 @@ class Home extends Component {
         name: obj.name,
         email: obj.email,
         description: obj.description,
-        sdk: this.sdk,
+     //   sdk: this.sdk,
         customerId: obj.customerId,
         storeTitle: this.state.selectedStore.title,
         title: obj.description,
-        goBackFromChat: this.goBackFromChat,
-        callback: this.resetLoadingState
+       // goBackFromChat: this.goBackFromChat,
+      //  callback: this.resetLoadingState
       }
+      this.setState({
+        chatProps: newChatProps
+      })
       //console.log(newChatProps)
       setTimeout(() => {
-        this.props.navigation.navigate('Chat',newChatProps);
+        this._showModal('Chat');
+       // this.props.navigation.navigate('Chat',newChatProps);
       }, 1000);
 
 
@@ -526,7 +538,11 @@ class Home extends Component {
       }
     }
     goBackFromChat = () => {
-      this.getChatsSummary(0,25);
+      this._hideModal('Chat');
+      setTimeout(()=>{
+        this.getChatsSummary(0,25);
+      },300)
+
     }
 
     selectStore = (store) => {      
@@ -559,18 +575,32 @@ class Home extends Component {
     loadChat = (chat) => {
       console.log('load chat with id: '+chat.id)
       chat.myLastVisit = Date.now();
-
-      this.props.navigation.navigate('Chat', {
-        sdk: this.sdk,
+      let loadChatProps = {             
         customerId: this.state.customerId,
         chatId: chat.id,
         storeTitle: chat.storeTitle,
         title: chat.title.toUpperCase(),
         isActive: chat.isActive,
         adminLastSeen: chat.adminLastSeen,
-        userData: this.state.userData,
-        goBackFromChat: this.goBackFromChat
-      });
+        userData: this.state.userData
+      }
+      console.log(loadChatProps);
+      this.setState({
+        chatProps: loadChatProps
+      })
+      this._showModal('Chat');
+
+      // this.props.navigation.navigate('Chat', {
+      //   sdk: this.sdk,
+      //   customerId: this.state.customerId,
+      //   chatId: chat.id,
+      //   storeTitle: chat.storeTitle,
+      //   title: chat.title.toUpperCase(),
+      //   isActive: chat.isActive,
+      //   adminLastSeen: chat.adminLastSeen,
+      //   userData: this.state.userData,
+      //   goBackFromChat: this.goBackFromChat
+      // });
 
       // this.props.navigator.push({
       //   screen: 'ChatIOsdk',
@@ -620,6 +650,12 @@ class Home extends Component {
         case "NewChat":
           this.setState({ showNewChatModal: true });
           break;
+        case "Chat":
+          this.setState({ showChatModal: true });
+          break;
+        case "Camera":
+          this.setState({ showCameraModal: true });
+          break;
       }
       
     }    
@@ -630,6 +666,12 @@ class Home extends Component {
           break;
         case "NewChat":
           this.setState({ showNewChatModal: false });
+          break;
+        case "Chat":
+          this.setState({ showChatModal: false });
+          break;
+        case "Camera":
+          this.setState({ showCameraModal: false });
           break;
       }
     }
@@ -676,6 +718,41 @@ class Home extends Component {
       </Modal>
       )
     }
+    renderChatModal() {
+      return (
+        <Modal 
+        style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+        isVisible={this.state.showChatModal}
+        animationIn='slideInRight'
+        animationOut='slideOutRight'
+        animationInTiming={400}
+        animationOutTiming={300}
+        backdropTransitionInTiming={400}
+        backdropTransitionOutTiming={300}
+        backdropOpacity={.5}
+      >
+
+        <ChatIO 
+          area={this.state.chatProps.area}
+          name={this.state.chatProps.name}
+          email={this.state.chatProps.email}
+          description={this.state.chatProps.description}
+          sdk={this.sdk}
+          customerId={this.state.chatProps.customerId}
+          storeTitle={this.state.chatProps.storeTitle}
+          title={this.state.chatProps.title}
+          goBackFromChat={this.goBackFromChat}
+          callback={this.resetLoadingState}
+
+          chatId={this.state.chatProps.chatId}
+          isActive={this.state.chatProps.isActive}
+          adminLastSeen={this.state.chatProps.adminLastSeen}
+          userData={this.state.chatProps.userData}
+        />
+      </Modal>
+      )
+    }
+
     renderStoreStatus() {
       let { selectedStore } = this.state;
       return (
@@ -814,9 +891,9 @@ class Home extends Component {
               </View>
               <Text
                 style={[Common.fontMedium,{
-                  fontSize: 16,
+                  fontSize: 15,
                   color: '#5b5b5b',
-                  marginBottom: 7,
+                  marginBottom: 5,
                   paddingHorizontal: 16
                 }]}>Open Chats</Text>
               {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No open chats</Text></View>}
@@ -860,10 +937,10 @@ class Home extends Component {
 
               <Text
                 style={[Common.fontMedium,{
-                  fontSize: 16,
+                  fontSize: 15,
                   color: '#5b5b5b',
-                  marginBottom: 7,
-                  marginTop: 30,
+                  marginBottom: 5,
+                  marginTop: 25,
                   paddingHorizontal: 16
                 }]}>Previous Chats</Text>
 
@@ -955,6 +1032,7 @@ class Home extends Component {
             {this.renderChats(stores,chats)}
             {this.renderAvailabilityModal()}
             {this.renderNewChatModal()}
+            {this.renderChatModal()}
           </View>
         </View>        
       )
@@ -1037,7 +1115,7 @@ class Home extends Component {
       backgroundColor: '#eee6d9',
     },
     row: {
-      height: 80,
+      height: 72,
       flex:1,
       paddingTop: 3,
       paddingRight: 18,

@@ -4,23 +4,23 @@ import React, { Component } from 'react';
 import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 
 
- import ChatIOsdk from './ChatIOsdk';
- import NewChat from './NewChat';
+//  import ChatIOsdk from './ChatIOsdk';
+//  import NewChat from './NewChat';
  import Home from './Home';
- import Details from './Details';
- import Something from './Something';
+//  import Details from './Details';
+//  import Something from './Something';
  //import Header from './Header';
  //import ThumbsModal from './ThumbsModal';
 
- import Availability from './Availability';
+// import Availability from './Availability';
 
 export default {
   home: Home,
-  details: Details,
-  newChat: NewChat,
-  something: Something,
-  chat: ChatIOsdk,
-  availability: Availability
+  // details: Details,
+  // newChat: NewChat,
+  // something: Something,
+  // chat: ChatIOsdk,
+  // availability: Availability
 };
 
 //  const images = {

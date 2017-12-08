@@ -36,21 +36,21 @@ const RootNavigator = StackNavigator({
   Home: {
     screen: screens.home
   },
-  Availability: {
-    screen: screens.availability
-  },
-  Details: {
-    screen: screens.details
-  },
-  Something: {
-    screen: screens.something
-  },
-  NewChat: {
-    screen: screens.newChat
-  },
-  Chat: {
-    screen: screens.chat
-  },
+  // Availability: {
+  //   screen: screens.availability
+  // },
+  // Details: {
+  //   screen: screens.details
+  // },
+  // Something: {
+  //   screen: screens.something
+  // },
+  // NewChat: {
+  //   screen: screens.newChat
+  // },
+  // Chat: {
+  //   screen: screens.chat
+  // },
 
 }, {
   headerMode: 'none'

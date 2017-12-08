@@ -90,11 +90,11 @@ export default class ThumbsModal extends Component {
   renderThumbs() {
 
         return (  
-          <View style={{flex: 1,width:'100%',padding:25,paddingTop: 60}}>
+          <View style={{flex: 1,width:'100%',padding:20,paddingTop: 45}}>
               <TouchableWithoutFeedback                    
                    onPress={() => this.closeModal()}
                   >
-                  <Image style={{height: 20,width: 20,position:'absolute',top:20,right:20}} source={images.close} />
+                  <Image style={{height: 20,width: 20,position:'absolute',top:15,right:15}} source={images.close} />
               </TouchableWithoutFeedback>
               <View>
                 <Text style={[Common.fontRegular,{color:'#5b5b5b',marginBottom:13,lineHeight:17,fontSize:15,paddingHorizontal:10,textAlign:'center'}]}>
@@ -162,8 +162,8 @@ What went wrong and what did you like?
 }
 const styles = StyleSheet.create({
   container: {
-    width:315,
-    height:440,
+    width:295,
+    height:420,
     flexDirection: 'column',
     justifyContent: 'flex-start',
     //alignItems: 'center',

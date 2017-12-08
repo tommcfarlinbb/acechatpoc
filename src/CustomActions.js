@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {
-  Modal,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -9,6 +8,9 @@ import {
   Text,
   Image
 } from 'react-native';
+
+import Header from './components/Header';
+import Modal from 'react-native-modal';
 
 import CameraRollPicker from 'react-native-camera-roll-picker';
 import NavBar, { NavButton, NavButtonText, NavTitle } from 'react-native-nav';
@@ -134,6 +136,19 @@ export default class CustomActions extends React.Component {
     );
   }
 
+  sendImage = () => {
+    this.setModalVisible(false);
+    
+    const images = this.getImages().map((image) => {
+      return {
+        filename: image.filename,
+        uri: image.uri,
+      };
+    });
+    console.log(images)
+    this.props.onImageSend(images);
+    this.setImages([]);
+  }
   renderIcon() {
     if (this.props.icon) {
       return this.props.icon();
@@ -154,14 +169,22 @@ export default class CustomActions extends React.Component {
         onPress={this.onActionsPress}
       >
         <Modal
-          animationType={'slide'}
-          transparent={false}
-          visible={this.state.modalVisible}
-          onRequestClose={() => {
-            this.setModalVisible(false);
-          }}
+          style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+          isVisible={this.state.modalVisible}
+          animationInTiming={400}
+          animationOutTiming={400}
+          backdropTransitionInTiming={1}
+          backdropTransitionOutTiming={1}
+          backdropOpacity={0}
         >
-          {this.renderNavBar()}
+          <Header 
+          left="close" 
+          onPressLeft={() => {this.setModalVisible(false)}}
+          right="Send" 
+          onPressRight={this.sendImage}
+          title={'Camera Roll'}
+          padHeader={true}  />
+
           <CameraRollPicker
             maximum={1}
             imagesPerRow={4}
