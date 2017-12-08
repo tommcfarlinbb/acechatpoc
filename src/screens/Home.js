@@ -295,7 +295,7 @@ class Home extends Component {
       this.sdk.destroy();
     }
 
-
+    setTimeout(() => {
       this.sdk = init({ 
         license: storeConfig.license,
         clientId: storeConfig.clientId,
@@ -407,6 +407,8 @@ class Home extends Component {
         //console.log(thread_summary)
       })
 
+    },500);
+     
 
   }
 
@@ -532,7 +534,6 @@ class Home extends Component {
         )
       }
       return null;
-
     }
     addGlobalUsers = (user) => {
     //  console.log(user)
