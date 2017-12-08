@@ -610,7 +610,6 @@ export default class ChatIO extends React.Component {
     this._isMounted = true;
     console.log('CHATIOSDK componentDidMount')
     console.log(this.props)
-  //  this.sdk = init({ license: config.chatio_license });
 
     if (this.sdk && this._isMounted) {
       console.log(this.props.chatId)
@@ -628,7 +627,9 @@ export default class ChatIO extends React.Component {
        //  this.sdk.updateCustomer(payload);
 
         this.sdk.updateLastSeenTimestamp(this.props.chatId,Date.now());
-        this.getChatHistory(this.props.chatId);
+        setTimeout(()=>{
+          this.getChatHistory(this.props.chatId);
+        },200)   
       } else {
         // new chat
         this.setState({

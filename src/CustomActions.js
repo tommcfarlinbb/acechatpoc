@@ -3,6 +3,7 @@ import React from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ViewPropTypes,
   Text,
@@ -25,6 +26,7 @@ export default class CustomActions extends React.Component {
     this._images = [];
     this.state = {
       modalVisible: false,
+      actionsVisible: false,
     };
     this.onActionsPress = this.onActionsPress.bind(this);
     this.selectImages = this.selectImages.bind(this);
@@ -42,7 +44,40 @@ export default class CustomActions extends React.Component {
     this.setState({modalVisible: visible});
   }
 
+  // onActionsPress() {
+  //   const options = ['Choose From Gallery','Cancel'];
+  //   const cancelButtonIndex = options.length - 1;
+  //   this.context.actionSheet().showActionSheetWithOptions({
+  //     options,
+  //     cancelButtonIndex,
+  //   },
+  //   (buttonIndex) => {
+  //     console.log(buttonIndex)
+  //     switch (buttonIndex) {
+  //       case 0:
+  //         // CHOSE FROM GALLERY
+  //         this.setModalVisible(true);
+  //         // navigator.geolocation.getCurrentPosition(
+  //         //   (position) => {
+  //         //     this.props.onSend({
+  //         //       location: {
+  //         //         latitude: position.coords.latitude,
+  //         //         longitude: position.coords.longitude,
+  //         //       },
+  //         //     });
+  //         //   },
+  //         //   (error) => alert(error.message),
+  //         //   {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+  //         // );
+  //         break;
+  //       default:
+  //     }
+  //   });
+  // }
+
   onActionsPress() {
+    this.setState({ actionsVisible:true})
+    return false;
     const options = ['Choose From Gallery','Cancel'];
     const cancelButtonIndex = options.length - 1;
     this.context.actionSheet().showActionSheetWithOptions({
@@ -77,65 +112,6 @@ export default class CustomActions extends React.Component {
     this.setImages(images);
   }
 
-  renderNavBar() {
-    return (
-      <NavBar style={{
-        statusBar: {
-          backgroundColor: '#FFF',
-        },
-        navBar: {
-          backgroundColor: '#FFF',
-          paddingTop: 8,
-          paddingLeft: 14,
-          paddingRight: 14
-
-        },
-      }}>
-        <NavButton onPress={() => {
-          this.setModalVisible(false);
-        }}>
-          <NavButtonText style={{
-            paddingTop: 3,
-            color: '#000',
-            fontSize: 14,
-            fontFamily: 'HelveticaNeueLTStd-MdCn',
-          }}>
-            {'Cancel'}
-          </NavButtonText>
-        </NavButton>
-        <NavTitle style={{
-          fontFamily: 'HelveticaNeue-CondensedBold',
-          color: '#d80024',
-          fontSize: 18,          
-        }}>
-          {'CAMERA ROLL'}
-        </NavTitle>
-        <NavButton onPress={() => {
-          this.setModalVisible(false);
-
-          const images = this.getImages().map((image) => {
-            return {
-              filename: image.filename,
-              uri: image.uri,
-            };
-          });
-          console.log(images)
-          this.props.onImageSend(images);
-          this.setImages([]);
-        }}>
-          <NavButtonText style={{
-            paddingTop: 3,
-            color: '#000',
-            fontSize: 14,
-            fontFamily: 'HelveticaNeueLTStd-MdCn',
-          }}>
-            {'Send'}
-          </NavButtonText>
-        </NavButton>
-      </NavBar>
-    );
-  }
-
   sendImage = () => {
     this.setModalVisible(false);
     
@@ -161,39 +137,88 @@ export default class CustomActions extends React.Component {
       </View>
     );
   }
+  pressGallery = () => {
+    this.setState({ actionsVisible:false})
+    setTimeout( () => {
+      this.setState({ modalVisible:true})
+    },400)
+
+  }
+  renderActionsModal() {
+    return (
+      <Modal 
+      style={{flex:1,margin:0,padding:10,justifyContent:'flex-end',alignItems:'center'}}
+      isVisible={this.state.actionsVisible}
+      backdropOpacity={.4}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}
+      animationInTiming={300}
+      animationOutTiming={300}
+      backdropTransitionInTiming={300}
+      backdropTransitionOutTiming={300}
+      onBackdropPress={() => this.setState({ actionsVisible: false })}
+    >
+      <View style={{
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            width: '100%'
+           // padding: 10
+            //backgroundColor: '#fff'
+      }}>        
+
+          <TouchableWithoutFeedback 
+            style={{width: '100%'}}
+            onPress={this.pressGallery}
+          >
+            <View style={[styles.actionsButton,{marginBottom: 10}]}><Text style={styles.actionsText}>Choose From Gallery</Text></View>
+          </TouchableWithoutFeedback>  
+          <TouchableWithoutFeedback
+            style={{width: '100%',}}
+            onPress={() => {this.setState({ actionsVisible:false})}}
+          >
+            <View style={styles.actionsButton}><Text style={[styles.actionsText,{fontWeight:'bold'}]}>Cancel</Text></View>
+          </TouchableWithoutFeedback>
+      </View>
+    </Modal>
+    )
+  }
 
   render() {
     return (
+      <View>
       <TouchableOpacity
         style={[styles.container, this.props.containerStyle]}
         onPress={this.onActionsPress}
       >
-        <Modal
-          style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
-          isVisible={this.state.modalVisible}
-          animationInTiming={400}
-          animationOutTiming={400}
-          backdropTransitionInTiming={1}
-          backdropTransitionOutTiming={1}
-          backdropOpacity={0}
-        >
-          <Header 
-          left="close" 
-          onPressLeft={() => {this.setModalVisible(false)}}
-          right="Send" 
-          onPressRight={this.sendImage}
-          title={'Camera Roll'}
-          padHeader={true}  />
-
-          <CameraRollPicker
-            maximum={1}
-            imagesPerRow={4}
-            callback={this.selectImages}
-            selected={[]}
-          />
-        </Modal>
         {this.renderIcon()}
       </TouchableOpacity>
+      {this.renderActionsModal()}
+      <Modal
+        style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+        isVisible={this.state.modalVisible}
+        animationInTiming={400}
+        animationOutTiming={400}
+        backdropTransitionInTiming={1}
+        backdropTransitionOutTiming={1}
+        backdropOpacity={0}
+      >
+        <Header 
+        left="close" 
+        onPressLeft={() => {this.setModalVisible(false)}}
+        right="Send" 
+        onPressRight={this.sendImage}
+        title={'Camera Roll'}
+        padHeader={true}  />
+
+        <CameraRollPicker
+          maximum={1}
+          imagesPerRow={4}
+          callback={this.selectImages}
+          selected={[]}
+        />
+      </Modal>
+      </View> 
     );
   }
 }
@@ -215,6 +240,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     textAlign: 'center',
   },
+  actionsButton: {
+    height: 50,
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  actionsText: {
+    color: '#007aff',
+    fontSize: 18,
+    backgroundColor: 'transparent',
+    textAlign: 'center'
+  }
 });
 
 CustomActions.contextTypes = {
