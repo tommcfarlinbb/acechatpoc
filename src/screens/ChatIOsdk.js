@@ -441,11 +441,12 @@ export default class ChatIO extends React.Component {
           }, ...this.state.messages]
         });
         setTimeout(() => {
-          this.setState({
-            isActive: false
-          });
+          this._showModal();
+
           setTimeout(() => {
-            this._showModal();
+            this.setState({
+              isActive: false
+            });
 
             // this.props.navigator.showLightBox({
             //   screen: "ThumbsModal", 
