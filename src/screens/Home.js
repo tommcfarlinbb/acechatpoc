@@ -7,6 +7,7 @@ import {
   ScrollView,
   Text,
   Image,
+  WebView,
   TouchableOpacity,
   TouchableHighlight,
   TouchableWithoutFeedback,
@@ -89,6 +90,8 @@ class Home extends Component {
       this._contextualMenu = false;
       this._toggleTabs = 'shown';
       this._toggleNavBar = 'shown';
+      // this.source = { uri: 'https://www.github.com' }
+      // this.source2 = { uri: 'https://yahoo.com' }
       this.state = {
         isConnected: false,
         chats: [],
@@ -110,7 +113,9 @@ class Home extends Component {
         showCameraModal: false,
         showNewChatModal: false,
         initialLoad: true,
-        initialState: true
+        initialState: true,
+    //    url: 'https://www.brandingbrand.com',
+    //    source: {}
 
       }
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
@@ -289,19 +294,19 @@ class Home extends Component {
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
-    console.log(storeConfig);
-    console.log(this.sdk);
+    console.log(this.sdk)
     if (this.sdk) {
-      this.sdk.destroy();
-    }
-
+      console.log('destroy')
+    } 
     setTimeout(() => {
+      // console.log('settimeout init')
+       console.log(this.sdk)
       this.sdk = init({ 
         license: storeConfig.license,
         clientId: storeConfig.clientId,
         redirectUri: 'https://app.chat.io/'
       });
-
+      console.log(this.sdk)
 
       // console.log(this.sdk)
    
@@ -407,7 +412,7 @@ class Home extends Component {
         //console.log(thread_summary)
       })
 
-    },500);
+    },300);
      
 
   }
@@ -480,6 +485,18 @@ class Home extends Component {
         initialLoad:false
       })
     },1000);
+    // this.setState({
+    //   source: this.source
+    // })
+    // setTimeout(() => {
+    //   console.log('setting state again')
+    //   this.setState({
+    //     source: this.source2
+    //   })
+    //   // this.setState({
+    //   //   url: 'https://www.amazon.com/'
+    //   // })
+    // },5000)
 
   }
 
@@ -1022,6 +1039,8 @@ class Home extends Component {
       
       
     }
+    onMessage = (event) => console.log(event.nativeEvent.data)
+
     render() {
       const {
         chats,
