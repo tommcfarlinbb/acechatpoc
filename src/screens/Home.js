@@ -560,10 +560,7 @@ class Home extends Component {
     }
     goBackFromChat = () => {
       this._hideModal('Chat');
-      setTimeout(()=>{
-        this._showModal('NewChat');
-        this.getChatsSummary(0,25);
-      },300)
+      this.getChatsSummary(0,25);
 
     }
 

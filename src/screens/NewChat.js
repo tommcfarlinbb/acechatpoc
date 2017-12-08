@@ -190,7 +190,7 @@ export default class NewChat extends Component {
         }}>
           
           <View style={styles.container}>
-            <ScrollView style={{flex: 1,width:'100%'}}>
+            <ScrollView style={{flex: 1,width:'100%',marginBottom:150}}>
                 <View style={{padding:10,paddingBottom:0}}>
                   <Text style={styles.header}>Contact information:</Text>
                   <View style={{
