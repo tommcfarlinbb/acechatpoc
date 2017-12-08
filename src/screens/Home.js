@@ -289,6 +289,7 @@ class Home extends Component {
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
+    console.log(storeConfig);
     console.log(this.sdk);
     if (this.sdk) {
       this.sdk.destroy();
