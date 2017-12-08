@@ -598,6 +598,7 @@ export default class ChatIO extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
+    console.log('CHATIOSDK componentDidMount')
     console.log(this.props)
   //  this.sdk = init({ license: config.chatio_license });
 
@@ -1097,6 +1098,7 @@ export default class ChatIO extends React.Component {
     }    
   }
   onImageSend = (images) => {
+    console.log('onImageSend')
     if (this._isMounted) {
       console.log(images)
       const file = {
