@@ -294,19 +294,19 @@ class Home extends Component {
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
+    console.log(storeConfig)
     console.log(this.sdk)
     if (this.sdk) {
       console.log('destroy')
+      this.sdk.destroy();
     } 
-    setTimeout(() => {
-      // console.log('settimeout init')
-       console.log(this.sdk)
-      this.sdk = init({ 
-        license: storeConfig.license,
-        clientId: storeConfig.clientId,
-        redirectUri: 'https://app.chat.io/'
-      });
-      console.log(this.sdk)
+    console.log(this.sdk)
+    this.sdk = init({ 
+      license: storeConfig.license,
+      clientId: storeConfig.clientId,
+      redirectUri: 'https://app.chat.io/'
+    });
+      
 
       // console.log(this.sdk)
    
@@ -411,8 +411,6 @@ class Home extends Component {
         //console.log('thread_summary')
         //console.log(thread_summary)
       })
-
-    },300);
      
 
   }
