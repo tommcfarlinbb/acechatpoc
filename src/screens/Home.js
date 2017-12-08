@@ -523,12 +523,16 @@ class Home extends Component {
       this._showModal('NewChat');
     }
     renderAuthView() {
-      return (
-        <View style={{
-          height: 0,
-          backgroundColor: 'transparent'
-        }}><AuthWebView style={styles.auth} /></View>
-      )
+      if (this._isMounted) {
+        return (
+          <View style={{
+            height: 0,
+            backgroundColor: 'transparent'
+          }}><AuthWebView style={styles.auth} /></View>
+        )
+      }
+      return null;
+
     }
     addGlobalUsers = (user) => {
     //  console.log(user)

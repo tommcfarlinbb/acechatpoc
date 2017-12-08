@@ -1513,6 +1513,17 @@ export default class ChatIO extends React.Component {
       };
     }
  }
+ renderAuthView() {
+  if (this._isMounted) {
+    return (
+      <View style={{
+        height: 0,
+        backgroundColor: 'transparent'
+      }}><AuthWebView style={styles.commonStyles.auth} /></View>
+    )
+  }
+  return null;
+}
  onInputTextChanged = (text) => {
    if (this.state.sneakPeakEnabled) {
      if (text && text.length > 2) {
@@ -1590,7 +1601,8 @@ export default class ChatIO extends React.Component {
                 height:1,
                 backgroundColor:'#eee6d9'
               }}>
-                <AuthWebView />
+                { this.renderAuthView() }
+                
               </View>              
               <CustomGiftedChat
                 messages={this.state.messages}
@@ -1696,6 +1708,14 @@ const commonStyles = StyleSheet.create({
   //  backgroundColor: '#e31836',
     justifyContent: 'center',
     width:'100%'
+  },
+  auth: {
+    position: 'absolute',
+    left: 500,
+    top: -400,
+    backgroundColor: '#eee6d9',
+    height: 1
+     
   },
   button: {
     alignItems: 'center',
