@@ -88,7 +88,7 @@ class CustomSystemMessage extends SystemMessage {
               {currentMessage.text}
             </Text>
             <Text style={[systemStyles.text, this.props.textStyle,{ 
-              fontFamily: 'HelveticaNeueLTStd-CnO',
+              fontFamily: 'HelveticaNeueLTStd-Cn',
               fontSize: 14,
               paddingHorizontal: 25,
               color: '#5b5b5b'
