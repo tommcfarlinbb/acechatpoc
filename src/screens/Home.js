@@ -560,9 +560,9 @@ class Home extends Component {
     }
     goBackFromChat = () => {
       this._hideModal('Chat');
-      setTimeout(()=>{
-        this.getChatsSummary(0,25);
-      },300)
+    
+      this.getChatsSummary(0,25);
+     
 
     }
 
@@ -937,7 +937,7 @@ class Home extends Component {
                       <View style={{                  
                           flexDirection: 'row',
                         }}>
-                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
+                          <Text numberOfLines={1} style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
                           <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
                             sameDay: 'h:mm a',
                             nextDay: '[Tomorrow]',
@@ -984,7 +984,7 @@ class Home extends Component {
                       <View style={{                  
                           flexDirection: 'row',
                         }}>
-                          <Text style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
+                          <Text numberOfLines={1} style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
                           <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
                             sameDay: 'h:mm a',
                             nextDay: '[Tomorrow]',
