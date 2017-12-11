@@ -64,13 +64,16 @@ export default class NewChat extends Component {
   //   }
   // }
   beginChat = () => {
-    if (!(this.state.firstName && this.state.description)) {      
+    if (!(this.state.firstName && this.state.description && this.state.area)) {      
       let errors = {};
       if (!this.state.firstName) {
         errors.firstName = true;
       }
       if (!this.state.description) {
         errors.description = true;
+      }
+      if (!this.state.area) {
+        errors.area = true;
       }
       this.setState({
         errors: errors
@@ -139,9 +142,19 @@ export default class NewChat extends Component {
     })
   }
   renderError() {
-    if (this.state.errors && (this.state.errors.firstName || this.state.errors.description) && (!this.state.firstName || !this.state.description)) {
+    if (this.state.errors 
+        && (this.state.errors.firstName || this.state.errors.description || this.state.errors.area) 
+        && (!this.state.firstName || !this.state.description || !this.state.area)) {
       return (
         <Text style={[Common.fontMedium,{marginTop:10,paddingLeft:10,fontSize:13,color:'#f4002d'}]}>Please complete the required fields above</Text>
+      )
+    }
+    return null;
+  }
+  renderAreaError() {
+    if (this.state.errors && this.state.errors.area && !this.state.area) {
+      return (
+        <Text style={[Common.fontMedium,{marginTop:0,marginBottom:5,paddingLeft:10,fontSize:13,color:'#f4002d'}]}>Please select a topic</Text>
       )
     }
     return null;
@@ -189,8 +202,8 @@ export default class NewChat extends Component {
           width:'100%'
         }}>
           
-          <View style={styles.container}>
-            <ScrollView style={{flex: 1,width:'100%',marginBottom:150}}>
+          <View style={[styles.container,{height:900}]}>
+            <ScrollView style={{flex: 1,width:'100%'}}>
                 <View style={{padding:10,paddingBottom:0}}>
                   <Text style={styles.header}>Contact information:</Text>
                   <View style={{
@@ -215,6 +228,7 @@ export default class NewChat extends Component {
                     { areaList }
                   </View>
                 </View>
+                {this.renderAreaError()}
 
 
                 <View style={{padding:10,paddingBottom:0}}>

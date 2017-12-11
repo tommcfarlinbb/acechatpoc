@@ -255,6 +255,7 @@ class Home extends Component {
   }
 
   setChatState = (chats) => {
+    console.log('--setChatState--')
     console.log(chats)
     this.setState({
       chats: chats
@@ -561,7 +562,6 @@ class Home extends Component {
     goBackFromChat = () => {
       this._hideModal('Chat');
       this.getChatsSummary(0,25);
-
     }
 
     selectStore = (store) => {      
@@ -705,6 +705,7 @@ class Home extends Component {
         backdropTransitionInTiming={1}
         backdropTransitionOutTiming={1}
         backdropOpacity={0}
+        avoidKeyboard={true}
       >
         <NewChat 
           closeHandler={() => this._hideModal('NewChat')}          
@@ -714,7 +715,7 @@ class Home extends Component {
           callback={this.beginChatCallback}
           firstName={this.state.firstName}
           lastName={this.state.lastName}
-          avoidKeyboard={true}
+      
           email={this.state.email}
         />
       </Modal>
@@ -763,7 +764,6 @@ class Home extends Component {
           title={this.state.chatProps.title}
           goBackFromChat={this.goBackFromChat}
           callback={this.resetLoadingState}
-          avoidKeyboard={true}
           chatId={this.state.chatProps.chatId}
           isActive={this.state.chatProps.isActive}
           adminLastSeen={this.state.chatProps.adminLastSeen}
