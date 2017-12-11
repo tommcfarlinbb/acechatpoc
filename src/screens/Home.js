@@ -121,7 +121,7 @@ class Home extends Component {
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     getChatsSummary = (offset,limit,fullChatList) => {
-      console.log('getChatsSummary');
+      console.log('-----getChatsSummary-----');
 
       fullChatList = fullChatList || [];
 
@@ -131,6 +131,7 @@ class Home extends Component {
        })
         .then(({chatsSummary,totalChats}) => {
           console.log(chatsSummary,totalChats)
+          console.log('--------------------------')
           fullChatList = [...fullChatList, ...chatsSummary];
 
           this.iterateOver(chatsSummary, (chat, report, fields) => {                
@@ -191,6 +192,8 @@ class Home extends Component {
           doneCount++;  
           fullDoneCount++;
           // done looping through loaded chats
+          console.log('doneCount,list.length')
+          console.log(doneCount,list.length)
           if (doneCount === list.length) {
             // all chats loaded
             console.log(fullDoneCount,totalChats)
@@ -207,7 +210,7 @@ class Home extends Component {
       
       let userData = this.state.userData.slice();
       let fields = {};
-      console.log(userData)
+    
       let users = [];
       for (i=0; i<userData.length; i++) {
         if (userData[i].type === 'customer') {
