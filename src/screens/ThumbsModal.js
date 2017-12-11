@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   Image,
+  Keyboard,
   TextInput,
   TouchableOpacity,
   Dimensions,
@@ -40,6 +41,7 @@ export default class ThumbsModal extends Component {
     this.setState({
       rating: rating
     })
+    
   }
   closeModal = () => {
    if (this.props.closeHandler) {
@@ -90,7 +92,9 @@ export default class ThumbsModal extends Component {
   renderThumbs() {
 
         return (  
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{flex: 1,width:'100%',padding:20,paddingTop: 45}}>
+          
               <TouchableWithoutFeedback                    
                    onPress={() => this.closeModal()}
                   >
@@ -128,8 +132,9 @@ What went wrong and what did you like?
 
               <View style={{
                 marginTop:18,
-                marginBottom:18
-              }}>
+                marginBottom:18                
+              }}              
+              >
               <TextInput style={[Common.fontRegular,styles.inputEmail]} multiline={true} onChangeText={text => this.setState({comment: text})} value={this.state.comment} placeholder="Optional comment..." />
               </View>
              
@@ -145,8 +150,9 @@ What went wrong and what did you like?
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
-      
+              
           </View>
+          </TouchableWithoutFeedback>
         )
 
 

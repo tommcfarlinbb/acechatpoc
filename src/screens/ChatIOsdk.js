@@ -492,25 +492,34 @@ export default class ChatIO extends React.Component {
           chatId: chat.id
         });
 
+
+        // TEST
+        this.sdk.updateChatProperties(chat.id,{
+          chatInfo: {
+            title: this.props.description,
+            store: this.props.storeTitle,
+            area: this.props.area
+          }
+        })
         // temporary for storing chat titles
         // ////////////////////////////////
         // ////////////////////////////////
         // eventually replace with new configuration API
         // ////////////////////////////////
-        let payload = { fields: {} }
-        let chatKey = 'chat_'+chat.id;
-        let catkey = 'category_'+chat.id;
-        let storekey = 'store_'+chat.id;
-        payload.fields[catkey] = this.props.area;   
-     //   let chatKeyLastVisit = 'lastVisit_'+chat.id;
-        payload.fields[chatKey] = this.props.description;
-        payload.fields[storekey] = this.props.storeTitle;
-     //   payload.fields[chatKeyLastVisit] = Date.now().toString();
+        // let payload = { fields: {} }
+        // let chatKey = 'chat_'+chat.id;
+        // let catkey = 'category_'+chat.id;
+        // let storekey = 'store_'+chat.id;
+        // payload.fields[catkey] = this.props.area;   
+     
+        // payload.fields[chatKey] = this.props.description;
+        // payload.fields[storekey] = this.props.storeTitle;
+        //this.sdk.updateCustomer(payload);
         // ////////////////////////////////
         // ////////////////////////////////
         // ////////////////////////////////
 
-        this.sdk.updateCustomer(payload);
+        
 
         this.sdk.sendEvent(chat.id, {
           type: 'filled_form',
@@ -675,6 +684,11 @@ export default class ChatIO extends React.Component {
     //     //   console.log('-----------------RX.OBSERVABLE-----------------')
     //     // }
     // })
+
+    this.sdk.on('chat_properties_updated', (data) => {
+      console.log('chat_properties_updated')
+      console.log(data)
+    })
 
     // /////////////////////////////////////
     // ////////// connection_lost //////////
@@ -1585,6 +1599,7 @@ export default class ChatIO extends React.Component {
               isVisible={this.state.isModalVisible}
               onBackdropPress={() => this.setState({ isModalVisible: false })}
               backdropOpacity={0.50}
+              avoidKeyboard={true}
             >
             <ThumbsModal 
             updateHandler={this.updateMessages}

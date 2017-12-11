@@ -134,12 +134,20 @@ class Home extends Component {
           console.log('--------------------------')
           fullChatList = [...fullChatList, ...chatsSummary];
 
-          this.iterateOver(chatsSummary, (chat, report, fields) => {                
+          this.iterateOver(chatsSummary, (chat, report, fields) => { 
+
             chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
-            const threadsArr = [chat.lastEvent.thread]
-            chat.title = fields['chat_'+chat.id];
-            chat.storeTitle = fields['store_'+chat.id];
-            chat.area  = fields['category_'+chat.id];
+
+            let properties = chat.properties && chat.properties.chatInfo;
+            if (properties) {
+              chat.title = properties.title.value;
+              chat.area = properties.area.value;
+              chat.storeTitle = properties.store.value;
+            }
+
+            // chat.title = fields['chat_'+chat.id];
+            // chat.storeTitle = fields['store_'+chat.id];
+            // chat.area  = fields['category_'+chat.id];
 
             for (var user in chat.lastSeenTimestamps) {
               if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
@@ -150,7 +158,9 @@ class Home extends Component {
             }
             
 
-            this.sdk.getChatThreads(chat.id, threadsArr)
+            if (chat.lastEvent) {
+              const threadsArr = [chat.lastEvent.thread];
+              this.sdk.getChatThreads(chat.id, threadsArr)
               .then(threads => {
                   chat.isActive = threads[0].active;                      
                   report();
@@ -158,6 +168,10 @@ class Home extends Component {
               .catch(error => {
                   console.log(error)
               });
+            } else {
+              report();
+            }
+
                   
           }, this.setChatState, totalChats, fullChatList, offset);
         })
@@ -348,9 +362,15 @@ class Home extends Component {
   
         this.iterateOver(chatsSummary, (chat, report, fields) => {
           console.log(fields)
-            chat.title         = fields['chat_'+chat.id];
-            chat.area          = fields['category_'+chat.id];
-            chat.storeTitle    = fields['store_'+chat.id];
+          let properties = chat.properties && chat.properties.chatInfo;
+          if (properties) {
+            chat.title = properties.title.value;
+            chat.area = properties.area.value;
+            chat.storeTitle = properties.store.value;
+          }
+         //   chat.title         = fields['chat_'+chat.id];
+         //   chat.area          = fields['category_'+chat.id];
+          //  chat.storeTitle    = fields['store_'+chat.id];
             chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
             chat.adminLastSeen = null;
             if (chat.lastEvent) {
@@ -363,8 +383,10 @@ class Home extends Component {
                 }
               }
               
-              const threadsArr = [chat.lastEvent.thread]
-              this.sdk.getChatThreads(chat.id, threadsArr)
+              if (chat.lastEvent) {
+                const threadsArr = [chat.lastEvent.thread];
+                
+                this.sdk.getChatThreads(chat.id, threadsArr)
                 .then(threads => {
                     chat.isActive = threads[0].active;                
                     report();
@@ -372,6 +394,12 @@ class Home extends Component {
                 .catch(error => {
                     console.log(error)
                 });
+              } else {
+                report();
+              }
+
+              
+
             } else {
               report();
             }
@@ -413,6 +441,10 @@ class Home extends Component {
       })
       this.sdk.on('thread_closed', ({ chat }) => {
         this.getChatsSummary(0,25);
+      })
+      this.sdk.on('chat_properties_updated', (data) => {
+        console.log('chat_properties_updated')
+        console.log(data)
       })
       this.sdk.on('thread_summary', (thread_summary) => {
         //console.log('thread_summary')
@@ -570,7 +602,10 @@ class Home extends Component {
     }
     goBackFromChat = () => {
       this._hideModal('Chat');
-      this.getChatsSummary(0,25);
+      setTimeout(() => {
+        this.getChatsSummary(0,25);
+      },200)
+      
     }
 
     selectStore = (store) => {      
