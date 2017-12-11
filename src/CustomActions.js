@@ -195,7 +195,7 @@ export default class CustomActions extends React.Component {
       </TouchableOpacity>
       {this.renderActionsModal()}
       <Modal
-        style={{flex:1,margin:0,padding:0,justifyContent:'center',alignItems:'center'}}
+        style={{flex:1,margin:0,padding:0,justifyContent:'flex-start',alignItems:'center'}}
         isVisible={this.state.modalVisible}
         animationInTiming={400}
         animationOutTiming={400}
@@ -209,14 +209,19 @@ export default class CustomActions extends React.Component {
         right="Send" 
         onPressRight={this.sendImage}
         title={'Camera Roll'}
-        padHeader={true}  />
-
-        <CameraRollPicker
-          maximum={1}
-          imagesPerRow={4}
-          callback={this.selectImages}
-          selected={[]}
-        />
+          />
+        <View style={{
+          backgroundColor: '#fff',
+          flex: 1,
+          width: '100%'
+        }}>
+          <CameraRollPicker
+            maximum={1}
+            imagesPerRow={4}
+            callback={this.selectImages}
+            selected={[]}
+          />
+        </View>
       </Modal>
       </View> 
     );
