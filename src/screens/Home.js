@@ -301,13 +301,18 @@ class Home extends Component {
       console.log('destroy')
       this.sdk.destroy();
     } 
-    console.log(this.sdk)
-    this.sdk = init({ 
-      license: storeConfig.license,
-      clientId: storeConfig.clientId,
-      redirectUri: 'https://app.chat.io/'
-    });
-      
+
+
+
+        console.log(this.sdk)
+        this.sdk = init({ 
+          license: storeConfig.license,
+          clientId: storeConfig.clientId,
+          redirectUri: 'https://app.chat.io/'
+        });
+          
+  
+
 
       // console.log(this.sdk)
    
@@ -797,7 +802,11 @@ class Home extends Component {
               }}>
                   <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
                   <TouchableWithoutFeedback
-                    onPress={() => this._showModal('Availability')}
+                    onPress={() => { 
+                        //this.sdk.destroy();
+                        this._showModal('Availability')
+                      }
+                    }
                   >
                     <View><Text style={[Common.fontMedium,{fontSize:13,height:15,color:'#f4002d'}]}>change store</Text></View>
                   </TouchableWithoutFeedback>
