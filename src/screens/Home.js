@@ -459,15 +459,15 @@ class Home extends Component {
     // storage.remove({
     //   key: 'savedStore'
     // });
-    // storage.load({
-    //   key: 'savedStore',
-    // }).then(store => {
-    //   console.log('saved store: ',store);
-    //   this.setState({
-    //     selectedStore: store
-    //   })
-    // }).catch(err => {
-    // });
+    storage.load({
+      key: 'savedStore',
+    }).then(store => {
+      console.log('saved store: ',store);
+      this.setState({
+        selectedStore: store
+      })
+    }).catch(err => {
+    });
 
     
     setTimeout(() => {
