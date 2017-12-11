@@ -453,15 +453,18 @@ class Home extends Component {
     });
 
 
-    storage.load({
-      key: 'savedStore',
-    }).then(store => {
-      console.log('saved store: ',store);
-      this.setState({
-        selectedStore: store
-      })
-    }).catch(err => {
-    });
+    // storage.remove({
+    //   key: 'savedStore'
+    // });
+    // storage.load({
+    //   key: 'savedStore',
+    // }).then(store => {
+    //   console.log('saved store: ',store);
+    //   this.setState({
+    //     selectedStore: store
+    //   })
+    // }).catch(err => {
+    // });
 
     
     setTimeout(() => {
@@ -883,10 +886,8 @@ class Home extends Component {
         
       if (chats.length) {
 
-        let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); }
-                              ).sort((a, b) => { return b.order - a.order });
-        let previousChats = chats.filter(chat => { return !chat.isActive && chat.title && !~hideChats.indexOf(chat.id); })
-                                  .sort((a, b) => { return b.order - a.order });
+        let activeChats   = chats.filter(chat => { return chat.isActive && chat.title && !~hideChats.indexOf(chat.id); });
+        let previousChats = chats.filter(chat => { return !chat.isActive && chat.title && !~hideChats.indexOf(chat.id); });
         return (          
           <View style={styles.containerChats}>
             { this.renderAuthView() }
