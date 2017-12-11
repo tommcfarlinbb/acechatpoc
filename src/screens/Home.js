@@ -302,8 +302,6 @@ class Home extends Component {
       this.sdk.destroy();
     } 
 
-
-
         console.log(this.sdk)
         this.sdk = init({ 
           license: storeConfig.license,
