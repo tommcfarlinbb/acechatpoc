@@ -755,7 +755,6 @@ class Home extends Component {
                   <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
                   <TouchableWithoutFeedback
                     onPress={() => { 
-                        //this.sdk.destroy();
                         this._showModal('Availability')
                       }
                     }
