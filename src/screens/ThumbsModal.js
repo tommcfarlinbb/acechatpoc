@@ -48,33 +48,38 @@ export default class ThumbsModal extends Component {
      this.props.closeHandler();
    }
   }
+
   submitRating = () => {
-    console.log(this.state.rating)
+    if (!this.state.rating) {
+      return false;
+    }
     let rating = this.state.rating === 'up' ? 'good' : 'bad';
     let ratingNum = this.state.rating === 'up' ? 1 : 0;
-    console.log(rating)
+    
     this.props.sdk.sendEvent(this.props.chat, {
       type: 'annotation',
       annotation_type: 'rating',
       properties: {
         rating: {
           score: ratingNum,
-          comment: this.state.comment,
+          comment: this.state.comment || '<no commment submitted>',
         },
       },
+    }).then(data => {
+      this.props.updateHandler({
+        _id: Math.round(Math.random() * 1000000),
+        text: 'You rated this chat as: '+rating,
+        createdAt: data.timestamp,
+        system: true,
+        rating: {
+          comment: this.state.comment,
+          rating: rating
+        }
+      },data.timestamp);
+     this.closeModal();
     })
 
-    this.props.updateHandler({
-      _id: Math.round(Math.random() * 1000000),
-      text: 'You rated this chat as: '+rating,
-      createdAt: Date.now(),
-      system: true,
-      rating: {
-        comment: this.state.comment,
-        rating: rating
-      }
-    })
-   this.closeModal();
+
   }
   renderSearching() {
     if (this.state.isSearching) {

@@ -87,14 +87,12 @@ class CustomSystemMessage extends SystemMessage {
             }]}>
               {currentMessage.text}
             </Text>
-            <Text style={[systemStyles.text, this.props.textStyle,{ 
+            {currentMessage.rating.comment && <Text style={[systemStyles.text, this.props.textStyle,{ 
               fontFamily: 'HelveticaNeueLTStd-Cn',
               fontSize: 14,
               paddingHorizontal: 25,
               color: '#5b5b5b'
-            }]}>
-              "{currentMessage.rating.comment}"
-            </Text>
+            }]}>"{currentMessage.rating.comment}" </Text>}
           </View>
         </View>
       );
@@ -420,8 +418,10 @@ export default class ChatIO extends React.Component {
     // });
   }
 
-  updateMessages = (message) => {
+  updateMessages = (message,timestamp) => {
+    this.sdk.updateLastSeenTimestamp(this.state.chatId,timestamp);
     this.setState({
+      myLastMessage: timestamp,
       messages: [message, ...this.state.messages]
     });
   }
@@ -551,7 +551,6 @@ export default class ChatIO extends React.Component {
     
   }
   onMessageStartChat = (msg) => {  
-    console.log('set chat id')
     this.setState({
       chatId: msg.payload.chat.id
     })
@@ -563,10 +562,9 @@ export default class ChatIO extends React.Component {
    // if (isDescription) payload.customId = 'description';
    // console.log(payload);
     this.sdk.sendMessage(chatId,payload).then(message => {
-      console.log(message);
       if (this._isMounted && (chatId === this.state.chatId)) {
         this.sdk.updateLastSeenTimestamp(chatId,message.timestamp).then(response => {
-          console.log(response)
+     //     console.log(response)
         })
         this.setState({
           sneakPeakEnabled: true,
@@ -618,11 +616,8 @@ export default class ChatIO extends React.Component {
 
   componentDidMount() {
     this._isMounted = true;
-    console.log('CHATIOSDK componentDidMount')
-    console.log(this.props)
 
     if (this.sdk && this._isMounted) {
-      console.log(this.props.chatId)
       if (this.props.chatId) {
         
         // previous chat
@@ -658,9 +653,7 @@ export default class ChatIO extends React.Component {
  
     }
     this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
-      console.log('on connected', { chatsSummary, totalChats })
       if (!this.props.name || !this.props.email) {
-        console.log('===========--------- NOT SURE HOW WE GOT HERE ----------=================')
         return false;
       }
       this.setCustomerInfo({
@@ -684,11 +677,6 @@ export default class ChatIO extends React.Component {
     //     //   console.log('-----------------RX.OBSERVABLE-----------------')
     //     // }
     // })
-
-    this.sdk.on('chat_properties_updated', (data) => {
-      console.log('chat_properties_updated')
-      console.log(data)
-    })
 
     // /////////////////////////////////////
     // ////////// connection_lost //////////
@@ -848,9 +836,9 @@ export default class ChatIO extends React.Component {
   }
 
   userChatStatusUpdate = (user,chat,didJoin) => {
-    console.log(user,chat)
+    
     let userData = this.state.userData.slice();
-    console.log(userData)
+    
     let name = 'Agent';
     for (i=0; i<userData.length; i++) {
       if (userData[i].id === user) {
@@ -883,8 +871,7 @@ export default class ChatIO extends React.Component {
     history.next().then(result => {
       const events = result.value;
       let newMessages = [];
-      console.log(result.done)
-      console.log(events)
+
       for (i=0; i<events.length; i++) {
         if (events[i].type === 'message' && events[i].text) {
           settings.username = users[settings.lastUserIdx].name || 'Customer';
@@ -946,7 +933,7 @@ export default class ChatIO extends React.Component {
         });
       } else {
         // load more
-        console.log('------------------------- load more -------------------------')
+//        console.log('------------------------- load more -------------------------')
         this.loadHistory(history,messages,users,settings);
       }
 
@@ -991,13 +978,13 @@ export default class ChatIO extends React.Component {
   }
 
   setCustomerInfo = (userData) => {
-    console.log('setCustomerInfo');
+    
     this.sdk.updateCustomer({
       name: userData.name,
       email: userData.email
     })
     .then(response => {
-      console.log(response)
+      //console.log(response)
     })
     .catch(error => {
       console.log(error);
@@ -1015,8 +1002,7 @@ export default class ChatIO extends React.Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-    console.log('----componentWillUnmount----')
-    console.log('Unmount ===> remove event listeners')
+
 
     this.sdk.off('connection_lost', this._connectionLostHandler);
     this.sdk.off('disconnected', this._disconnectedHandler);

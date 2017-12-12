@@ -121,7 +121,6 @@ class Home extends Component {
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     getChatsSummary = (offset,limit,fullChatList) => {
-      console.log('-----getChatsSummary-----');
 
       fullChatList = fullChatList || [];
 
@@ -130,8 +129,7 @@ class Home extends Component {
         limit: limit,
        })
         .then(({chatsSummary,totalChats}) => {
-          console.log(chatsSummary,totalChats)
-          console.log('--------------------------')
+          
           fullChatList = [...fullChatList, ...chatsSummary];
 
           this.iterateOver(chatsSummary, (chat, report, fields) => { 
@@ -206,11 +204,10 @@ class Home extends Component {
           doneCount++;  
           fullDoneCount++;
           // done looping through loaded chats
-          console.log('doneCount,list.length')
-          console.log(doneCount,list.length)
+
           if (doneCount === list.length) {
             // all chats loaded
-            console.log(fullDoneCount,totalChats)
+//            console.log(fullDoneCount,totalChats)
             if (fullDoneCount === totalChats) {
               callback(fullChatList);
             } else {
@@ -252,7 +249,7 @@ class Home extends Component {
   updateChats = (chat) => {
     let chatList = this.state.chats.slice();
     for (i=0; i<chatList.length; i++) {
-      console.log(chat.event);
+      
       if (chatList[i].id === chat.chat) {
         if (!chatList[i].lastEvent) chatList[i].lastEvent = {};
         chatList[i].lastEvent.text = chat.event.text;
@@ -272,78 +269,27 @@ class Home extends Component {
   }
 
   setChatState = (chats) => {
-    console.log('--setChatState--')
-    console.log(chats)
     this.setState({
       chats: chats
     })
   }
-  // setChatState = (chats) => {
-  //   console.log(chats)
-  //   this.setState({
-  //     chats: chats
-  //   })
-  // }
-  // getChatHistory = (chatsSummary) => {
-  //   const id = chatsSummary[i].id
-  //   const history = this.sdk.getChatHistory(id);
-
-  //   history.next().then(result => {
-  //     console.log(result.done)
-
-  //     const events = result.value
-  //     let title = null;
-  //     console.log(events)
-  //     for (i=0; i<events.length; i++) {
-  //       if (events[i].type === 'message' && events[i].customId === 'description') {
-  //         title = events[i].text;
-  //         break;
-  //       }
-  //     }     
-  //     // now loop through chats in state     
-  //     for (i=0; i<chatsSummary.length; i++) {
-  //       if (chatsSummary[i].id === id) {
-  //         chatsSummary[i].title = title;
-  //         break;
-  //       }
-  //     }
-  //   })
-  // }
+  
 
   initSdk = (store) => {
     let storeConfig = config.stores[store.custom.store_id];
-    console.log(storeConfig)
-    console.log(this.sdk)
     if (this.sdk) {
-      console.log('destroy')
       this.sdk.destroy();
     } 
 
-        console.log(this.sdk)
-        this.sdk = init({ 
-          license: storeConfig.license,
-          clientId: storeConfig.clientId,
-          redirectUri: 'https://app.chat.io/'
-        });
+      this.sdk = init({ 
+        license: storeConfig.license,
+        clientId: storeConfig.clientId,
+        redirectUri: 'https://app.chat.io/'
+      });
           
-  
-
-
-      // console.log(this.sdk)
-   
-      // this.sdk.getChatsSummary({
-      //   offset: 0,
-      //   limit: 25,
-      //   })
-      //   .then(({chatsSummary,totalChats}) => {
-      //     console.log(chatsSummary,totalChats)
-      //   });
-    
-
-  
 
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
-        console.log(this.sdk);
+
 
         console.log('on connected', { chatsSummary, totalChats })
         this.updateChatHistory(chatsSummary);
@@ -354,7 +300,6 @@ class Home extends Component {
   
   
         this.iterateOver(chatsSummary, (chat, report, fields) => {
-          console.log(fields)
           let properties = chat.properties && chat.properties.chatInfo;
           if (properties) {
             chat.title = properties.title.value;
@@ -422,11 +367,8 @@ class Home extends Component {
       })
   
       this.sdk.on('new_event', (payload) => {
-        console.log('new_event from HOME')
         if (this._isMounted) {
-          console.log(payload)
           this.updateChats(payload);
-       //   this.onIncomingEvent(payload);
         }      
       })
       this.sdk.on('user_data', (user) => {
@@ -435,13 +377,11 @@ class Home extends Component {
       this.sdk.on('thread_closed', ({ chat }) => {
         this.getChatsSummary(0,25);
       })
-      this.sdk.on('chat_properties_updated', (data) => {
-        console.log('chat_properties_updated')
-        console.log(data)
-      })
+      // this.sdk.on('chat_properties_updated', (data) => {
+
+      // })
       this.sdk.on('thread_summary', (thread_summary) => {
-        //console.log('thread_summary')
-        //console.log(thread_summary)
+
       })
      
 
@@ -449,7 +389,6 @@ class Home extends Component {
 
   setStores = (stores) => {
     // populate stores
-    console.log(stores)
     this.setState({
       initialState: false,
       stores: stores,
@@ -458,22 +397,16 @@ class Home extends Component {
     })
   }
   componentWillUnmount() {
-    console.log('HOME - componentWillUnmount')
-    console.log(this.sdk)
     if (this.sdk) {
       this.sdk.destroy();
     }
   }
   componentDidMount() {
-    console.log('HOME - componentDidMount')
-    console.log(this.sdk);
-
     this._isMounted = true;
 
     storage.load({
       key: 'userState',
     }).then(user => {
-      console.log(user);
       this.setState({
         firstName: user.firstName,
         lastName: user.lastName,
@@ -490,7 +423,6 @@ class Home extends Component {
     storage.load({
       key: 'savedStore',
     }).then(store => {
-      console.log('saved store: ',store);
       this.setState({
         selectedStore: store
       })
@@ -543,7 +475,6 @@ class Home extends Component {
 
     }
     beginChatCallback = (obj) => {
-      console.log(obj)
       this.setState({
         isLoading: true,
         loadingText: 'Starting Chat...'
@@ -553,20 +484,15 @@ class Home extends Component {
         name: obj.name,
         email: obj.email,
         description: obj.description,
-     //   sdk: this.sdk,
         customerId: obj.customerId,
         storeTitle: this.state.selectedStore.title,
         title: obj.description,
-       // goBackFromChat: this.goBackFromChat,
-      //  callback: this.resetLoadingState
       }
       this.setState({
         chatProps: newChatProps
       })
-      //console.log(newChatProps)
       setTimeout(() => {
         this._showModal('Chat');
-       // this.props.navigation.navigate('Chat',newChatProps);
       }, 1000);
 
 
@@ -586,7 +512,6 @@ class Home extends Component {
       return null;
     }
     addGlobalUsers = (user) => {
-    //  console.log(user)
       if (this._isMounted) {
         this.setState({
           userData: [user, ...this.state.userData]
@@ -602,8 +527,6 @@ class Home extends Component {
     }
 
     selectStore = (store) => {      
-      console.log('init sdk with store:')
-      console.log(store)
       this.setState({
         isLoading: true,
         showStores: false,
