@@ -51,7 +51,19 @@ export default class ThumbsModal extends Component {
   submitRating = () => {
     console.log(this.state.rating)
     let rating = this.state.rating === 'up' ? 'good' : 'bad';
+    let ratingNum = this.state.rating === 'up' ? 1 : 0;
     console.log(rating)
+    this.props.sdk.sendEvent(this.props.chat, {
+      type: 'annotation',
+      annotation_type: 'rating',
+      properties: {
+        rating: {
+          score: ratingNum,
+          comment: this.state.comment,
+        },
+      },
+    })
+
     this.props.updateHandler({
       _id: Math.round(Math.random() * 1000000),
       text: 'You rated this chat as: '+rating,

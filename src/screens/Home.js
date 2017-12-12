@@ -345,13 +345,6 @@ class Home extends Component {
       this.sdk.on('connected', ({ chatsSummary, totalChats }) => {
         console.log(this.sdk);
 
-        storage.save({
-          key: 'sdk', 
-          data: {
-            sdk: this.sdk
-          }
-        });
-
         console.log('on connected', { chatsSummary, totalChats })
         this.updateChatHistory(chatsSummary);
         this.setState({
@@ -993,7 +986,7 @@ class Home extends Component {
                           <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                       </View>
                       <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.type === 'annotation' ? chat.lastEventsPerType && chat.lastEventsPerType.message && chat.lastEventsPerType.message.text : chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
                     </View>
                   </View>
 
@@ -1040,7 +1033,7 @@ class Home extends Component {
                           <Image style={{height: 14,width: 8,marginRight: 5,marginTop:-2}} source={images.arrowRight} />
                       </View>
                       <Text numberOfLines={1} style={[Common.fontRegular,styles.description, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageBold]}>{chat.title ? chat.title : 'Loading...'}</Text>
-                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
+                      <Text numberOfLines={1} style={[Common.fontRegular,styles.message, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.lastEvent && chat.lastEvent.type === 'annotation' ? chat.lastEventsPerType && chat.lastEventsPerType.message && chat.lastEventsPerType.message.text : chat.lastEvent && chat.lastEvent.text ? chat.lastEvent.text : chat.lastEvent && chat.lastEvent.type === 'file' && chat.lastEvent.contentType === 'image/jpeg' && '<Image file sent>'}</Text>
                     </View>
                   </View>
 

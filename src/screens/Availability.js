@@ -53,6 +53,18 @@ export default class Availability extends Component {
   //     }
   //   }
   // }
+  componentDidMount() {
+    storage.load({
+      key: 'zipSearch',
+    }).then(zip => {
+      console.log(zip);
+      this.setState({
+        zipCode: zip
+      })
+    }).catch(err => {
+
+    });
+  }
   sendEmail = () => {
     let email = this.state.email;
     this.setState({
@@ -92,6 +104,12 @@ export default class Availability extends Component {
     this.setState({
       isSearching: 'Searching...'
     })
+
+    storage.save({
+      key: 'zipSearch', 
+      data: zip
+    });
+
     // setTimeout(() => {
     fetch(zipSearch)  
       .then((response) => {

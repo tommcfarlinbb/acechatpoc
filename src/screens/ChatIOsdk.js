@@ -1604,6 +1604,8 @@ export default class ChatIO extends React.Component {
             <ThumbsModal 
             updateHandler={this.updateMessages}
             closeHandler={this._hideModal}
+            chat={this.state.chatId}
+            sdk={this.sdk}
             />
           </Modal>
           <View style={{
