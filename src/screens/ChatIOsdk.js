@@ -14,7 +14,6 @@ import {
 
 import {GiftedChat, Time, InputToolbar, Composer, Send, MessageText, utils, MessageContainer, Day, GiftedAvatar, Actions, Bubble, Message, Avatar, SystemMessage, MessageImage} from 'react-native-gifted-chat';
 import CustomActions from '../CustomActions';
-import CustomView from '../CustomView';
 import config from '../config';
 import './userAgent';
 import { AuthWebView } from '@livechat/chat.io-customer-auth';
@@ -155,7 +154,9 @@ class CustomMessage extends Message {
       <Avatar {...this.getInnerComponentProps()}         
         imageStyleTest={{
           right: {
-            backgroundColor: '#aaa'
+            backgroundColor: '#aaa',
+            width: 30,
+            height: 30
           }   
         }}
         />
@@ -281,7 +282,6 @@ class CustomBubble extends Bubble {
               {...this.props.touchableProps}
             >
               <View>
-                {this.renderCustomView()}
                 {this.renderMessageImage()}
                 {this.renderMessageText()}
                 <View style={[bubbleStyles.bottom, this.props.bottomContainerStyle[this.props.position]]}>
@@ -1208,8 +1208,8 @@ export default class ChatIO extends React.Component {
         {...props}
         textStyle={{
           left: {
-            marginTop: 12,
-            marginBottom: 8,
+            marginTop: 10,
+            marginBottom: 5,
             marginLeft: 12,
             marginRight: 12,
             fontSize: 15,
@@ -1217,8 +1217,8 @@ export default class ChatIO extends React.Component {
             fontFamily: 'HelveticaNeueLTStd-Cn',
           },
           right: {
-            marginTop: 12,
-            marginBottom: 8,
+            marginTop: 10,
+            marginBottom: 5,
             marginLeft: 12,
             marginRight: 12,
             lineHeight: 16,
@@ -1455,14 +1455,6 @@ export default class ChatIO extends React.Component {
     );
   }
 
-  renderCustomView(props) {
-    return (
-      <CustomView
-        {...props}
-      />
-    );
-  }
-
   renderFooter(props) {
    if (this.state.typingText) {
       return (
@@ -1620,7 +1612,7 @@ export default class ChatIO extends React.Component {
                 renderBubble={this.renderBubble}
                 renderAvatar={this.renderAvatar}
                 renderSystemMessage={this.renderSystemMessage}
-                renderCustomView={this.renderCustomView}
+
                 renderFooter={this.renderFooter}
                 renderDay={this.renderDay}
                 renderMessageText={this.renderMessageText}

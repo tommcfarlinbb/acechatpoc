@@ -14,7 +14,6 @@ import Header from './components/Header';
 import Modal from 'react-native-modal';
 
 import CameraRollPicker from 'react-native-camera-roll-picker';
-import NavBar, { NavButton, NavButtonText, NavTitle } from 'react-native-nav';
 
 const images = {
   camera: require('./img/camera.png'),

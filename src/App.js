@@ -8,53 +8,54 @@ import {
   View
 } from 'react-native';
 
-import { StackNavigator } from 'react-navigation';
+//import { StackNavigator } from 'react-navigation';
 
-import screens from './screens';
+import Home from './screens/Home';
 
-const StackModalNavigator = (routeConfigs, navigatorConfig) => {
-  const CardStackNavigator = StackNavigator(routeConfigs, navigatorConfig);
-  const modalRouteConfig = {};
-  const routeNames = Object.keys(routeConfigs);
+const RootNavigator = Home;
+// const StackModalNavigator = (routeConfigs, navigatorConfig) => {
+//   const CardStackNavigator = StackNavigator(routeConfigs, navigatorConfig);
+//   const modalRouteConfig = {};
+//   const routeNames = Object.keys(routeConfigs);
 
-  for (let i = 0; i < routeNames.length; i++) {
-    modalRouteConfig[`${routeNames[i]}Modal`] = routeConfigs[routeNames[i]];
-  }
+//   for (let i = 0; i < routeNames.length; i++) {
+//     modalRouteConfig[`${routeNames[i]}Modal`] = routeConfigs[routeNames[i]];
+//   }
 
-  const ModalStackNavigator = StackNavigator({
-    CardStackNavigator: { screen: CardStackNavigator },
-    ...modalRouteConfig
-  }, {
-    mode: 'modal',
-    headerMode: 'none',
-  });
+//   const ModalStackNavigator = StackNavigator({
+//     CardStackNavigator: { screen: CardStackNavigator },
+//     ...modalRouteConfig
+//   }, {
+//     mode: 'modal',
+//     headerMode: 'none',
+//   });
 
-  return ModalStackNavigator;
-};
+//   return ModalStackNavigator;
+// };
 
-const RootNavigator = StackNavigator({
-  Home: {
-    screen: screens.home
-  },
-  // Availability: {
-  //   screen: screens.availability
-  // },
-  // Details: {
-  //   screen: screens.details
-  // },
-  // Something: {
-  //   screen: screens.something
-  // },
-  // NewChat: {
-  //   screen: screens.newChat
-  // },
-  // Chat: {
-  //   screen: screens.chat
-  // },
+// const RootNavigator = StackNavigator({
+//   Home: {
+//     screen: screens.home
+//   },
+//   // Availability: {
+//   //   screen: screens.availability
+//   // },
+//   // Details: {
+//   //   screen: screens.details
+//   // },
+//   // Something: {
+//   //   screen: screens.something
+//   // },
+//   // NewChat: {
+//   //   screen: screens.newChat
+//   // },
+//   // Chat: {
+//   //   screen: screens.chat
+//   // },
 
-}, {
-  headerMode: 'none'
-});
+// }, {
+//   headerMode: 'none'
+// });
 
 // const RootNavigator = StackNavigator({
 //   Home: {

@@ -10,6 +10,7 @@ import {
   WebView,
   TouchableOpacity,
   TouchableHighlight,
+  NativeModules,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
@@ -35,6 +36,8 @@ import ChatIO from './ChatIOsdk';
 import Modal from 'react-native-modal';
 
 import Storage from 'react-native-storage';
+
+//let { ACEChatViewController } = NativeModules;
 
 let storage = new Storage({
 	// maximum capacity, default 1000 
@@ -536,6 +539,11 @@ class Home extends Component {
         key: 'savedStore', 
         data: store
       });
+
+      // if (ACEChatViewController) {
+      //   ACEChatViewController.updateChatBadge('Birthday Party', '4 Privet Drive, Surrey');
+      // }
+      
       this.initSdk(store);
 
       // this.props.navigation.navigate('Chat', {

@@ -15,7 +15,7 @@ import {StyleSheet, Image,TouchableOpacity, View, Text} from 'react-native';
 // import Availability from './Availability';
 
 export default {
-  home: Home,
+  RootNavigator: Home
   // details: Details,
   // newChat: NewChat,
   // something: Something,
