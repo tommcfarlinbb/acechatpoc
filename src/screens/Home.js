@@ -279,11 +279,14 @@ class Home extends Component {
   
 
   initSdk = (store) => {
+    console.log('initSdk:')
+    
     let storeConfig = config.stores[store.custom.store_id];
+    console.log(storeConfig)
     if (this.sdk) {
       this.sdk.destroy();
     } 
-
+    console.log('now init sdk')
       this.sdk = init({ 
         license: storeConfig.license,
         clientId: storeConfig.clientId,
@@ -535,10 +538,13 @@ class Home extends Component {
         showStores: false,
         selectedStore: store
       });
+      console.log('settings isLoading:true, showStores: false, selectStore:')
+      console.log(store)
       storage.save({
         key: 'savedStore', 
         data: store
       });
+      console.log('store saved to AsyncStorage')
 
       // if (ACEChatViewController) {
       //   ACEChatViewController.updateChatBadge('Birthday Party', '4 Privet Drive, Surrey');
@@ -1014,7 +1020,7 @@ class Home extends Component {
       } = this.state;
       return (
         <View style={styles.RNcontainer}>
-          <Header navigation={this.props.navigation} title="CHAT" />
+          {Platform.OS == 'ios'  && <Header title="CHAT" />}
           <View style={{
              flex: 1,
              backgroundColor: '#eee6d9',
