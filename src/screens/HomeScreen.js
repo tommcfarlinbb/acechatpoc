@@ -22,7 +22,7 @@ export default class HomeScreen extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Header navigation={this.props.navigation} title="CHAT" />
+        {Platform.OS == 'ios'  && <Header navigation={this.props.navigation} title="CHAT" />}
         <View style={{
           flex: 1,
           alignItems: 'center',
