@@ -159,6 +159,16 @@ class CustomMessage extends Message {
             height: 30
           }   
         }}
+        imageStyle={{
+          left: {
+            width: 30,
+            height: 30
+          },
+          right: {
+            width: 30,
+            height: 30
+          }
+        }}
         />
     );
   } 
@@ -1208,8 +1218,8 @@ export default class ChatIO extends React.Component {
         {...props}
         textStyle={{
           left: {
-            marginTop: 10,
-            marginBottom: 5,
+            marginTop: 9,
+            marginBottom: 4,
             marginLeft: 12,
             marginRight: 12,
             fontSize: 15,
@@ -1217,8 +1227,8 @@ export default class ChatIO extends React.Component {
             fontFamily: 'HelveticaNeueLTStd-Cn',
           },
           right: {
-            marginTop: 10,
-            marginBottom: 5,
+            marginTop: 9,
+            marginBottom: 4,
             marginLeft: 12,
             marginRight: 12,
             lineHeight: 16,
@@ -1477,7 +1487,7 @@ export default class ChatIO extends React.Component {
           fontFamily: 'HelveticaNeue-CondensedBold',
           fontSize: 14
         }}
-        avatarStyle={StyleSheet.flatten([styles[props.position].image, props.imageStyleTest[props.position]])}
+        avatarStyle={StyleSheet.flatten([styles[props.position].image, props.imageStyleTest[props.position],{width:30,height:30}])}
         user={props.currentMessage.user}
         onPress={() => props.onPressAvatar && props.onPressAvatar(props.currentMessage.user)}
       />

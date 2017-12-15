@@ -755,7 +755,7 @@ class Home extends Component {
           borderBottomWidth: 1,
           borderBottomColor: '#e2d3bc',
           paddingTop: 8,
-          marginBottom: 10,
+          marginBottom: 0,
           height:58,
           width:'100%'
         }}>
@@ -764,19 +764,23 @@ class Home extends Component {
             <View style={{
                 flexDirection: 'row',
                 width:'100%',
+                alignItems: 'center',
                 justifyContent: 'space-between'
               }}>
+                <View>
                   <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
-                  <TouchableWithoutFeedback
-                    onPress={() => { 
-                        this._showModal('Availability')
-                      }
+                  {this.renderAddress(selectedStore,{fontSize:13,lineHeight:13,height:14})}
+                </View>                  
+                <TouchableWithoutFeedback
+                  onPress={() => { 
+                      this._showModal('Availability')
                     }
-                  >
-                    <View><Text style={[Common.fontMedium,{fontSize:13,height:15,color:'#f4002d'}]}>change store</Text></View>
-                  </TouchableWithoutFeedback>
+                  }
+                >
+                  <View><Text style={[Common.fontMedium,{fontSize:13,height:15,color:'#f4002d'}]}>Change store</Text></View>
+                </TouchableWithoutFeedback>
               </View>
-              {this.renderAddress(selectedStore,{fontSize:13,lineHeight:13,height:14})}
+              
 
             </View>
           </View>
@@ -865,8 +869,9 @@ class Home extends Component {
         return (          
           <View style={styles.containerChats}>
             { this.renderAuthView() }
-            <ScrollView style={{paddingTop:0}}>
             {this.renderStoreStatus()}
+            <ScrollView style={{paddingTop:12}}>
+            
               <View style={{flex:1,alignItems:'center',marginBottom:20}}>
                 
                 <TouchableOpacity
