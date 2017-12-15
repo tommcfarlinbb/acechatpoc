@@ -51,6 +51,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>This app would like to access your camera.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>HelveticaNeueLTStd-BdCn.otf</string>

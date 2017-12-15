@@ -1119,18 +1119,28 @@ export default class ChatIO extends React.Component {
     }    
   }
   onImageSend = (images) => {
-    console.log('onImageSend')
+ 
+    
     if (this._isMounted) {
-      console.log(images)
-      const file = {
-        uri: images[0].uri,
-        //type: 'image/jpeg', // optional
-        name: images[0].filename, // optional
+      let file = {};
+      if (Array.isArray(images)) {
+        // camera roll
+        file = {
+          uri: images[0].uri,
+          name: images[0].filename
+        }
+      } else {
+        // take picture
+        file = {
+          uri: images.path,
+          name: 'CameraPhoto.jpg'
+        }
       }
+      console.log(file);
       let randomId = Math.round(Math.random() * 1000000);
       this.setState({
         messages: [{
-          image: images[0].uri,
+          image: file.uri,
           _id: randomId,
           createdAt: Date.now(),
           sent: true,
