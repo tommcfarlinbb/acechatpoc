@@ -69,7 +69,7 @@ export default class Header extends React.Component {
 
   render() {
     return (
-      <View style={[styles.container, this.props.padHeader && styles.padHeader]}>
+      <View style={[styles.container, this.props.padHeader && styles.padHeader, this.props.camera && styles.camera]}>
         {this.renderLeftBtn()}
         {this.renderMiddle()}        
         {this.renderRightBtn()}
@@ -88,6 +88,10 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
     borderBottomWidth: 1,
     borderBottomColor: '#d7d6d7'
+  },
+  camera: {
+    backgroundColor: '#000',
+    borderBottomWidth: 0
   },
   padHeader: {
     marginTop: 63.5
