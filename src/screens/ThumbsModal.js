@@ -34,6 +34,7 @@ export default class ThumbsModal extends Component {
       comment: null,
       rating: null,
       error: false,
+      googleFormId: this.props.googleFormId || null,
     }
   }
   
@@ -55,14 +56,16 @@ export default class ThumbsModal extends Component {
     }
     let rating = this.state.rating === 'up' ? 'good' : 'bad';
     let ratingNum = this.state.rating === 'up' ? 1 : 0;
-    
+    console.log(this.state.comment)
+    let comment = this.state.comment || '-no comment submitted-';
+    console.log(comment)
     this.props.sdk.sendEvent(this.props.chat, {
       type: 'annotation',
       annotation_type: 'rating',
       properties: {
         rating: {
           score: ratingNum,
-          comment: this.state.comment || '<no commment submitted>',
+          comment: comment,
         },
       },
     }).then(data => {
@@ -72,10 +75,17 @@ export default class ThumbsModal extends Component {
         createdAt: data.timestamp,
         system: true,
         rating: {
-          comment: this.state.comment,
+          comment: comment,
           rating: rating
         }
       },data.timestamp);
+
+      this.props.webviewCallback({
+        id: this.state.googleFormId,
+        rating: rating,
+        feedback: comment.replace(/’/g,"").replace(/\s/g,"%20")
+      });
+
      this.closeModal();
     })
 

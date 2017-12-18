@@ -16,6 +16,7 @@ import Bubbles from '../Bubbles';
 import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
+import * as axios from 'axios';
 
 
 const zipCodeList = ['63005','63011','63017','63021','63141','63001','63006','63022','63024','63032','63045','63099','63119','63122','63124','63131','63141','63144','63145','63146','63151','63167','63198','63043','63044','63074','63114','63141','63146','63011','63017','63021','63040','63088','62258','59047'];
@@ -40,6 +41,7 @@ export default class Availability extends Component {
       isAvailable: false,
       showNotAvailable: false,
       showEmailSent: false,
+      googleFormId: this.props.googleFormId || null,
       customerId: this.props.customerId || null
     }
     this.sdk = this.props.sdk;
@@ -68,12 +70,25 @@ export default class Availability extends Component {
   sendEmail = () => {
     let email = this.state.email;
     this.setState({
-      emailError: false,
+      emailError: false
+    })
+
+    let isValidEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+    if (!isValidEmail) {
+      this.setState({
+        emailError: true
+      })
+      return;
+    }
+
+    this.setState({
       isSearching: 'Sending...'
     })
 
-    // TODO; validate email
- 
+    this.props.webviewCallback({
+      email: email,
+      id: this.state.googleFormId || this.guidGenerator()
+    });
 
     setTimeout(() => {
 
@@ -82,7 +97,13 @@ export default class Availability extends Component {
         isSearching: null
       })
       
-    },2000);
+    },1000);
+  }
+  guidGenerator() {
+    var S4 = function() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    return (S4()+S4()+S4()+S4()+S4()+S4()+S4()+S4());
   }
   searchZip = () => {
     let zip = this.state.zipCode;
@@ -121,6 +142,65 @@ export default class Availability extends Component {
       })
       .then((responseData) => {
         console.log(responseData);
+
+              // google form
+              this.props.webviewCallback({
+                zip: zip,
+                id: this.state.googleFormId || this.guidGenerator()
+              });
+              // let uniqueId = this.guidGenerator();
+              // console.log(uniqueId)
+              // let googleFormId = '1FAIpQLSeUJ8d4t_bafLyDi-dfrCO28AU_mBWc-fRjdGmXiReuZ9PDYw';
+              // let url = 'https://acehardware.uat.bbhosted.com/landingPage?target=chat_zipcode';
+              // //let url = 'https://docs.google.com/forms/d/e/'+googleFormId+'/formResponse';
+              // let obj = {
+              //   method: 'POST',
+              //   headers: {
+              //     'Accept': 'application/json',
+              //     'Content-Type': 'application/json'
+              //   },
+              //   body: JSON.stringify({
+              //     'id': 'asdfhsfioafusdoi23oir23j',
+              //     'zip': '5555555',
+              //   })
+              // }
+              // console.log(obj.body.length)
+              // console.log('google fetch')
+
+              // axios.get(url)
+              // .then(function (response) {
+              //   console.log(response);
+              // })
+              // .catch(function (error) {
+              //   console.log(error);
+              // });
+
+              // $.ajax({
+              //   url: 'https://docs.google.com/forms/d/e/'+googleFormId+'/formResponse',
+              //   type: 'POST',
+              //   data: {
+              //     'entry.1334856829': uniqueId,
+              //     'entry.1608845929': zip,
+              //   }
+              // }).always(function() {
+              //   console.log('finish google post')
+              // });
+              
+              // fetch(url)      
+              // .then((response) => {
+              //   console.log(response)
+              //   console.log(response._bodyInit)
+              //   // return response.json()
+              // })
+              // .then((responseData) => {
+              //   console.log(responseData)
+              // })
+              // .catch((error) => {
+              //   console.error(error);
+              // });
+
+                  
+
         if (responseData.invalid) {
           this.setState({
             zipError: true,
@@ -154,6 +234,8 @@ export default class Availability extends Component {
            },500);
            
         }
+        
+
       })
       .catch((error) => {
         console.error(error);
@@ -315,13 +397,15 @@ export default class Availability extends Component {
           backgroundColor: '#eee6d9',
           width:'100%'
         }}>
-        
+
           <View style={styles.container}>        
             {this.renderZipContent()}
             {this.renderSearching()}
           </View>
 
         </View>
+
+
       </View>
 
     );   

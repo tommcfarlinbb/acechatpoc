@@ -49,7 +49,8 @@ export default class NewChat extends Component {
       store: this.props.store,
       errors: {},
       description: null,
-      customerId: this.props.customerId || null
+      customerId: this.props.customerId || null,
+      googleFormId: this.props.googleFormId || null,
     }
     this.sdk = this.props.sdk;
 //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
@@ -106,6 +107,13 @@ export default class NewChat extends Component {
     });
     this.props.closeHandler();
 
+    this.props.webviewCallback({
+      email: this.state.email,
+      area: this.state.area.replace(/\s/g,"%20").replace(/&/g,"and"),
+      description: this.state.description.replace(/’/g,"").replace(/\s/g,"%20"),
+      id: this.state.googleFormId
+    });
+    
     // this.props.navigator.push({
     //   screen: 'ChatIOsdk',
     //   title: 'Rick\'s Ace Hardware',

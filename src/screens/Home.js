@@ -117,7 +117,9 @@ class Home extends Component {
         showNewChatModal: false,
         initialLoad: true,
         initialState: true,
-        newChatCount: 0
+        newChatCount: 0,
+        webviewUri: null,
+        googleUserId: null
     //    url: 'https://www.brandingbrand.com',
     //    source: {}
 
@@ -436,6 +438,16 @@ class Home extends Component {
     }).catch(err => {
     });
 
+    storage.load({
+      key: 'googleUserId',
+    }).then(id => {
+      this.setState({
+        googleUserId: id
+      })
+    }).catch(err => {
+    });
+
+
     
     setTimeout(() => {
       if (this.state.selectedStore) {
@@ -539,13 +551,11 @@ class Home extends Component {
         showStores: false,
         selectedStore: store
       });
-      console.log('settings isLoading:true, showStores: false, selectStore:')
-      console.log(store)
       storage.save({
         key: 'savedStore', 
         data: store
       });
-      console.log('store saved to AsyncStorage')
+      
 
       // if (ACEChatViewController) {
       //   ACEChatViewController.updateChatBadge('Birthday Party', '4 Privet Drive, Surrey');
@@ -690,11 +700,40 @@ class Home extends Component {
           callback={this.beginChatCallback}
           firstName={this.state.firstName}
           lastName={this.state.lastName}
-      
+          webviewCallback={this.webviewCallback}
           email={this.state.email}
         />
       </Modal>
       )
+    }
+    webviewCallback = (data) => {
+      let url = 'https://m.acehardware.com/landingPage?target=chat_zipcode';
+      let queryString = '';
+      console.log(data)
+      if (!this.state.googleUserId) {
+        this.setState({
+          googleUserId: data.id
+        })
+        if (data.id)  { queryString += '&id='+data.id;  }
+        storage.save({
+          key: 'googleUserId', 
+          data: data.id
+        });
+      } else {
+        queryString += '&id='+this.state.googleUserId;
+      }
+      
+      if (data.zip) { queryString += '&zip='+data.zip;  }
+      if (data.email) { queryString += '&email='+data.email;  }
+      if (data.area) { queryString += '&area='+data.area;  }
+      if (data.description) { queryString += '&desc='+data.description;  }
+      if (data.rating) { queryString += '&rating='+data.rating;  }
+      if (data.feedback) { queryString += '&feedback='+data.feedback;  }
+      console.log(url + queryString)
+      this.setState({
+        webviewUri: { uri: url + queryString }
+      })
+
     }
     renderAvailabilityModal() {
       return (
@@ -710,6 +749,8 @@ class Home extends Component {
         <Availability 
           closeHandler={() => this._hideModal('Availability')}
           setStoresCallback={this.setStores}
+          webviewCallback={this.webviewCallback}
+          googleFormId={this.state.googleFormId}
         />
       </Modal>
       )
@@ -743,6 +784,8 @@ class Home extends Component {
           isActive={this.state.chatProps.isActive}
           adminLastSeen={this.state.chatProps.adminLastSeen}
           userData={this.state.chatProps.userData}
+          webviewCallback={this.webviewCallback}
+          googleFormId={this.state.googleFormId}
         />
       </Modal>
       )
@@ -822,7 +865,7 @@ class Home extends Component {
         return (
           <View style={styles.containerChats}>
           { this.renderAuthView() }
-          <ScrollView style={{paddingTop:5}}>
+          <ScrollView style={{paddingTop:5,flex:1}}>
             <View style={[styles.containerNoChats]}>
               <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
               <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 7}]}>You must select a location to check chat availability.</Text>
@@ -836,8 +879,9 @@ class Home extends Component {
                 </TouchableOpacity>
                 
             </View>
-            
+
           </ScrollView>
+
           </View>
         );
       }
@@ -1066,8 +1110,10 @@ class Home extends Component {
         stores
       } = this.state;
       return (
+
         <View style={styles.RNcontainer}>
-          {Platform.OS == 'ios'  && <Header title="CHAT" />}
+          {Platform.OS == 'ios' && <Header title="CHAT" />}
+
           <View style={{
              flex: 1,
              backgroundColor: '#eee6d9',
@@ -1077,13 +1123,34 @@ class Home extends Component {
             {this.renderAvailabilityModal()}
             {this.renderNewChatModal()}
             {this.renderChatModal()}
+            <View 
+            style={{
+              height: 0,
+              position: 'absolute',
+              overflow: 'hidden',
+              bottom: -1000
+            }}>
+            <WebView
+              source = { this.state.webviewUri  }
+            />
+            </View>
+
           </View>
-        </View>        
+
+        </View>  
+              
       )
     }
   }
 
   const styles = StyleSheet.create({
+    hideWebview: {
+      height: 10,
+      position: 'absolute',
+      left: 0,
+      flex: 1
+    },
+
     container: {
       flex: 1,
       flexDirection: 'column',

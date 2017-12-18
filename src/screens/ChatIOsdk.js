@@ -375,7 +375,8 @@ export default class ChatIO extends React.Component {
       isModalVisible: false,
       myLastMessage: null,
       adminLastSeen: adminLastSeen || null,
-      minInputToolbarHeight: 64
+      minInputToolbarHeight: 64,
+      googleFormId: this.props.googleFormId || null,
     };
     this.sdk = sdk;
    // this.socket = new WebSocket('wss://api.chat.io/customer/v0.2/rtm/ws?license_id='+config.chatio_license);
@@ -1604,6 +1605,8 @@ export default class ChatIO extends React.Component {
             closeHandler={this._hideModal}
             chat={this.state.chatId}
             sdk={this.sdk}
+            webviewCallback={this.props.webviewCallback}
+            googleFormId={this.state.googleFormId}
             />
           </Modal>
           <View style={{
