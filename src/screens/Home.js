@@ -788,25 +788,25 @@ class Home extends Component {
         </View>
       )
     }
-    chatIncrease = () => {
-      let count = this.state.newChatCount;
-      this.setState(function(prevState, props){
-        if (ACEChatViewController) {
-          ACEChatViewController.updateChatBadge(prevState.newChatCount + 1);
-        }
-        return {newChatCount: prevState.newChatCount + 1}
-      });
+    // chatIncrease = () => {
+    //   let count = this.state.newChatCount;
+    //   this.setState(function(prevState, props){
+    //     if (ACEChatViewController) {
+    //       ACEChatViewController.updateChatBadge(prevState.newChatCount + 1);
+    //     }
+    //     return {newChatCount: prevState.newChatCount + 1}
+    //   });
 
 
-    }
-    chatReset = () => {
-      this.setState({
-        newChatCount: 0
-      })
-      if (ACEChatViewController) {
-        ACEChatViewController.updateChatBadge(0);
-      }
-    }
+    // }
+    // chatReset = () => {
+    //   this.setState({
+    //     newChatCount: 0
+    //   })
+    //   if (ACEChatViewController) {
+    //     ACEChatViewController.updateChatBadge(0);
+    //   }
+    // }
     renderChats(stores,chats) {
       if (this.state.isLoading) {
         return (
@@ -891,29 +891,7 @@ class Home extends Component {
             { this.renderAuthView() }
             {this.renderStoreStatus()}
             <ScrollView style={{paddingTop:12}}>
-            <Text style={{textAlign:'center'}}>COUNT: {this.state.newChatCount}</Text>
-            <View style={{
-              margin: 10,
-              flex: 1,
-              flexDirection: 'row'
-            }}>
-                <TouchableOpacity
-                  style={[styles.button,{height:40,flex:1,marginRight:10}]}
-                  onPress={this.chatIncrease}
-                >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={[styles.linearGradient,{width:140}]}>
-                    <Text style={styles.buttonText}>CHAT # +1</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button,{height:40,flex:1}]}
-                  onPress={this.chatReset}
-                >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={[styles.linearGradient,{width:140}]}>
-                    <Text style={styles.buttonText}>RESET CHAT #</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-          </View>
+          
               <View style={{flex:1,alignItems:'center',marginBottom:20}}>
                 
                 <TouchableOpacity
