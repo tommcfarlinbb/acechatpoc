@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   TextInput,
+  Keyboard,
   TouchableOpacity,
   Dimensions,
   TouchableWithoutFeedback,
@@ -19,7 +20,7 @@ import Header from '../components/Header'
 
 
 const zipCodeList = ['63005','63011','63017','63021','63141','63001','63006','63022','63024','63032','63045','63099','63119','63122','63124','63131','63141','63144','63145','63146','63151','63167','63198','63043','63044','63074','63114','63141','63146','63011','63017','63021','63040','63088','62258','59047'];
-const storeIdList = ['00033','00491','15102','16035','16113','6457'];
+const storeIdList = ['00033','00491','15102','16035','16113','06457'];
 let { width, height } = Dimensions.get('window')
 
 
@@ -78,11 +79,11 @@ export default class Availability extends Component {
     setTimeout(() => {
 
       this.setState({
-        showEmailSent: true,
         isSearching: null
-      })
+      });
+      this.props.emailSubmitHandler();
       
-    },2000);
+    },1000);
   }
   searchZip = () => {
     let zip = this.state.zipCode;
@@ -133,16 +134,19 @@ export default class Availability extends Component {
             showNotAvailable: true,
             isSearching: null
           })
+          Keyboard.dismiss();
         } else {
+          console.log(storeIdList)
            let validStores = responseData.filter((store) => {
              return ~storeIdList.indexOf(store.custom.store_id);
            })
-           
+           console.log(validStores)
            if (!validStores.length) {
             this.setState({
               showNotAvailable: true,
               isSearching: null
             })
+            Keyboard.dismiss();
             return false;
            }
            // now show list of stores
@@ -193,38 +197,38 @@ export default class Availability extends Component {
   renderZipContent() {
     if (this.state.showNotAvailable) {
 
-      if (this.state.showEmailSent) {
-        return (
-          <View style={{flex: 1,width:'100%',paddingTop: 120}}>
+      // if (this.state.showEmailSent) {
+      //   return (
+      //     <View style={{flex: 1,width:'100%',paddingTop: 120}}>
           
-              <View style={{padding:10,paddingBottom:0}}>
-                <Text style={[styles.header,{textAlign:'center'}]}>We got it!</Text>
-                <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:35,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
-              </View>
-              <View style={{flexDirection: 'row',justifyContent: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
-                <TouchableOpacity
-                    style={[styles.button,{width:195,height:40}]}
-                    onPress={() => { return null; }}
-                  >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-                    <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
-                  </LinearGradient>
-                  {/* <View style={styles.linearGradient}>
-                    <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
-                  </View> */}
-                </TouchableOpacity>
-              </View>
-              {this.state.emailError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid email address.</Text>}
+      //         <View style={{padding:10,paddingBottom:0}}>
+      //           <Text style={[styles.header,{textAlign:'center'}]}>We got it!</Text>
+      //           <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:35,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
+      //         </View>
+      //         <View style={{flexDirection: 'row',justifyContent: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
+      //           <TouchableOpacity
+      //               style={[styles.button,{width:195,height:40}]}
+      //               onPress={() => { return null; }}
+      //             >
+      //             <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+      //               <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
+      //             </LinearGradient>
+      //             {/* <View style={styles.linearGradient}>
+      //               <Text style={styles.buttonText}>CONTINUE SHOPPING</Text>
+      //             </View> */}
+      //           </TouchableOpacity>
+      //         </View>
+      //         {this.state.emailError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid email address.</Text>}
       
-          </View>
-        )
-      }
+      //     </View>
+      //   )
+      // }
       return (
-        <View style={{flex: 1,width:'100%',paddingTop: 120}}>
+        <View style={{flex: 1,width:'100%',paddingTop: 10}}>
         
             <View style={{padding:10,paddingBottom:0}}>
-              <Text style={[styles.header,{textAlign:'center'}]}>Unfortunately, Ace Chat is not yet available near you.</Text>
-              <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:35,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Enter your email below and we’ll email you when Ace Chat is available in your neighborhood!</Text>
+              <Text style={[styles.header,{textAlign:'center',paddingHorizontal:10,fontFamily:'HelveticaNeueLTStd-MdCn'}]}>Unfortunately, Ace Chat is not yet available near you.</Text>
+              <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:25,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Please check back again or enter your email below and we'll notify you when Ace Chat is available at your local Ace.</Text>
             </View>
             <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
               <TextInput 
@@ -261,14 +265,14 @@ export default class Availability extends Component {
     }
 
     return (
-     <View style={{flex: 1,width:'100%',paddingTop: 20}}>
+     <View style={{flex: 1,width:'100%',paddingTop: 10}}>
     
         <View style={{padding:10,paddingBottom:0}}>
           <Text style={styles.header}>Enter your ZIP code to see if an Ace representative is available to chat near you.</Text>
         </View>
         <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
           <TextInput 
-            style={[Common.fontRegular,styles.inputEmail,{flex:1}]} 
+            style={[Common.fontRegular,styles.inputEmail,{flex:1,alignSelf:'center',textAlign:'center'}]} 
             onChangeText={text => {
                 this.setState({zipCode: text})
                 if (!text) {
@@ -366,7 +370,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     color: '#5b5b5b',
-    fontFamily: 'HelveticaNeueLTStd-MdCn'
+    fontFamily: 'HelveticaNeueLTStd-Cn'
   },
   inputEmail: {
     height: 42,
