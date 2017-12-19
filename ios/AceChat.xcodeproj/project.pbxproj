@@ -47,7 +47,6 @@
 		C0C925BEFBA7459E88DD52E8 /* libBVLinearGradient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DD5A694F10F45388A42860D /* libBVLinearGradient.a */; };
 		C178537A4AAE4971934AE53C /* HelveticaNeueLTStd-MdCn.otf in Resources */ = {isa = PBXBuildFile; fileRef = 49588D7E4CEC42F793D79943 /* HelveticaNeueLTStd-MdCn.otf */; };
 		CA26E647964C442493242CD3 /* HelveticaNeueLTStd-BdCn.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6C8E52316B0D45A88150F1AB /* HelveticaNeueLTStd-BdCn.otf */; };
-		F858931E51134B619A61914B /* libAirMaps.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9100A085E04F4C8793D10156 /* libAirMaps.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -403,7 +402,6 @@
 				832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */,
 				00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */,
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
-				F858931E51134B619A61914B /* libAirMaps.a in Frameworks */,
 				C0C925BEFBA7459E88DD52E8 /* libBVLinearGradient.a in Frameworks */,
 				ADE54777003F4059A1055634 /* libRCTCamera.a in Frameworks */,
 			);

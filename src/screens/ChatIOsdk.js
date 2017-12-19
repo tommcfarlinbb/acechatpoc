@@ -209,7 +209,7 @@ class CustomDay extends Day {
       return (
         <View style={[dayStyles.container, this.props.containerStyle]}>
           <View style={[dayStyles.wrapper, this.props.wrapperStyle]}>
-            <Text style={[dayStyles.text, this.props.textStyle]}>
+            <Text style={[dayStyles.text, this.props.textStyle,{fontFamily:'HelveticaNeueLTStd-MdCn'}]}>
               {moment(this.props.currentMessage.createdAt).locale(this.context.getLocale()).format('ddd LT').toUpperCase()}
             </Text>
           </View>
@@ -1331,10 +1331,10 @@ export default class ChatIO extends React.Component {
               flex:1
             }}>
               <TouchableOpacity
-                    style={[commonStyles.button,{marginRight:10}]}
+                    style={[commonStyles.button]}
                     onPress={this.onReopenChat}
                   >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient, {width:250}]}>
+                  <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient]}>
                     <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
                     </LinearGradient>   
                     {/* <View style={[commonStyles.linearGradient, {width:250}]}>

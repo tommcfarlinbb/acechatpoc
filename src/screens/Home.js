@@ -117,6 +117,7 @@ class Home extends Component {
         showNewChatModal: false,
         initialLoad: true,
         initialState: true,
+        emailConfirm: false,
         newChatCount: 0
     //    url: 'https://www.brandingbrand.com',
     //    source: {}
@@ -696,6 +697,12 @@ class Home extends Component {
       </Modal>
       )
     }
+    emailSubmit = () => {
+      this.setState({
+        emailConfirm: true
+      })
+      this._hideModal('Availability')
+    }
     renderAvailabilityModal() {
       return (
         <Modal 
@@ -709,6 +716,7 @@ class Home extends Component {
       >
         <Availability 
           closeHandler={() => this._hideModal('Availability')}
+          emailSubmitHandler={this.emailSubmit}
           setStoresCallback={this.setStores}
         />
       </Modal>
@@ -807,6 +815,49 @@ class Home extends Component {
     //     ACEChatViewController.updateChatBadge(0);
     //   }
     // }
+    renderInitialChatCopy() {
+      if (this.state.emailConfirm) {
+        return (
+          <View style={[styles.containerNoChats,{marginTop:20}]}>              
+            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>We got it!</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:260,flex:1,marginTop: 8, marginBottom: 15}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
+            <TouchableOpacity
+                style={[styles.button,{height:40}]}
+                onPress={() => 
+                  { 
+                    this._showModal('Availability');
+                    setTimeout(() => {
+                      this.setState({
+                        emailConfirm: false
+                      })
+                    },400);
+                  }
+                }
+              >
+                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                <Text style={styles.buttonText}>TRY ANOTHER LOCATION</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              
+          </View>
+        )
+      }
+      return (
+          <View style={[styles.containerNoChats,{marginTop:20}]}>              
+              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
+              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 15}]}>You must select a location to check chat availability.</Text>
+              <TouchableOpacity
+                  style={[styles.button,{height:40}]}
+                  onPress={() => this._showModal('Availability')}
+                >
+                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>CHAT AVAILABILITY</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                
+            </View>
+      )
+    }
     renderChats(stores,chats) {
       if (this.state.isLoading) {
         return (
@@ -823,20 +874,7 @@ class Home extends Component {
           <View style={styles.containerChats}>
           { this.renderAuthView() }
           <ScrollView style={{paddingTop:5}}>
-            <View style={[styles.containerNoChats]}>
-              <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
-              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 7}]}>You must select a location to check chat availability.</Text>
-              <TouchableOpacity
-                  style={[styles.button,{height:40}]}
-                  onPress={() => this._showModal('Availability')}
-                >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-                  <Text style={styles.buttonText}>CHAT AVAILABILITY</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-                
-            </View>
-            
+            { this.renderInitialChatCopy() }         
           </ScrollView>
           </View>
         );
@@ -890,7 +928,7 @@ class Home extends Component {
           <View style={styles.containerChats}>
             { this.renderAuthView() }
             {this.renderStoreStatus()}
-            <ScrollView style={{paddingTop:12}}>
+            <ScrollView style={{paddingTop:16}}>
           
               <View style={{flex:1,alignItems:'center',marginBottom:20}}>
                 
@@ -1017,7 +1055,7 @@ class Home extends Component {
           { this.renderStoreStatus() } 
           <View style={{marginTop: 80,}}>
             <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
-            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with one of our Ace representatives near you!</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with on of our Ace store associates near you!</Text>
             <TouchableOpacity
               style={styles.button}
               onPress={this.onPressNewChat}
@@ -1140,7 +1178,7 @@ class Home extends Component {
       height: 72,
       flex:1,
       paddingTop: 3,
-      paddingRight: 18,
+      paddingRight: 12,
       paddingLeft: 8,
       flexDirection: 'row',
       alignItems: 'center',
