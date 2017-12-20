@@ -181,7 +181,8 @@ export default class NewChat extends Component {
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                height: 32
+                height: 32,
+                borderWidth: 0
               }}>
                 <Text style={styles.areaContentTitle}>{area.name}</Text>
               </View>              
@@ -354,6 +355,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     justifyContent: 'center',
     textAlign: 'center',
+    borderTopWidth: 0
   },
   areaItem: {
     height: 80,

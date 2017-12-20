@@ -257,13 +257,14 @@ class CustomBubble extends Bubble {
     }
     if (currentMessage.createdAt >= myLastMessage) {
       return (
-        <View>
+        <View style={{borderTopWidth: 0}}>
           <Text style={{
             fontFamily: 'HelveticaNeueLTStd-MdCn',
             fontSize: 11,
             marginTop: 4,
             marginBottom: -3,
-            color: '#5b5b5b'
+            color: '#5b5b5b',
+            borderTopWidth: 0
           }}>Delivered</Text>
         </View>
       )
