@@ -777,8 +777,8 @@ class Home extends Component {
                 justifyContent: 'space-between'
               }}>
                 <View>
-                  <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15}]}>{selectedStore.title}</Text>
-                  {this.renderAddress(selectedStore,{fontSize:13,lineHeight:13,height:14})}
+                  <Text style={[Common.fontRegular,{fontSize:13,marginRight:5,height:15, borderRightWidth:0}]}>{selectedStore.title}</Text>
+                  {this.renderAddress(selectedStore,{fontSize:13,lineHeight:13,height:14,borderRightWidth:0})}
                 </View>                  
                 <TouchableWithoutFeedback
                   onPress={() => { 
@@ -819,8 +819,8 @@ class Home extends Component {
       if (this.state.emailConfirm) {
         return (
           <View style={[styles.containerNoChats,{marginTop:20}]}>              
-            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>We got it!</Text>
-            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:260,flex:1,marginTop: 8, marginBottom: 15}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
+            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1,borderTopWidth:0}]}>We got it!</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:260,flex:1,marginTop: 8, marginBottom: 15,borderTopWidth:0}]}>Be on the lookout for more information coming your way on Ace Chat.</Text>
             <TouchableOpacity
                 style={[styles.button,{height:40}]}
                 onPress={() => 
@@ -864,7 +864,7 @@ class Home extends Component {
           <View style={styles.container}>
             { this.renderAuthView() }
             <Bubbles loader={true} size={8} color="#d80024" />
-            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15}]}>{this.state.loadingText}</Text>
+            <Text style={[Common.fontMedium,{color:'#d80024',marginTop:10,fontSize:15,borderRightWidth:0}]}>{this.state.loadingText}</Text>
           </View>
         );
       }
@@ -954,7 +954,7 @@ class Home extends Component {
                   marginBottom: 5,
                   paddingHorizontal: 16
                 }]}>Open Chats</Text>
-              {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No open chats</Text></View>}
+              {!activeChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center',borderTopWidth:0}]}>No open chats</Text></View>}
               {activeChats.map(chat => {
                 return (
                 <TouchableHighlight
@@ -1002,7 +1002,7 @@ class Home extends Component {
                   paddingHorizontal: 16
                 }]}>Previous Chats</Text>
 
-              {!previousChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center'}]}>No previous chats</Text></View>}  
+              {!previousChats.length && <View style={styles.empty}><Text style={[Common.fontRegular,{flex:1,fontSize:16,color:'#999',textAlign:'center',borderTopWidth:0}]}>No previous chats</Text></View>}  
               {previousChats.map(chat => (
                 <TouchableHighlight
                   key={chat.id}
@@ -1019,9 +1019,10 @@ class Home extends Component {
                       <View style={styles.chat}>
                       <View style={{                  
                           flexDirection: 'row',
+                          borderTopWidth: 0
                         }}>
-                          <Text numberOfLines={1} style={[Common.fontRegular,styles.store, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
-                          <Text style={[Common.fontRegular,styles.time, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
+                          <Text numberOfLines={1} style={[Common.fontRegular,styles.store, {borderTopWidth:0,borderRightWidth:0}, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageColor]}>{chat.storeTitle ? chat.storeTitle : 'No store found'}</Text>
+                          <Text style={[Common.fontRegular,styles.time, {borderTopWidth:0,borderRightWidth:0}, (chat.lastEvent && chat.lastEvent.timestamp > chat.myLastVisit) && styles.newMessageTime]}>{chat.lastEvent && moment(chat.lastEvent.timestamp).calendar(null, {
                             sameDay: 'h:mm a',
                             nextDay: '[Tomorrow]',
                             nextWeek: 'ddd',
@@ -1054,8 +1055,8 @@ class Home extends Component {
           
           { this.renderStoreStatus() } 
           <View style={{marginTop: 80,}}>
-            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b'}]}>You do not have a chat history.</Text>
-            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30}]}>Start a new chat below to talk with on of our Ace store associates near you!</Text>
+            <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',borderTopWidth:0}]}>You do not have a chat history.</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30,borderTopWidth:0}]}>Start a new chat below to talk with on of our Ace store associates near you!</Text>
             <TouchableOpacity
               style={styles.button}
               onPress={this.onPressNewChat}

@@ -101,7 +101,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'center',
     marginBottom: 2,
-    fontFamily: 'HelveticaNeueLTStd-Cn'
+    fontFamily: 'HelveticaNeueLTStd-Cn',
+    borderTopWidth: 0
   },
   buttonText: {
     color: '#000',

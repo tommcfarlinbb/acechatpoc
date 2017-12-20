@@ -370,6 +370,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 8,
     color: '#5b5b5b',
+    borderTopWidth: 0,
     fontFamily: 'HelveticaNeueLTStd-Cn'
   },
   inputEmail: {
