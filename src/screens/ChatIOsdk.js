@@ -1278,28 +1278,28 @@ export default class ChatIO extends React.Component {
   }
 
   renderCustomActions(props) {
- //   if (Platform.OS === 'ios') {
+    if (Platform.OS === 'ios') {
       return (
         <CustomActions
           {...props}
         />
       );
-  //  }
-    // const options = {
-    //   'Take a Photo': (props) => {
-    //     alert('option 1');
-    //   },
-    //   'Choose From Gallery': (props) => {
-    //     alert('option 2');
-    //   },
-    //   'Cancel': () => {},
-    // };
-    // return (
-    //   <AndroidActions
-    //     {...props}
-    //     options={options}
-    //   />
-    // );
+   }
+    const options = {
+      'Take a Photo': (props) => {
+        alert('option 1');
+      },
+      'Choose From Gallery': (props) => {
+        alert('option 2');
+      },
+      'Cancel': () => {},
+    };
+    return (
+      <AndroidActions
+        {...props}
+        options={options}
+      />
+    );
   }
 
 
