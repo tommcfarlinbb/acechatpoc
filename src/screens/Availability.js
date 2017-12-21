@@ -138,7 +138,7 @@ export default class Availability extends Component {
         } else {
           console.log(storeIdList)
            let validStores = responseData.filter((store) => {
-             return ~storeIdList.indexOf(store.custom.store_id);
+              return (store.custom && store.custom.chat_data) || ~storeIdList.indexOf(store.custom.store_id);          
            })
            console.log(validStores)
            if (!validStores.length) {
