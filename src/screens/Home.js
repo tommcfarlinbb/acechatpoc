@@ -126,9 +126,14 @@ class Home extends Component {
   //    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
     getChatsSummary = (offset,limit,fullChatList) => {
-
+      
       fullChatList = fullChatList || [];
 
+      if (!fullChatList.length) {
+        this.setState({
+          newChatCount:0
+        });
+      }
       this.sdk.getChatsSummary({
         offset: offset,
         limit: limit,
@@ -137,11 +142,13 @@ class Home extends Component {
           
           fullChatList = [...fullChatList, ...chatsSummary];
 
-          this.iterateOver(chatsSummary, (chat, report, fields) => { 
+          this.iterateOver(chatsSummary, (chat, report) => { 
 
             chat.myLastVisit = chat.lastSeenTimestamps[this.state.customerId];
 
             let properties = chat.properties && chat.properties.chatInfo;
+            let isNewChat = false;
+
             if (properties) {
               chat.title = properties.title.value;
               chat.area = properties.area.value;
@@ -158,21 +165,25 @@ class Home extends Component {
                   chat.adminLastSeen = chat.lastSeenTimestamps[user]
                 }                  
               }
-            }
-            
+            }            
 
             if (chat.lastEvent) {
+
+              if (chat.lastEvent.timestamp > chat.myLastVisit) {
+                isNewChat = true;
+              }
+
               const threadsArr = [chat.lastEvent.thread];
               this.sdk.getChatThreads(chat.id, threadsArr)
               .then(threads => {
                   chat.isActive = threads[0].active;                      
-                  report();
+                  report(isNewChat);
               })
               .catch(error => {
                   console.log(error)
               });
             } else {
-              report();
+              report(isNewChat);
             }
 
                   
@@ -200,21 +211,39 @@ class Home extends Component {
   
   iterateOver = (list, iterator, callback, totalChats, fullChatList, offset) => {
       offset = offset || 0;
+      let newChats = this.state.newChatCount;
       let doneCount = 0;
       let fullDoneCount = fullChatList.length - list.length; 
       // if (!fullChatList) {
       //   fullChatList = list.slice();
       // }
-      report = () => { 
+      report = (newChat) => { 
           doneCount++;  
           fullDoneCount++;
           // done looping through loaded chats
+
+          if (newChat) {
+            newChats++;
+          }
+
 
           if (doneCount === list.length) {
             // all chats loaded
 //            console.log(fullDoneCount,totalChats)
             if (fullDoneCount === totalChats) {
               callback(fullChatList);
+              // TODO: Make Update
+              if (ACEChatViewController) {
+                ACEChatViewController.updateChatBadge(newChats);
+              }
+             // let count = this.state.newChatCount;
+              this.setState({
+                newChatCount: newChats
+              })
+              // this.setState(function(prevState, props){
+              //   return {newChatCount: newChats}
+              // });    
+              console.log('chat count: '+newChats)
             } else {
               offset = offset + 25;
               // there are more chats to load
@@ -248,11 +277,12 @@ class Home extends Component {
       // console.log(fields)
       for(var i = 0; i < list.length; i++) {
        // console.log(list[i],users[0].fields)
-          iterator(list[i], report, fields)
+          iterator(list[i], report)
       }
   }
   updateChats = (chat) => {
     let chatList = this.state.chats.slice();
+    let newChats = 0;
     for (i=0; i<chatList.length; i++) {
       
       if (chatList[i].id === chat.chat) {
@@ -261,8 +291,21 @@ class Home extends Component {
         chatList[i].lastEvent.timestamp = chat.event.timestamp;
         chatList[i].order = chat.event.timestamp;
         chatList[i].isActive = true;
-        break;
+       // break;
       }
+
+      // check if 
+      console.log(chatList[i].lastEvent.timestamp, chatList[i].myLastVisit)
+      if (chatList[i].lastEvent.timestamp > chatList[i].myLastVisit) {
+        newChats++;
+      }
+    }
+    console.log('chat count: '+newChats)
+    this.setState({
+      newChatCount: newChats
+    })
+    if (ACEChatViewController) {
+      ACEChatViewController.updateChatBadge(newChats);
     }
     this.updateChatHistory(chatList);
   }
@@ -307,8 +350,9 @@ class Home extends Component {
         })
   
   
-        this.iterateOver(chatsSummary, (chat, report, fields) => {
+        this.iterateOver(chatsSummary, (chat, report) => {
           let properties = chat.properties && chat.properties.chatInfo;
+          let isNewChat = false;
           if (properties) {
             chat.title = properties.title.value;
             chat.area = properties.area.value;
@@ -320,6 +364,10 @@ class Home extends Component {
             chat.myLastVisit   = chat.lastSeenTimestamps[this.state.customerId];
             chat.adminLastSeen = null;
             if (chat.lastEvent) {
+
+              if (chat.lastEvent.timestamp > chat.myLastVisit) {
+                isNewChat = true;
+              }
   
               for (var user in chat.lastSeenTimestamps) {
                 if (chat.lastSeenTimestamps.hasOwnProperty(user)) {
@@ -335,19 +383,19 @@ class Home extends Component {
                 this.sdk.getChatThreads(chat.id, threadsArr)
                 .then(threads => {
                     chat.isActive = threads[0].active;                
-                    report();
+                    report(isNewChat);
                 })
                 .catch(error => {
                     console.log(error)
                 });
               } else {
-                report();
+                report(isNewChat);
               }
 
               
 
             } else {
-              report();
+              report(isNewChat);
             }
   
                 
@@ -681,7 +729,7 @@ class Home extends Component {
         backdropTransitionInTiming={1}
         backdropTransitionOutTiming={1}
         backdropOpacity={0}
-        avoidKeyboard={true}
+        avoidKeyboard={Platform.OS === 'ios' ? true : false}
       >
         <NewChat 
           closeHandler={() => this._hideModal('NewChat')}          
@@ -834,9 +882,15 @@ class Home extends Component {
                   }
                 }
               >
-                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+
+              {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
+                  <Text style={styles.buttonText}>TRY ANOTHER LOCATION</Text>
+                </View>}
+              {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                 <Text style={styles.buttonText}>TRY ANOTHER LOCATION</Text>
-                </LinearGradient>
+                </LinearGradient>}
+
+
               </TouchableOpacity>
               
           </View>
@@ -850,9 +904,12 @@ class Home extends Component {
                   style={[styles.button,{height:40}]}
                   onPress={() => this._showModal('Availability')}
                 >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
+                <Text style={styles.buttonText}>CHAT AVAILABILITY</Text>
+                  </View>}
+                {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                   <Text style={styles.buttonText}>CHAT AVAILABILITY</Text>
-                  </LinearGradient>
+                  </LinearGradient>}
                 </TouchableOpacity>
                 
             </View>
@@ -936,13 +993,12 @@ class Home extends Component {
                   style={[styles.button,{height:40}]}
                   onPress={this.onPressNewChat}
                 >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-                    <Text style={styles.buttonText}>START NEW CHAT</Text>
-                  </LinearGradient>
-                  {/* <View style={styles.linearGradient}>
+                {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
                   <Text style={styles.buttonText}>START NEW CHAT</Text>
-                  </View>
-                  */}
+                </View>}
+                {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  <Text style={styles.buttonText}>START NEW CHAT</Text>
+                </LinearGradient>}
 
                 </TouchableOpacity>
                 
@@ -1061,12 +1117,13 @@ class Home extends Component {
               style={styles.button}
               onPress={this.onPressNewChat}
             >
-              <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradientNoHistory}>
+              {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
+                  <Text style={styles.buttonText}>START NEW CHAT</Text>
+              </View>}
+              {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                 <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </LinearGradient>
-              {/* <View style={styles.linearGradientNoHistory}>
-                <Text style={styles.buttonText}>START NEW CHAT</Text>
-              </View> */}
+              </LinearGradient>}
+
             </TouchableOpacity>
           </View>
         

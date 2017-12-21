@@ -37,7 +37,8 @@ const images = {
   send: require('../img/send.png'),
   thumbs: require('../img/thumbs.png'),
   thumbsUp: require('../img/thumbsUp.png'),
-  thumbsDown: require('../img/thumbsDown.png')
+  thumbsDown: require('../img/thumbsDown.png'),
+  camera: require('../img/camera.png'),
 };
 
 class CustomGiftedChat extends GiftedChat {  
@@ -219,6 +220,20 @@ class CustomDay extends Day {
     return null;
   }
 }
+class AndroidActions extends Actions {
+  renderIcon() {
+    if (this.props.icon) {
+      return this.props.icon();
+    }
+    return (
+      <View
+        style={[styles.wrapper, this.props.wrapperStyle]}
+      >
+        <Image style={{height: 17,width: 22}} source={images.camera} />
+      </View>
+    );
+  }
+}
 class CustomBubble extends Bubble {
   renderTicks() {
     const {currentMessage, adminLastSeen, myLastMessage} = this.props;
@@ -286,7 +301,7 @@ class CustomBubble extends Bubble {
     return (
       <View>        
         <View style={[bubbleStyles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
-          <View style={[bubbleStyles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position], this.props.currentMessage.image && {backgroundColor:'transparent'}]}>
+          <View style={[bubbleStyles[this.props.position].wrapper, this.props.wrapperStyle[this.props.position], this.props.currentMessage.image && {backgroundColor:'#dcd3c5'}]}>
             <TouchableWithoutFeedback
               onLongPress={this.onLongPress}
               accessibilityTraits="text"
@@ -1172,6 +1187,8 @@ export default class ChatIO extends React.Component {
         for (i=0; i<messagesCopy.length; i++) {
           if (messagesCopy[i].image && messagesCopy[i]._id === randomId) {
             messagesCopy[i].pending = false;
+            this.sdk.updateLastSeenTimestamp(this.state.chatId,messagesCopy[i].createdAt);
+
             if (this.state.myLastMessage < messagesCopy[i].createdAt) {
               this.setState({
                 myLastMessage: messagesCopy[i].createdAt
@@ -1211,6 +1228,14 @@ export default class ChatIO extends React.Component {
   }
   renderMessageImage = (props) => {
     return (
+      <View>
+      <Text style={[Common.fontRegular,{
+        fontSize: 13,
+        textAlign: 'center',
+        position: 'absolute',
+        top: '50%',
+        width: 245
+      }]}>Loading Image...</Text>
       <MessageImage 
         {...props}
         imageStyle={{
@@ -1220,6 +1245,7 @@ export default class ChatIO extends React.Component {
           margin: 0
         }}
       />
+      </View>
   
     );
   }
@@ -1252,28 +1278,28 @@ export default class ChatIO extends React.Component {
   }
 
   renderCustomActions(props) {
-    if (Platform.OS === 'ios') {
+ //   if (Platform.OS === 'ios') {
       return (
         <CustomActions
           {...props}
         />
       );
-    }
-    const options = {
-      'Action 1': (props) => {
-        alert('option 1');
-      },
-      'Action 2': (props) => {
-        alert('option 2');
-      },
-      'Cancel': () => {},
-    };
-    return (
-      <Actions
-        {...props}
-        options={options}
-      />
-    );
+  //  }
+    // const options = {
+    //   'Take a Photo': (props) => {
+    //     alert('option 1');
+    //   },
+    //   'Choose From Gallery': (props) => {
+    //     alert('option 2');
+    //   },
+    //   'Cancel': () => {},
+    // };
+    // return (
+    //   <AndroidActions
+    //     {...props}
+    //     options={options}
+    //   />
+    // );
   }
 
 
@@ -1335,12 +1361,13 @@ export default class ChatIO extends React.Component {
                     style={[commonStyles.button]}
                     onPress={this.onReopenChat}
                   >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={[commonStyles.linearGradient]}>
+
+                  {Platform.OS === 'android' && <View  style={[commonStyles.linearGradient,{backgroundColor: '#e31836'}]}>
+                  <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
+                    </View>}
+                  {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={commonStyles.linearGradient}>
                     <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
-                    </LinearGradient>   
-                    {/* <View style={[commonStyles.linearGradient, {width:250}]}>
-                      <Text style={commonStyles.buttonText}>REOPEN CHAT</Text>
-                    </View>                  */}
+                    </LinearGradient>}
 
                   </TouchableOpacity>
             </View>
@@ -1598,7 +1625,7 @@ export default class ChatIO extends React.Component {
               isVisible={this.state.isModalVisible}
               onBackdropPress={() => this.setState({ isModalVisible: false })}
               backdropOpacity={0.50}
-              avoidKeyboard={true}
+              avoidKeyboard={Platform.OS === 'ios' ? true : false}
             >
             <ThumbsModal 
             updateHandler={this.updateMessages}
