@@ -13,7 +13,7 @@ import {
 
 import Header from './components/Header';
 import Modal from 'react-native-modal';
-import Camera from 'react-native-camera';
+//import Camera from 'react-native-camera';
 import CameraRollPicker from 'react-native-camera-roll-picker';
 
 const images = {
@@ -173,7 +173,7 @@ export default class CustomActions extends React.Component {
         flex: 1,
         width: '100%'
       }}>
-          <Camera
+          {/* <Camera
             ref={(cam) => {
               this.camera = cam;
             }}
@@ -200,7 +200,7 @@ export default class CustomActions extends React.Component {
               />
             </TouchableOpacity>
             </View>
-          </Camera>
+          </Camera> */}
       </View>
     </Modal>
     )
