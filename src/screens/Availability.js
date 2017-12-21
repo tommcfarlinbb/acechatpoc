@@ -249,12 +249,12 @@ export default class Availability extends Component {
                   style={styles.button}
                   onPress={this.sendEmail}
                 >
-                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
                   <Text style={styles.buttonText}>SUBMIT</Text>
-                </LinearGradient>
-                {/* <View  style={styles.linearGradient}>
+                </View>}
+                {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                   <Text style={styles.buttonText}>SUBMIT</Text>
-                </View> */}
+                </LinearGradient>}
               </TouchableOpacity>
             </View>
             {this.state.emailError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid email address.</Text>}
@@ -290,12 +290,12 @@ export default class Availability extends Component {
               style={styles.button}
               onPress={this.searchZip}
             >
-            {/* <View style={styles.linearGradient}>
-              <Text style={styles.buttonText}>SUBMIT</Text>
-            </View> */}
-            <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
-              <Text style={styles.buttonText}>SUBMIT</Text>
-            </LinearGradient>
+              {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
+                  <Text style={styles.buttonText}>SUBMIT</Text>
+              </View>}
+              {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                <Text style={styles.buttonText}>SUBMIT</Text>
+              </LinearGradient>}
           </TouchableOpacity>
         </View>
         {this.state.zipError && <Text style={[Common.fontMedium,{color:'#d80024',marginLeft:16,fontSize:15}]}>Please enter a valid zip code.</Text>}

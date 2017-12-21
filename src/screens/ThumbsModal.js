@@ -62,10 +62,19 @@ export default class ThumbsModal extends Component {
       properties: {
         rating: {
           score: ratingNum,
-          comment: this.state.comment || '<no commment submitted>',
+          comment: this.state.comment || '-no commment submitted-',
         },
       },
     }).then(data => {
+      
+      this.props.sdk.updateChatThreadProperties(this.props.chat, data.thread, {
+        rating: {
+          score: ratingNum, 
+          comment: this.state.comment || '-no commment submitted-'
+        }
+      }).then(data => {
+        console.log(data)
+      })
       this.props.updateHandler({
         _id: Math.round(Math.random() * 1000000),
         text: 'You rated this chat as: '+rating,
@@ -162,9 +171,13 @@ What went wrong and what did you like?
                     style={[styles.button,{height:40}]}
                     onPress={this.submitRating}
                   >
-                  <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                  
+                  {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
+                  <Text style={styles.buttonText}>SUBMIT RATING</Text>
+                    </View>}
+                  {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                     <Text style={styles.buttonText}>SUBMIT RATING</Text>
-                  </LinearGradient>
+                    </LinearGradient>}
                 </TouchableOpacity>
               </View>
               

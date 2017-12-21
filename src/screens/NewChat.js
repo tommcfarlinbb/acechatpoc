@@ -247,12 +247,14 @@ export default class NewChat extends Component {
                   style={styles.button}
                   onPress={this.beginChat}
                 >
-                <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
+                
+                {Platform.OS === 'android' && <View  style={[styles.linearGradient,{backgroundColor: '#e31836'}]}>
                   <Text style={styles.buttonText}>BEGIN CHAT</Text>
-                </LinearGradient>
-                {/* <View style={styles.linearGradient}>
+                 </View>}
+                {Platform.OS === 'ios' && <LinearGradient colors={['#e21836', '#b11226']} style={styles.linearGradient}>
                   <Text style={styles.buttonText}>BEGIN CHAT</Text>
-                </View> */}
+                  </LinearGradient>}
+                  
                 </TouchableOpacity>
             </View>
           </View>
