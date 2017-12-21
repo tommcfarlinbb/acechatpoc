@@ -1185,7 +1185,6 @@ class Home extends Component {
       width: '100%'
     },
     linearGradient: {
-      flex: 1,
       paddingLeft: 15,
       paddingRight: 15,
       borderRadius: 5,
