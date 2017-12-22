@@ -847,7 +847,7 @@ export default class ChatIO extends React.Component {
         this.closeChat(chat);
       }
     }
-    this.sdk.on('thread_closed', this.threadClosedHandler);
+    this.sdk.on('thread_closed', this._threadClosedHandler);
 
 
     // ////////////////////////////////////
