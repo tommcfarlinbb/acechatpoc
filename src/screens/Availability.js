@@ -18,9 +18,8 @@ import { Common } from '../styles';
 import LinearGradient from 'react-native-linear-gradient';
 import Header from '../components/Header'
 
-
-const zipCodeList = ['63005','63011','63017','63021','63141','63001','63006','63022','63024','63032','63045','63099','63119','63122','63124','63131','63141','63144','63145','63146','63151','63167','63198','63043','63044','63074','63114','63141','63146','63011','63017','63021','63040','63088','62258','59047'];
-const storeIdList = ['00033','00491','15102','16035','16113','06457'];
+//const storeIdList = ["11069", "11544", "11856", "14201", "14508", "14594", "14797", "14974", "14989", "15079", "15102", "16035", "16113", "04673", "06001", "07853", "04207", "08132", "05531", "00033", "00491", "09222"]
+const storeIdList = ['00033','00491','16035','16113'];
 let { width, height } = Dimensions.get('window')
 
 
@@ -99,7 +98,7 @@ export default class Availability extends Component {
       return;
     }
 
-    let zipSearch = 'https://storc.brandingbrand.com/v1/stores/acehardware?zip='+zip+'&radius=50';
+    let zipSearch = 'https://storc.brandingbrand.com/v1/stores/acehardware?zip='+zip+'&radius=40';
 
     console.log(zipSearch)
     this.setState({
