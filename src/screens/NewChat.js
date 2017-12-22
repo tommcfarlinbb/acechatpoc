@@ -196,7 +196,7 @@ export default class NewChat extends Component {
         <Header 
           left="close" 
           onPressLeft={this.props.closeHandler}
-          title="NEW ISSUE" />
+          title="NEW CHAT" />
         <View style={{
           flex: 1,
           backgroundColor: '#eee6d9',
@@ -233,7 +233,7 @@ export default class NewChat extends Component {
 
 
                 <View style={{padding:10,paddingBottom:0}}>
-                  <Text style={styles.header}>Briefly describe your issue:</Text>
+                  <Text style={styles.header}>Briefly describe your question:</Text>
                   <View>
                     <TextInput style={[Common.fontRegular,styles.inputDescription,this.state.errors.description && !this.state.description && styles.inputError]} onChangeText={text => this.setState({description: text})}  placeholder="Description *" />
                   </View>

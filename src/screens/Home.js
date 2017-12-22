@@ -899,7 +899,7 @@ class Home extends Component {
       return (
           <View style={[styles.containerNoChats,{marginTop:20}]}>              
               <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',textAlign:'center',flex:1}]}>Welcome to Ace Chat!</Text>
-              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 15}]}>You must select a location to check chat availability.</Text>
+              <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',textAlign:'center',width:220,flex:1,marginTop: 8, marginBottom: 15}]}>You must enter a ZIP code to check your chat availability.</Text>
               <TouchableOpacity
                   style={[styles.button,{height:40}]}
                   onPress={() => this._showModal('Availability')}
@@ -1112,7 +1112,7 @@ class Home extends Component {
           { this.renderStoreStatus() } 
           <View style={{marginTop: 80,}}>
             <Text style={[styles.noChats,Common.fontMedium,{fontSize:16,color: '#5b5b5b',borderTopWidth:0}]}>You do not have a chat history.</Text>
-            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30,borderTopWidth:0}]}>Start a new chat below to talk with on of our Ace store associates near you!</Text>
+            <Text style={[styles.noChats,Common.fontRegular,{fontSize:16,color: '#5b5b5b',marginTop: 15, marginBottom: 30,borderTopWidth:0}]}>Start a new chat below to talk with one of our Ace store associates near you!</Text>
             <TouchableOpacity
               style={styles.button}
               onPress={this.onPressNewChat}
@@ -1141,7 +1141,7 @@ class Home extends Component {
       } = this.state;
       return (
         <View style={styles.RNcontainer}>
-          {Platform.OS == 'ios'  && <Header title="CHAT" />}
+          {Platform.OS == 'ios'  && <Header title="ASK ACE" />}
           <View style={{
              flex: 1,
              backgroundColor: '#eee6d9',
