@@ -227,7 +227,7 @@ export default class Availability extends Component {
         <View style={{flex: 1,width:'100%',paddingTop: 10}}>
         
             <View style={{padding:10,paddingBottom:0}}>
-              <Text style={[styles.header,{textAlign:'center',paddingHorizontal:10,fontFamily:'HelveticaNeueLTStd-MdCn'}]}>Unfortunately, Ace Chat is not yet available near you.</Text>
+              <Text style={[styles.header,{textAlign:'center',paddingHorizontal:10,fontFamily:'HelveticaNeueLTStd-MdCn'}]}>Unfortunately, Ace Chat is not available near you.</Text>
               <Text style={[Common.fontRegular,{paddingHorizontal:20,paddingTop:3,marginBottom:25,fontSize:16,lineHeight:15,color:'#5b5b5b',textAlign:'center'}]}>Please check back again or enter your email below and we'll notify you when Ace Chat is available at your local Ace.</Text>
             </View>
             <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
@@ -268,7 +268,7 @@ export default class Availability extends Component {
      <View style={{flex: 1,width:'100%',paddingTop: 10}}>
     
         <View style={{padding:10,paddingBottom:0}}>
-          <Text style={styles.header}>Enter your ZIP code to see if an Ace representative is available to chat near you.</Text>
+          <Text style={styles.header}>Enter your ZIP code to see if an Ace store is available to chat near you.</Text>
         </View>
         <View style={{flexDirection: 'row',alignItems: 'center',paddingLeft:10,paddingRight:10,marginBottom: 10}}>
           <TextInput 
@@ -283,7 +283,7 @@ export default class Availability extends Component {
             value={this.state.zipCode}
             autoCorrect={false} 
             autoCapitalize="none" 
-            placeholder="Zip Code" 
+            placeholder="ZIP Code" 
             keyboardType = 'numeric'
           />
           <TouchableOpacity

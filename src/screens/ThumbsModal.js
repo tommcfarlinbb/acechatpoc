@@ -129,8 +129,7 @@ export default class ThumbsModal extends Component {
               <View>
                 <Text style={[Common.fontRegular,{color:'#5b5b5b',marginBottom:13,lineHeight:17,fontSize:15,paddingHorizontal:10,textAlign:'center'}]}>
 Your feedback is very important to us.
-How would you rate my support? 
-What went wrong and what did you like?
+How would you rate the help you received?
                 </Text>
               </View>
               <View style={{flexDirection: 'row',justifyContent: 'center'}}>
@@ -140,7 +139,7 @@ What went wrong and what did you like?
                     <View style={[styles.rateButton,{borderTopRightRadius:0,borderBottomRightRadius:0},this.state.rating === 'up' && styles.rateSelected]}>
                       <View style={styles.rateContent}>
                         <Image style={{height: 32,width: 37,marginBottom:13,marginTop:2}} source={images.thumbsUp} />
-                        <Text style={styles.rateContentTitle}>Rate good</Text>
+                        <Text style={styles.rateContentTitle}>Good</Text>
                       </View>
                     </View>
                 </TouchableWithoutFeedback>
@@ -150,7 +149,7 @@ What went wrong and what did you like?
                     <View style={[styles.rateButton,{borderTopLeftRadius:0,borderBottomLeftRadius:0,borderLeftWidth:0},this.state.rating === 'down' && styles.rateSelected]}>
                     <View style={styles.rateContent}>
                     <Image style={{height: 32,width: 36,marginBottom:13,marginTop:2}} source={images.thumbsDown} />
-                      <Text style={styles.rateContentTitle}>Rate bad</Text>
+                      <Text style={styles.rateContentTitle}>Bad</Text>
                     </View>
                   </View>
                 </TouchableWithoutFeedback>
