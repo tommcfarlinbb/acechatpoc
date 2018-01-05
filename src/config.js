@@ -2,10 +2,10 @@ export default  {
   // TEST ACCOUNT
 //  "00033": { license: 9360575, clientId: 'e5d497aa6426bbeea49e1336df63c099' },
   stores: {
-    "00033": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
+    "00033": { license: 9386560, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
     "00491": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
     "16035": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
-    "16113": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' }
+    "16113": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
   }
   // stores: {
   //   "04673": { license: 9360440, clientId: '27643d7a85335d9d33d22f2b8a9a40c6' },
